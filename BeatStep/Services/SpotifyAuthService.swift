@@ -17,8 +17,8 @@ class SpotifyAuthService {
     // MARK: - Private
 
     // TODO: Replace with your Spotify Client ID from developer.spotify.com
-    private let clientID = "YOUR_SPOTIFY_CLIENT_ID"
-    private let redirectURL = URL(string: "beatstep://spotify-callback")!
+    let clientID = "YOUR_SPOTIFY_CLIENT_ID"
+    let redirectURL = URL(string: "beatstep://spotify-callback")!
 
     private let additionalScopes: [String] = [
         "playlist-read-private",
