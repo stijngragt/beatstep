@@ -13,6 +13,7 @@
 		2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53564AD8A26370E1D5CC4EB /* ContentView.swift */; };
 		2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */; };
 		36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */; };
+		5CEA394D403E9B19AF0C5594 /* AudioSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1DA1AE4223F5E864B4ED0E /* AudioSessionService.swift */; };
 		75F028DE1CD6EA1E54BF7CDF /* SpotifyPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */; };
 		B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891C60D8560980C95D3F6E61 /* BeatStepApp.swift */; };
 		BA8874F7D3FDA0EBB4354668 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = F71ECCFE50CC9E0DBDAD3512 /* KeychainAccess */; };
@@ -54,6 +55,7 @@
 		B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuthServiceTests.swift; sourceTree = "<group>"; };
 		B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyPlaylist.swift; sourceTree = "<group>"; };
 		C35322426C60E3601F3E3793 /* PaginatedResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaginatedResponse.swift; sourceTree = "<group>"; };
+		CA1DA1AE4223F5E864B4ED0E /* AudioSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionService.swift; sourceTree = "<group>"; };
 		DDE56539C5B7C96F590519D1 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		E0F7B31F8718FAA1C5A45EE9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E89C786A70B843741C71082D /* BeatStep.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BeatStep.entitlements; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 		492054E64C9EE9C03919B647 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				CA1DA1AE4223F5E864B4ED0E /* AudioSessionService.swift */,
 				F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */,
 				0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */,
 			);
@@ -288,6 +291,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5CEA394D403E9B19AF0C5594 /* AudioSessionService.swift in Sources */,
 				B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */,
 				2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */,
 				FB232EA2C7B5463D38AA5AEE /* KeychainManager.swift in Sources */,
