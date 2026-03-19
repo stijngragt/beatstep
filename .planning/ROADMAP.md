@@ -29,11 +29,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can play, pause, and skip tracks from within BeatStep
   3. Playback continues when the app is backgrounded or the phone is locked, with lock screen controls working
   4. User can browse their Spotify playlists and saved tracks within the app
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- Project scaffold, models, auth service, audio session infrastructure
+- [ ] 01-02-PLAN.md -- Playback service, API service, all views, wiring, manual verification
 
 ### Phase 2: BPM Data Pipeline
 **Goal**: App has reliable BPM data for the user's music library and can discover new tracks by BPM
