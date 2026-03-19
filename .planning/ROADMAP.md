@@ -12,7 +12,7 @@ BeatStep delivers a music-sync running experience in five phases. We start by es
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Spotify Integration** - Authenticate, play music, access library, and survive background transitions
+- [x] **Phase 1: Spotify Integration** - Authenticate, play music, access library, and survive background transitions
 - [ ] **Phase 2: BPM Data Pipeline** - Source BPM data externally, cache it, and scan user libraries
 - [ ] **Phase 3: Cadence Detection** - Detect running cadence in real-time via CoreMotion with smoothing
 - [ ] **Phase 4: Core Loop (Free Run)** - Match cadence to BPM, queue songs, and deliver the core experience
@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md -- Project scaffold, models, auth service, audio session infrastructure
-- [ ] 01-02-PLAN.md -- Playback service, API service, all views, wiring, manual verification
+- [x] 01-02-PLAN.md -- Playback service, API service, all views, wiring, manual verification
 
 ### Phase 2: BPM Data Pipeline
 **Goal**: App has reliable BPM data for the user's music library and can discover new tracks by BPM
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Spotify Integration | 1/2 | In Progress | - |
+| 1. Spotify Integration | 2/2 | Complete | 2026-03-19 |
 | 2. BPM Data Pipeline | 0/2 | Not started | - |
 | 3. Cadence Detection | 0/1 | Not started | - |
 | 4. Core Loop (Free Run) | 0/2 | Not started | - |
