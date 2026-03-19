@@ -1,0 +1,48 @@
+name: BeatStep
+options:
+  bundleIdPrefix: com.beatstep
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+
+packages:
+  SpotifyiOS:
+    url: https://github.com/spotify/ios-sdk
+    from: "2.1.4"
+  KeychainAccess:
+    url: https://github.com/kishikawakatsumi/KeychainAccess
+    from: "4.0.0"
+
+targets:
+  BeatStep:
+    type: application
+    platform: iOS
+    sources:
+      - BeatStep
+    settings:
+      base:
+        INFOPLIST_FILE: BeatStep/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.beatstep.app
+        CODE_SIGN_ENTITLEMENTS: BeatStep/Resources/BeatStep.entitlements
+    dependencies:
+      - package: SpotifyiOS
+      - package: KeychainAccess
+      - sdk: AVFoundation.framework
+      - sdk: MediaPlayer.framework
+
+  BeatStepTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - BeatStepTests
+    dependencies:
+      - target: BeatStep
+    settings:
+      base:
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/BeatStep.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeatStep"
+        BUNDLE_LOADER: "$(TEST_HOST)"
