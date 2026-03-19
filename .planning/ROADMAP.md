@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Project scaffold, models, auth service, audio session infrastructure
+- [x] 01-01-PLAN.md -- Project scaffold, models, auth service, audio session infrastructure
 - [ ] 01-02-PLAN.md -- Playback service, API service, all views, wiring, manual verification
 
 ### Phase 2: BPM Data Pipeline
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Spotify Integration | 0/2 | Not started | - |
+| 1. Spotify Integration | 1/2 | In Progress | - |
 | 2. BPM Data Pipeline | 0/2 | Not started | - |
 | 3. Cadence Detection | 0/1 | Not started | - |
 | 4. Core Loop (Free Run) | 0/2 | Not started | - |

@@ -15,9 +15,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Spotify Integration
 
-- [ ] **SPOT-01**: User can authenticate with Spotify via OAuth
+- [x] **SPOT-01**: User can authenticate with Spotify via OAuth
 - [ ] **SPOT-02**: User can control playback (play/pause/skip) from the app
-- [ ] **SPOT-03**: Playback continues in background with lock screen controls
+- [x] **SPOT-03**: Playback continues in background with lock screen controls
 - [ ] **SPOT-04**: App can access user's Spotify playlists and saved tracks
 - [ ] **SPOT-05**: App can discover new songs from Spotify catalog at matching BPM
 
@@ -78,9 +78,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAD-01 | Phase 3 | Pending |
 | CAD-02 | Phase 3 | Pending |
 | CAD-03 | Phase 3 | Pending |
-| SPOT-01 | Phase 1 | Pending |
+| SPOT-01 | Phase 1 | Complete |
 | SPOT-02 | Phase 1 | Pending |
-| SPOT-03 | Phase 1 | Pending |
+| SPOT-03 | Phase 1 | Complete |
 | SPOT-04 | Phase 1 | Pending |
 | SPOT-05 | Phase 2 | Pending |
 | BPM-01 | Phase 2 | Pending |
