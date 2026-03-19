@@ -1,7 +1,7 @@
 # Requirements: BeatStep
 
 **Defined:** 2026-03-19
-**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
+**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
 
 ## v1 Requirements
 
@@ -32,9 +32,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Run Modes
 
-- [ ] **RUN-01**: Free run mode — music adapts to the runner's natural pace
-- [ ] **RUN-02**: Guided run mode — user sets target BPM, app plays music at that tempo
-- [ ] **RUN-03**: Warm-up/cool-down ramp — BPM gradually increases from warm-up to target pace, then decreases
+- [ ] **RUN-01**: Free run mode -- music adapts to the runner's natural pace
+- [ ] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
+- [ ] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
 
 ## v2 Requirements
 
@@ -75,29 +75,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAD-01 | — | Pending |
-| CAD-02 | — | Pending |
-| CAD-03 | — | Pending |
-| SPOT-01 | — | Pending |
-| SPOT-02 | — | Pending |
-| SPOT-03 | — | Pending |
-| SPOT-04 | — | Pending |
-| SPOT-05 | — | Pending |
-| BPM-01 | — | Pending |
-| BPM-02 | — | Pending |
-| BPM-03 | — | Pending |
-| BPM-04 | — | Pending |
-| BPM-05 | — | Pending |
-| BPM-06 | — | Pending |
-| RUN-01 | — | Pending |
-| RUN-02 | — | Pending |
-| RUN-03 | — | Pending |
+| CAD-01 | Phase 3 | Pending |
+| CAD-02 | Phase 3 | Pending |
+| CAD-03 | Phase 3 | Pending |
+| SPOT-01 | Phase 1 | Pending |
+| SPOT-02 | Phase 1 | Pending |
+| SPOT-03 | Phase 1 | Pending |
+| SPOT-04 | Phase 1 | Pending |
+| SPOT-05 | Phase 2 | Pending |
+| BPM-01 | Phase 2 | Pending |
+| BPM-02 | Phase 4 | Pending |
+| BPM-03 | Phase 4 | Pending |
+| BPM-04 | Phase 4 | Pending |
+| BPM-05 | Phase 2 | Pending |
+| BPM-06 | Phase 5 | Pending |
+| RUN-01 | Phase 4 | Pending |
+| RUN-02 | Phase 5 | Pending |
+| RUN-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
