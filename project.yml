@@ -24,11 +24,22 @@ targets:
     platform: iOS
     sources:
       - BeatStep
+    info:
+      path: BeatStep/Resources/Info.plist
+      properties:
+        LSApplicationQueriesSchemes:
+          - spotify
+        CFBundleURLTypes:
+          - CFBundleURLName: com.beatstep.app
+            CFBundleURLSchemes:
+              - beatstep
+        UIBackgroundModes:
+          - audio
+    entitlements:
+      path: BeatStep/Resources/BeatStep.entitlements
     settings:
       base:
-        INFOPLIST_FILE: BeatStep/Resources/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.beatstep.app
-        CODE_SIGN_ENTITLEMENTS: BeatStep/Resources/BeatStep.entitlements
     dependencies:
       - package: SpotifyiOS
       - package: KeychainAccess
@@ -44,5 +55,4 @@ targets:
       - target: BeatStep
     settings:
       base:
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/BeatStep.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeatStep"
-        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES

@@ -20,7 +20,10 @@
 		C85CD7A43991A3F81B5A14F8 /* SpotifyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EB39C3B2920F997B27D9396 /* SpotifyError.swift */; };
 		DE8DB96B1BA4595CD4CC3121 /* SpotifyAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */; };
 		E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35322426C60E3601F3E3793 /* PaginatedResponse.swift */; };
+		E9746D829C481F3130954D4A /* MockSpotifyResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B70810916CFBD9793F505 /* MockSpotifyResponses.swift */; };
+		EA446206E85B736A1D25D982 /* SpotifyAuthServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */; };
 		F145D138492D8F816576D28D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50AD42E658902F242BCCC303 /* AVFoundation.framework */; };
+		FB232EA2C7B5463D38AA5AEE /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */; };
 		FB67AACA35A67A85464C73B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,12 +43,15 @@
 		1EE4DF865E617B08EB3B0741 /* SpotifyUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyUser.swift; sourceTree = "<group>"; };
 		2EB39C3B2920F997B27D9396 /* SpotifyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyError.swift; sourceTree = "<group>"; };
 		3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyTrack.swift; sourceTree = "<group>"; };
+		4A5B70810916CFBD9793F505 /* MockSpotifyResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSpotifyResponses.swift; sourceTree = "<group>"; };
 		50AD42E658902F242BCCC303 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		6274DEE660A35399701FA544 /* BeatStepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatStepTests.swift; sourceTree = "<group>"; };
 		891C60D8560980C95D3F6E61 /* BeatStepApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatStepApp.swift; sourceTree = "<group>"; };
 		8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BeatStepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		B53564AD8A26370E1D5CC4EB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuthServiceTests.swift; sourceTree = "<group>"; };
 		B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyPlaylist.swift; sourceTree = "<group>"; };
 		C35322426C60E3601F3E3793 /* PaginatedResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaginatedResponse.swift; sourceTree = "<group>"; };
 		DDE56539C5B7C96F590519D1 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -73,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				6274DEE660A35399701FA544 /* BeatStepTests.swift */,
+				B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */,
 				F927185F0FC2EA44EC85146D /* Mocks */,
 			);
 			path = BeatStepTests;
@@ -169,6 +176,7 @@
 		CE0979D4BB988F1F1054557E /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -176,6 +184,7 @@
 		F927185F0FC2EA44EC85146D /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				4A5B70810916CFBD9793F505 /* MockSpotifyResponses.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -270,6 +279,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */,
+				E9746D829C481F3130954D4A /* MockSpotifyResponses.swift in Sources */,
+				EA446206E85B736A1D25D982 /* SpotifyAuthServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +290,7 @@
 			files = (
 				B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */,
 				2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */,
+				FB232EA2C7B5463D38AA5AEE /* KeychainManager.swift in Sources */,
 				FB67AACA35A67A85464C73B6 /* LoginView.swift in Sources */,
 				E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */,
 				DE8DB96B1BA4595CD4CC3121 /* SpotifyAuthService.swift in Sources */,
@@ -305,6 +317,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -313,7 +326,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.beatstep.BeatStepTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatStep.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeatStep";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatStep.app/BeatStep";
 			};
 			name = Release;
 		};
@@ -474,6 +487,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -482,7 +496,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.beatstep.BeatStepTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatStep.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeatStep";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatStep.app/BeatStep";
 			};
 			name = Debug;
 		};
