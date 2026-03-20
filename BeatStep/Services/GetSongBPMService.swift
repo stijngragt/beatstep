@@ -4,6 +4,7 @@ final class GetSongBPMService {
     static let shared = GetSongBPMService()
 
     private let baseURL = "https://api.getsongbpm.com"
+    private let proxyBaseURL = Secrets.getSongBPMProxyURL
     private static let apiKey = Secrets.getSongBPMApiKey
     private let session: URLSession
 
@@ -49,21 +50,18 @@ final class GetSongBPMService {
 
     // MARK: - BPM Lookup (Two-Step)
 
-    /// Performs two-step BPM lookup: search for song, then fetch song details for tempo
+    /// Performs two-step BPM lookup: search for song, then fetch song details for tempo.
+    /// Requests are routed through the Cloudflare Worker proxy to bypass Cloudflare bot protection.
     func fetchBPM(title: String, artist: String) async throws -> Int? {
         let cleanTitle = sanitizeTitle(title)
         let query = "\(cleanTitle) \(artist)"
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let searchURL = URL(string: "\(baseURL)/search/?api_key=\(Self.apiKey)&type=song&lookup=\(encodedQuery)") else {
+              let searchURL = URL(string: "\(proxyBaseURL)/search/?type=song&lookup=\(encodedQuery)") else {
             return nil
         }
 
-        // Step 1: Search
-        var searchRequest = URLRequest(url: searchURL)
-        searchRequest.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
-        searchRequest.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
-        searchRequest.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
-        let (searchData, _) = try await session.data(for: searchRequest)
+        // Step 1: Search (via proxy -- no api_key needed, proxy injects it server-side)
+        let (searchData, _) = try await session.data(from: searchURL)
         let searchResponse = try JSONDecoder().decode(GetSongBPMSearchResponse.self, from: searchData)
 
         guard let firstResult = searchResponse.search.first else { return nil }
@@ -71,16 +69,12 @@ final class GetSongBPMService {
         // Rate limit delay (300ms between API calls)
         try await Task.sleep(nanoseconds: 300_000_000)
 
-        // Step 2: Get song details
-        guard let songURL = URL(string: "\(baseURL)/song/?api_key=\(Self.apiKey)&id=\(firstResult.id)") else {
+        // Step 2: Get song details (via proxy)
+        guard let songURL = URL(string: "\(proxyBaseURL)/song/?id=\(firstResult.id)") else {
             return nil
         }
 
-        var songRequest = URLRequest(url: songURL)
-        songRequest.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
-        songRequest.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
-        songRequest.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
-        let (songData, _) = try await session.data(for: songRequest)
+        let (songData, _) = try await session.data(from: songURL)
         let songResponse = try JSONDecoder().decode(GetSongBPMSongResponse.self, from: songData)
 
         guard let tempoString = songResponse.song.tempo,
@@ -94,9 +88,9 @@ final class GetSongBPMService {
 
     // MARK: - Songs by BPM (Discovery)
 
-    /// Fetches songs at a specific BPM from GetSongBPM tempo endpoint
+    /// Fetches songs at a specific BPM from GetSongBPM tempo endpoint (via proxy)
     func fetchSongsByBPM(_ bpm: Int) async throws -> [GetSongBPMSong] {
-        guard let url = URL(string: "\(baseURL)/tempo/?api_key=\(Self.apiKey)&bpm=\(bpm)") else {
+        guard let url = URL(string: "\(proxyBaseURL)/tempo/?bpm=\(bpm)") else {
             return []
         }
 

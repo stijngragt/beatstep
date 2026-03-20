@@ -1,0 +1,6 @@
+name = "bpm-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-03-20"
+
+# GETSONGBPM_API_KEY is a secret — set via:
+#   npx wrangler secret put GETSONGBPM_API_KEY
