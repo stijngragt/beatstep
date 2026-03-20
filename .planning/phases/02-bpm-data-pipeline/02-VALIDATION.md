@@ -19,16 +19,16 @@ created: 2026-03-20
 |----------|-------|
 | **Framework** | XCTest (built-in, iOS 17) |
 | **Config file** | BeatStepTests target in project.yml |
-| **Quick run command** | `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:BeatStepTests` |
-| **Full suite command** | `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 16'` |
+| **Quick run command** | `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:BeatStepTests` |
+| **Full suite command** | `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 17 Pro'` |
 | **Estimated runtime** | ~30 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:BeatStepTests`
-- **After every plan wave:** Run `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 16'`
+- **After every task commit:** Run `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:BeatStepTests`
+- **After every plan wave:** Run `xcodebuild test -scheme BeatStep -destination 'platform=iOS Simulator,name=iPhone 17 Pro'`
 - **Before `/gsd:verify-work`:** Full suite must be green
 - **Max feedback latency:** 30 seconds
 
@@ -38,13 +38,11 @@ created: 2026-03-20
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 0 | BPM-01 | unit | `xcodebuild test -only-testing:BeatStepTests/GetSongBPMServiceTests` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 0 | BPM-05 | unit | `xcodebuild test -only-testing:BeatStepTests/BPMCacheServiceTests` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 0 | BPM-05 | unit | `xcodebuild test -only-testing:BeatStepTests/LibraryScanServiceTests` | ❌ W0 | ⬜ pending |
-| 02-01-04 | 01 | 1 | BPM-01 | unit (mocked) | `xcodebuild test -only-testing:BeatStepTests/GetSongBPMServiceTests` | ❌ W0 | ⬜ pending |
-| 02-01-05 | 01 | 1 | BPM-05 | unit | `xcodebuild test -only-testing:BeatStepTests/ScannedPlaylistTests` | ❌ W0 | ⬜ pending |
-| 02-02-01 | 02 | 2 | SPOT-05 | unit | `xcodebuild test -only-testing:BeatStepTests/SpotifyAPIServiceTests` | Partial | ⬜ pending |
-| 02-02-02 | 02 | 2 | SPOT-05 | unit | `xcodebuild test -only-testing:BeatStepTests/GetSongBPMServiceTests` | ❌ W0 | ⬜ pending |
+| 02-01-01 | 01 | 0 | BPM-01 | unit | `xcodebuild test -only-testing:BeatStepTests/ModelDecodingTests` | ❌ W0 | ⬜ pending |
+| 02-01-02 | 01 | 0 | BPM-01 | unit | `xcodebuild test -only-testing:BeatStepTests/GetSongBPMServiceTests` | ❌ W0 | ⬜ pending |
+| 02-01-03 | 01 | 0 | BPM-05 | unit | `xcodebuild test -only-testing:BeatStepTests/BPMCacheServiceTests` | ❌ W0 | ⬜ pending |
+| 02-02-01 | 02 | 2 | BPM-05 | unit | `xcodebuild test -only-testing:BeatStepTests/LibraryScanServiceTests` | ❌ W0 | ⬜ pending |
+| 02-02-02 | 02 | 2 | SPOT-05 | unit | `xcodebuild test -only-testing:BeatStepTests/BPMViewWiringTests` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,9 +50,11 @@ created: 2026-03-20
 
 ## Wave 0 Requirements
 
+- [ ] `BeatStepTests/ModelDecodingTests.swift` — stubs for BPM-01 (Codable response decoding, coverageText)
 - [ ] `BeatStepTests/GetSongBPMServiceTests.swift` — stubs for BPM-01, SPOT-05 (API response decoding, mock responses)
 - [ ] `BeatStepTests/BPMCacheServiceTests.swift` — stubs for BPM-05 (SwiftData CRUD with in-memory container)
 - [ ] `BeatStepTests/LibraryScanServiceTests.swift` — stubs for BPM-05 (delta scan logic)
+- [ ] `BeatStepTests/BPMViewWiringTests.swift` — stubs for BPM-05 (cache-to-view data flow)
 - [ ] `BeatStepTests/Mocks/MockGetSongBPMResponses.swift` — mock JSON responses for GetSongBPM API
 - [ ] SwiftData test setup: in-memory `ModelContainer` configuration for unit tests
 
