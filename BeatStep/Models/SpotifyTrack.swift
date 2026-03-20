@@ -33,5 +33,12 @@ struct SpotifyTrack: Codable, Identifiable, Hashable {
 }
 
 struct PlaylistTrackItem: Codable {
-    let track: SpotifyTrack?
+    let item: SpotifyTrack?
+
+    /// Backward-compatible accessor
+    var track: SpotifyTrack? { item }
+
+    enum CodingKeys: String, CodingKey {
+        case item
+    }
 }

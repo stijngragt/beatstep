@@ -13,7 +13,7 @@ final class SpotifyAPIServiceTests: XCTestCase {
 
         let first = response.items[0]
         XCTAssertEqual(first.name, "Running Hits")
-        XCTAssertEqual(first.tracks.total, 50)
+        XCTAssertEqual(first.tracks?.total, 50)
         XCTAssertEqual(first.images?.first?.url, "https://example.com/playlist1.jpg")
     }
 

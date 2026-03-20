@@ -59,7 +59,11 @@ final class GetSongBPMService {
         }
 
         // Step 1: Search
-        let (searchData, _) = try await session.data(from: searchURL)
+        var searchRequest = URLRequest(url: searchURL)
+        searchRequest.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+        searchRequest.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
+        searchRequest.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+        let (searchData, _) = try await session.data(for: searchRequest)
         let searchResponse = try JSONDecoder().decode(GetSongBPMSearchResponse.self, from: searchData)
 
         guard let firstResult = searchResponse.search.first else { return nil }
@@ -72,7 +76,11 @@ final class GetSongBPMService {
             return nil
         }
 
-        let (songData, _) = try await session.data(from: songURL)
+        var songRequest = URLRequest(url: songURL)
+        songRequest.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+        songRequest.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
+        songRequest.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+        let (songData, _) = try await session.data(for: songRequest)
         let songResponse = try JSONDecoder().decode(GetSongBPMSongResponse.self, from: songData)
 
         guard let tempoString = songResponse.song.tempo,

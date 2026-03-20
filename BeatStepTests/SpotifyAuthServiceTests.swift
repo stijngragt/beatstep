@@ -75,7 +75,7 @@ final class SpotifyAuthServiceTests: XCTestCase {
         let first = response.items[0]
         XCTAssertEqual(first.id, "playlist_1")
         XCTAssertEqual(first.name, "Running Hits")
-        XCTAssertEqual(first.tracks.total, 50)
+        XCTAssertEqual(first.tracks?.total, 50)
         XCTAssertEqual(first.owner?.displayName, "Test Runner")
     }
 

@@ -9,6 +9,7 @@ struct PlaylistDetailView: View {
     @State private var offset = 0
     @State private var error: String?
     @State private var bpmCache: [String: Int?] = [:]
+    @State private var isScanning = false
 
     private let limit = 100
     private var playerService: SpotifyPlayerService { .shared }
@@ -26,6 +27,23 @@ struct PlaylistDetailView: View {
         }
         .navigationTitle(playlist.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    Task { await scanBPM() }
+                } label: {
+                    Label("Scan BPM", systemImage: isScanning ? "progress.indicator" : "waveform.badge.magnifyingglass")
+                }
+                .disabled(isScanning || tracks.isEmpty)
+
+                Button {
+                    clearBPM()
+                } label: {
+                    Label("Clear BPM", systemImage: "trash")
+                }
+                .disabled(tracks.isEmpty)
+            }
+        }
         .task {
             if tracks.isEmpty {
                 await loadTracks()
@@ -52,7 +70,7 @@ struct PlaylistDetailView: View {
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    SpotifyPlayerService.shared.play(uri: track.uri)
+                    SpotifyPlayerService.shared.play(uri: track.uri, contextURI: "spotify:playlist:\(playlist.id)")
                 }
                 .onAppear {
                     if track.id == tracks.last?.id && hasMore && !isLoading {
@@ -110,7 +128,7 @@ struct PlaylistDetailView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Text("\(playlist.tracks.total) tracks")
+                Text("\(playlist.trackCount) tracks")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -164,6 +182,23 @@ struct PlaylistDetailView: View {
         }
 
         isLoading = false
+    }
+
+    private func scanBPM() async {
+        isScanning = true
+        await LibraryScanService.shared.scanPlaylist(playlist, tracks: tracks)
+        // Reload cache
+        for track in tracks {
+            bpmCache[track.id] = BPMCacheService.shared.getBPM(forTrackID: track.id)
+        }
+        isScanning = false
+    }
+
+    private func clearBPM() {
+        for track in tracks {
+            BPMCacheService.shared.clearCache(forTrackID: track.id)
+            bpmCache[track.id] = nil
+        }
     }
 }
 

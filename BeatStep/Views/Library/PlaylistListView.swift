@@ -172,7 +172,7 @@ private struct PlaylistRow: View {
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
-                    Text("\(playlist.tracks.total) tracks")
+                    Text("\(playlist.trackCount) tracks")
                         .font(.caption)
                         .foregroundStyle(.secondary)
 

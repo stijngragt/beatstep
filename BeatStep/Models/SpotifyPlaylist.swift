@@ -17,6 +17,10 @@ struct SpotifyPlaylist: Codable, Identifiable, Hashable {
     let name: String
     let description: String?
     let images: [SpotifyImage]?
-    let tracks: TracksRef
+    let tracks: TracksRef?
     let owner: PlaylistOwner?
+
+    var trackCount: Int {
+        tracks?.total ?? 0
+    }
 }

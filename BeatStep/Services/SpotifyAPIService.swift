@@ -15,13 +15,27 @@ final class SpotifyAPIService {
     }
 
     func fetchPlaylistTracks(playlistID: String, offset: Int = 0, limit: Int = 100) async throws -> PaginatedResponse<PlaylistTrackItem> {
-        let url = URL(string: "\(baseURL)/playlists/\(playlistID)/tracks?limit=\(limit)&offset=\(offset)")!
+        let url = URL(string: "\(baseURL)/playlists/\(playlistID)/items?limit=\(limit)&offset=\(offset)")!
         return try await authenticatedRequest(url: url)
     }
 
     func fetchCurrentUserProfile() async throws -> SpotifyUser {
         let url = URL(string: "\(baseURL)/me")!
         return try await authenticatedRequest(url: url)
+    }
+
+    // MARK: - Audio Features (BPM)
+
+    func fetchAudioFeatures(trackID: String) async throws -> AudioFeatures {
+        let url = URL(string: "\(baseURL)/audio-features/\(trackID)")!
+        return try await authenticatedRequest(url: url)
+    }
+
+    func fetchBatchAudioFeatures(trackIDs: [String]) async throws -> [AudioFeatures?] {
+        let ids = trackIDs.joined(separator: ",")
+        let url = URL(string: "\(baseURL)/audio-features?ids=\(ids)")!
+        let response: BatchAudioFeaturesResponse = try await authenticatedRequest(url: url)
+        return response.audioFeatures
     }
 
     // MARK: - Search & Discovery
@@ -57,7 +71,10 @@ final class SpotifyAPIService {
 
     // MARK: - Internal
 
-    func authenticatedRequest<T: Decodable>(url: URL) async throws -> T {
+    func authenticatedRequest<T: Decodable>(url: URL, retried: Bool = false) async throws -> T {
+        // Refresh token if needed before making request
+        await SpotifyAuthService.shared.refreshTokenIfNeeded()
+
         guard let token = KeychainManager.shared.accessToken else {
             throw SpotifyError.notAuthenticated
         }
@@ -82,7 +99,17 @@ final class SpotifyAPIService {
         case 200...299:
             return try JSONDecoder().decode(T.self, from: data)
         case 401:
+            // Try refreshing token once and retrying
+            if !retried {
+                let refreshed = await SpotifyAuthService.shared.refreshTokenIfNeeded()
+                if refreshed {
+                    return try await authenticatedRequest(url: url, retried: true)
+                }
+            }
             throw SpotifyError.tokenExpired
+        case 403:
+            let body = String(data: data, encoding: .utf8) ?? "Forbidden"
+            throw SpotifyError.apiError(statusCode: 403, message: "Forbidden — \(body)")
         default:
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
             throw SpotifyError.apiError(statusCode: httpResponse.statusCode, message: message)
@@ -148,6 +175,27 @@ private struct CreatePlaylistBody: Encodable {
 
 private struct AddTracksBody: Encodable {
     let uris: [String]
+}
+
+struct PlaylistWithTracksResponse: Decodable {
+    let tracks: PaginatedResponse<PlaylistTrackItem>
+}
+
+struct AudioFeatures: Decodable {
+    let id: String
+    let tempo: Double
+
+    var bpm: Int {
+        Int(tempo.rounded())
+    }
+}
+
+struct BatchAudioFeaturesResponse: Decodable {
+    let audioFeatures: [AudioFeatures?]
+
+    enum CodingKeys: String, CodingKey {
+        case audioFeatures = "audio_features"
+    }
 }
 
 struct SnapshotResponse: Decodable {

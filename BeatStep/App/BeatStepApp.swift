@@ -19,9 +19,6 @@ struct BeatStepApp: App {
         WindowGroup {
             ContentView()
                 .environment(authService)
-                .onOpenURL { url in
-                    SpotifyAuthService.shared.handleCallback(url: url)
-                }
         }
         .modelContainer(container)
         .onChange(of: scenePhase) { _, newPhase in

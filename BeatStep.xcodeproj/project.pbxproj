@@ -30,6 +30,7 @@
 		8759BAC4EDE9798BF8F2A1A3 /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */; };
 		A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */; };
 		A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */; };
+		AA1111111111111111111111 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2222222222222222222222 /* Secrets.swift */; };
 		B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891C60D8560980C95D3F6E61 /* BeatStepApp.swift */; };
 		BA8874F7D3FDA0EBB4354668 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = F71ECCFE50CC9E0DBDAD3512 /* KeychainAccess */; };
 		BC943FDE5214755D5F4B798D /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDE56539C5B7C96F590519D1 /* MediaPlayer.framework */; };
@@ -58,7 +59,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		02B44183152AC4CB07E0DA73 /* BeatStep.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BeatStep.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		02B44183152AC4CB07E0DA73 /* BeatStep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeatStep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyPlayerService.swift; sourceTree = "<group>"; };
 		15B6030B08CCF44B01BD0A2D /* GetSongBPMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMService.swift; sourceTree = "<group>"; };
 		1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheServiceTests.swift; sourceTree = "<group>"; };
@@ -80,6 +81,8 @@
 		8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BeatStepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		A82812B49FA131871ECBA508 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA2222222222222222222222 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		AA4444444444444444444444 /* Secrets.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.example.swift; sourceTree = "<group>"; };
 		AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIService.swift; sourceTree = "<group>"; };
 		ACACB0CB17A1CB562DE23B57 /* LibraryScanServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryScanServiceTests.swift; sourceTree = "<group>"; };
 		AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIServiceTests.swift; sourceTree = "<group>"; };
@@ -158,6 +161,8 @@
 				492054E64C9EE9C03919B647 /* Services */,
 				CE0979D4BB988F1F1054557E /* Utilities */,
 				FACE10684F1338B289BF8612 /* Views */,
+				AA2222222222222222222222 /* Secrets.swift */,
+				AA4444444444444444444444 /* Secrets.example.swift */,
 			);
 			path = BeatStep;
 			sourceTree = "<group>";
@@ -330,8 +335,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 9438CAB6241D9C87F8D5BF04 /* Build configuration list for PBXProject "BeatStep" */;
 			developmentRegion = en;
@@ -403,6 +406,7 @@
 				2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */,
 				36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */,
 				004D1293FB22774C11392D96 /* SpotifyUser.swift in Sources */,
+				AA1111111111111111111111 /* Secrets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,6 +563,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BeatStep/Resources/BeatStep.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = U396ADBX6D;
 				INFOPLIST_FILE = BeatStep/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -576,6 +581,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BeatStep/Resources/BeatStep.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = U396ADBX6D;
 				INFOPLIST_FILE = BeatStep/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -41,6 +41,16 @@ final class BPMCacheService {
         return try? context.fetch(descriptor).first?.bpm
     }
 
+    func clearCache(forTrackID trackID: String) {
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == trackID }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            context.delete(existing)
+            try? context.save()
+        }
+    }
+
     func hasLookup(forTrackID trackID: String) -> Bool {
         let descriptor = FetchDescriptor<CachedBPM>(
             predicate: #Predicate { $0.spotifyTrackID == trackID }

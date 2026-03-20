@@ -8,6 +8,7 @@ final class KeychainManager {
 
     private enum Keys {
         static let accessToken = "access_token"
+        static let refreshToken = "refresh_token"
         static let tokenExpiration = "token_expiration"
     }
 
@@ -22,6 +23,19 @@ final class KeychainManager {
                 try? keychain.set(newValue, key: Keys.accessToken)
             } else {
                 try? keychain.remove(Keys.accessToken)
+            }
+        }
+    }
+
+    var refreshToken: String? {
+        get {
+            try? keychain.get(Keys.refreshToken)
+        }
+        set {
+            if let newValue {
+                try? keychain.set(newValue, key: Keys.refreshToken)
+            } else {
+                try? keychain.remove(Keys.refreshToken)
             }
         }
     }
