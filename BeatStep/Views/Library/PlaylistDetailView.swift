@@ -8,6 +8,7 @@ struct PlaylistDetailView: View {
     @State private var hasMore = true
     @State private var offset = 0
     @State private var error: String?
+    @State private var bpmCache: [String: Int?] = [:]
 
     private let limit = 100
     private var playerService: SpotifyPlayerService { .shared }
@@ -46,7 +47,8 @@ struct PlaylistDetailView: View {
                 TrackRow(
                     track: track,
                     index: index + 1,
-                    isPlaying: playerService.currentTrack?.uri == track.uri
+                    isPlaying: playerService.currentTrack?.uri == track.uri,
+                    bpm: bpmCache[track.id].flatMap { $0 }
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -152,6 +154,11 @@ struct PlaylistDetailView: View {
             tracks.append(contentsOf: newTracks)
             hasMore = response.hasMore
             offset = response.nextOffset
+
+            // Load BPMs for new tracks from cache
+            for track in newTracks {
+                bpmCache[track.id] = BPMCacheService.shared.getBPM(forTrackID: track.id)
+            }
         } catch {
             self.error = error.localizedDescription
         }
@@ -166,6 +173,7 @@ private struct TrackRow: View {
     let track: SpotifyTrack
     let index: Int
     let isPlaying: Bool
+    let bpm: Int?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -197,6 +205,21 @@ private struct TrackRow: View {
             }
 
             Spacer()
+
+            // BPM badge
+            if let bpm {
+                Text("\(bpm) BPM")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(.orange.opacity(0.15)))
+            } else {
+                Text("--")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
 
             // Duration
             Text(formatDuration(ms: track.durationMs))

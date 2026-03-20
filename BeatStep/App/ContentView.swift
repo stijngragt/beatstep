@@ -43,5 +43,9 @@ struct ContentView: View {
             // Mini-player overlay at bottom
             MiniPlayerView()
         }
+        .task {
+            // Background delta scan on app launch
+            await LibraryScanService.shared.scanEnabledPlaylists()
+        }
     }
 }

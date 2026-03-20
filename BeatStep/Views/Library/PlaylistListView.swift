@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct PlaylistListView: View {
     @State private var playlists: [SpotifyPlaylist] = []
@@ -6,8 +7,10 @@ struct PlaylistListView: View {
     @State private var hasMore = true
     @State private var offset = 0
     @State private var error: String?
+    @State private var coverageMap: [String: String] = [:]
 
     private let limit = 50
+    private var scanService: LibraryScanService { .shared }
 
     var body: some View {
         Group {
@@ -25,9 +28,11 @@ struct PlaylistListView: View {
             if playlists.isEmpty {
                 await loadPlaylists()
             }
+            loadCoverageData()
         }
         .refreshable {
             await refresh()
+            loadCoverageData()
         }
     }
 
@@ -35,9 +40,21 @@ struct PlaylistListView: View {
 
     private var playlistList: some View {
         List {
+            // Scan progress banner
+            if let progress = scanService.scanProgress {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Scanning BPM data... \(progress.scanned)/\(progress.total)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .listRowSeparator(.hidden)
+            }
+
             ForEach(playlists) { playlist in
                 NavigationLink(value: playlist) {
-                    PlaylistRow(playlist: playlist)
+                    PlaylistRow(playlist: playlist, coverageText: coverageMap[playlist.id])
                 }
                 .onAppear {
                     if playlist.id == playlists.last?.id && hasMore && !isLoading {
@@ -105,12 +122,22 @@ struct PlaylistListView: View {
         hasMore = true
         await loadPlaylists()
     }
+
+    private func loadCoverageData() {
+        let context = BPMCacheService.shared.context
+        let descriptor = FetchDescriptor<ScannedPlaylist>()
+        guard let scannedPlaylists = try? context.fetch(descriptor) else { return }
+        for sp in scannedPlaylists where sp.tracksWithBPM > 0 {
+            coverageMap[sp.spotifyPlaylistID] = sp.coverageText
+        }
+    }
 }
 
 // MARK: - Playlist Row
 
 private struct PlaylistRow: View {
     let playlist: SpotifyPlaylist
+    var coverageText: String? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -144,9 +171,20 @@ private struct PlaylistRow: View {
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
-                Text("\(playlist.tracks.total) tracks")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text("\(playlist.tracks.total) tracks")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if let coverageText {
+                        Text("·")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(coverageText)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
         }
         .frame(height: 50)
