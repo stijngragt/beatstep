@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SPOT-02**: User can control playback (play/pause/skip) from the app
 - [x] **SPOT-03**: Playback continues in background with lock screen controls
 - [x] **SPOT-04**: App can access user's Spotify playlists and saved tracks
-- [ ] **SPOT-05**: App can discover new songs from Spotify catalog at matching BPM
+- [x] **SPOT-05**: App can discover new songs from Spotify catalog at matching BPM
 
 ### BPM Matching
 
@@ -82,7 +82,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SPOT-02 | Phase 1 | Complete |
 | SPOT-03 | Phase 1 | Complete |
 | SPOT-04 | Phase 1 | Complete |
-| SPOT-05 | Phase 2 | Pending |
+| SPOT-05 | Phase 2 | Complete |
 | BPM-01 | Phase 2 | Complete |
 | BPM-02 | Phase 4 | Pending |
 | BPM-03 | Phase 4 | Pending |
