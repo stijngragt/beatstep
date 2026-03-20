@@ -59,10 +59,11 @@ Plans:
   1. App detects running cadence via CMPedometer and updates in real-time during a run
   2. Cadence readings are smoothed with a rolling average so brief pace changes do not cause erratic values
   3. Current cadence (SPM) is displayed on-screen during a run with a trend indicator (speeding up / steady / slowing down)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md -- CadenceService singleton, RunSession model, smoothing/trend logic, CoreMotion config, unit tests
+- [ ] 03-02-PLAN.md -- RunView dark UI, CadenceDisplayView, navigation wiring from PlaylistDetailView, human verification
 
 ### Phase 4: Core Loop (Free Run)
 **Goal**: Runner's music automatically matches their stride -- the core value proposition works end to end
@@ -102,6 +103,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Spotify Integration | 2/2 | Complete | 2026-03-19 |
 | 2. BPM Data Pipeline | 3/3 | Complete   | 2026-03-20 |
-| 3. Cadence Detection | 0/1 | Not started | - |
+| 3. Cadence Detection | 0/2 | Planning complete | - |
 | 4. Core Loop (Free Run) | 0/2 | Not started | - |
 | 5. Guided Run + Polish | 0/2 | Not started | - |
