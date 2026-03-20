@@ -56,7 +56,11 @@ struct MiniPlayerView: View {
                     }
 
                     Button {
-                        SpotifyPlayerService.shared.skipNext()
+                        if RunEngineService.shared.isRunActive {
+                            Task { await RunEngineService.shared.skipToNextMatch() }
+                        } else {
+                            SpotifyPlayerService.shared.skipNext()
+                        }
                     } label: {
                         Image(systemName: "forward.fill")
                             .font(.title3)
