@@ -9,8 +9,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cadence Detection
 
-- [ ] **CAD-01**: App detects running cadence in real-time via CMPedometer
-- [ ] **CAD-02**: Cadence is smoothed with a rolling average to prevent jarring song switches
+- [x] **CAD-01**: App detects running cadence in real-time via CMPedometer
+- [x] **CAD-02**: Cadence is smoothed with a rolling average to prevent jarring song switches
 - [ ] **CAD-03**: Current cadence (SPM) is displayed during a run with trend indicator
 
 ### Spotify Integration
@@ -75,8 +75,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAD-01 | Phase 3 | Pending |
-| CAD-02 | Phase 3 | Pending |
+| CAD-01 | Phase 3 | Complete |
+| CAD-02 | Phase 3 | Complete |
 | CAD-03 | Phase 3 | Pending |
 | SPOT-01 | Phase 1 | Complete |
 | SPOT-02 | Phase 1 | Complete |
