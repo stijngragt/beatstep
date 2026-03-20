@@ -29,6 +29,12 @@ struct PlaylistDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                NavigationLink {
+                    RunView(playlist: playlist)
+                } label: {
+                    Label("Run", systemImage: "figure.run")
+                }
+
                 Button {
                     Task { await scanBPM() }
                 } label: {
