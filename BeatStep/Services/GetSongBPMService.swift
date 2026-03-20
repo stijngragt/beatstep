@@ -4,8 +4,7 @@ final class GetSongBPMService {
     static let shared = GetSongBPMService()
 
     private let baseURL = "https://api.getsongbpm.com"
-    // Replace with actual API key before testing with live API
-    private static let apiKey = "GETSONGBPM_API_KEY"
+    private static let apiKey = Secrets.getSongBPMApiKey
     private let session: URLSession
 
     init(session: URLSession = .shared) {
