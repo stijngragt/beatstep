@@ -185,6 +185,7 @@ struct PlaylistDetailView: View {
     }
 
     private func scanBPM() async {
+        debugPrint("SCAN: Button tapped, \(tracks.count) tracks")
         isScanning = true
         await LibraryScanService.shared.scanPlaylist(playlist, tracks: tracks)
         // Reload cache

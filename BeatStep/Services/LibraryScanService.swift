@@ -29,7 +29,10 @@ final class LibraryScanService {
         // Update ScannedPlaylist coverage even if all cached
         updateScannedPlaylist(playlistID: playlist.id, name: playlist.name, totalTracks: tracks.count)
 
+        debugPrint("SCAN: \(tracks.count) total, \(uncachedTracks.count) uncached")
+
         if uncachedTracks.isEmpty {
+            debugPrint("SCAN: All cached, skipping")
             return
         }
 
@@ -37,11 +40,13 @@ final class LibraryScanService {
 
         // Per-track BPM lookup via GetSongBPM proxy
         for track in uncachedTracks {
+            debugPrint("SCAN: Looking up '\(track.name)' by '\(track.artistName)'...")
             do {
                 let bpm = try await GetSongBPMService.shared.fetchBPM(
                     title: track.name,
                     artist: track.artistName
                 )
+                debugPrint("SCAN: '\(track.name)' → \(bpm.map { "\($0) BPM" } ?? "no match")")
                 BPMCacheService.shared.cache(
                     trackID: track.id,
                     name: track.name,
@@ -49,6 +54,7 @@ final class LibraryScanService {
                     bpm: bpm
                 )
             } catch {
+                debugPrint("SCAN: '\(track.name)' → ERROR: \(error)")
                 // Network/API error for this track -- mark as attempted with nil
                 // so delta scan doesn't retry immediately
                 BPMCacheService.shared.cache(

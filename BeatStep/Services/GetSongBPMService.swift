@@ -54,8 +54,8 @@ final class GetSongBPMService {
     /// Requests are routed through the Cloudflare Worker proxy to bypass Cloudflare bot protection.
     func fetchBPM(title: String, artist: String) async throws -> Int? {
         let cleanTitle = sanitizeTitle(title)
-        let query = "\(cleanTitle) \(artist)"
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+        // Search by title only — adding artist causes mismatches in GetSongBPM's search
+        guard let encodedQuery = cleanTitle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
               let searchURL = URL(string: "\(proxyBaseURL)/search/?type=song&lookup=\(encodedQuery)") else {
             return nil
         }
@@ -64,7 +64,13 @@ final class GetSongBPMService {
         let (searchData, _) = try await session.data(from: searchURL)
         let searchResponse = try JSONDecoder().decode(GetSongBPMSearchResponse.self, from: searchData)
 
-        guard let firstResult = searchResponse.search.first else { return nil }
+        // Match by artist name (case-insensitive) from results, fall back to first result
+        let lowercaseArtist = artist.lowercased()
+        let firstResult = searchResponse.search.first(where: {
+            $0.artist?.name?.lowercased() == lowercaseArtist
+        }) ?? searchResponse.search.first
+
+        guard let firstResult else { return nil }
 
         // Rate limit delay (300ms between API calls)
         try await Task.sleep(nanoseconds: 300_000_000)

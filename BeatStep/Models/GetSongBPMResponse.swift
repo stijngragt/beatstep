@@ -2,6 +2,20 @@ import Foundation
 
 struct GetSongBPMSearchResponse: Codable {
     let search: [GetSongBPMSearchResult]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // API returns array on success, dictionary on "no result"
+        if let results = try? container.decode([GetSongBPMSearchResult].self, forKey: .search) {
+            search = results
+        } else {
+            search = []
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case search
+    }
 }
 
 struct GetSongBPMSearchResult: Codable {
