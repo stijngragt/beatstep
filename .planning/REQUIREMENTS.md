@@ -23,11 +23,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### BPM Matching
 
-- [x] **BPM-01**: App acquires BPM data for songs via external API (not Spotify Audio Features)
+- [x] **BPM-01**: App acquires BPM data for songs via external API (not Spotify Audio Features) *(functionally complete after 02-03 gap closure: Cloudflare Worker proxy bypasses bot protection)*
 - [ ] **BPM-02**: App queues songs whose BPM matches the runner's current cadence
 - [ ] **BPM-03**: Half/double BPM matching expands the matchable song pool (e.g., 85 BPM song at 170 cadence)
 - [ ] **BPM-04**: User can configure BPM tolerance (how tight the match needs to be)
-- [x] **BPM-05**: App pre-scans and caches BPM data for user's Spotify library
+- [x] **BPM-05**: App pre-scans and caches BPM data for user's Spotify library *(functionally complete after 02-03 gap closure: scan uses GetSongBPM via proxy)*
 - [ ] **BPM-06**: When multiple songs match BPM, selection considers genre/mood preferences
 
 ### Run Modes
@@ -82,12 +82,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SPOT-02 | Phase 1 | Complete |
 | SPOT-03 | Phase 1 | Complete |
 | SPOT-04 | Phase 1 | Complete |
-| SPOT-05 | Phase 2 | Complete |
-| BPM-01 | Phase 2 | Complete |
+| SPOT-05 | Phase 2 | Complete (02-03 gap closure: discovery via proxy) |
+| BPM-01 | Phase 2 | Complete (02-03 gap closure) |
 | BPM-02 | Phase 4 | Pending |
 | BPM-03 | Phase 4 | Pending |
 | BPM-04 | Phase 4 | Pending |
-| BPM-05 | Phase 2 | Complete |
+| BPM-05 | Phase 2 | Complete (02-03 gap closure) |
 | BPM-06 | Phase 5 | Pending |
 | RUN-01 | Phase 4 | Pending |
 | RUN-02 | Phase 5 | Pending |
@@ -100,4 +100,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after roadmap creation*
+*Last updated: 2026-03-20 after 02-03 gap closure plan*

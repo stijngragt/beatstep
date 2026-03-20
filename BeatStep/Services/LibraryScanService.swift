@@ -35,29 +35,31 @@ final class LibraryScanService {
 
         scanProgress = ScanProgress(playlistName: playlist.name, scanned: 0, total: uncachedTracks.count)
 
-        // Batch fetch audio features from Spotify (up to 100 at a time)
-        let batches = stride(from: 0, to: uncachedTracks.count, by: 100).map {
-            Array(uncachedTracks[$0..<min($0 + 100, uncachedTracks.count)])
-        }
-
-        for batch in batches {
-            let trackIDs = batch.map(\.id)
+        // Per-track BPM lookup via GetSongBPM proxy
+        for track in uncachedTracks {
             do {
-                let features = try await SpotifyAPIService.shared.fetchBatchAudioFeatures(trackIDs: trackIDs)
-                for (index, track) in batch.enumerated() {
-                    let bpm = features.indices.contains(index) ? features[index]?.bpm : nil
-                    BPMCacheService.shared.cache(trackID: track.id, name: track.name, artist: track.artistName, bpm: bpm)
-                    scanProgress?.scanned += 1
-                }
+                let bpm = try await GetSongBPMService.shared.fetchBPM(
+                    title: track.name,
+                    artist: track.artistName
+                )
+                BPMCacheService.shared.cache(
+                    trackID: track.id,
+                    name: track.name,
+                    artist: track.artistName,
+                    bpm: bpm
+                )
             } catch {
-                // Cache individual tracks as nil
-                for track in batch {
-                    BPMCacheService.shared.cache(trackID: track.id, name: track.name, artist: track.artistName, bpm: nil)
-                    scanProgress?.scanned += 1
-                }
+                // Network/API error for this track -- mark as attempted with nil
+                // so delta scan doesn't retry immediately
+                BPMCacheService.shared.cache(
+                    trackID: track.id,
+                    name: track.name,
+                    artist: track.artistName,
+                    bpm: nil
+                )
             }
+            scanProgress?.scanned += 1
         }
-
 
         // Update ScannedPlaylist with final coverage
         let allTrackIDs = tracks.map(\.id)
