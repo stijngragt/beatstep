@@ -1,0 +1,131 @@
+import Foundation
+import SwiftData
+
+struct ScanProgress {
+    let playlistName: String
+    var scanned: Int
+    let total: Int
+
+    var isComplete: Bool {
+        scanned >= total
+    }
+}
+
+@MainActor
+@Observable
+final class LibraryScanService {
+    static let shared = LibraryScanService()
+
+    var scanProgress: ScanProgress?
+
+    private init() {}
+
+    // MARK: - Scan Single Playlist
+
+    func scanPlaylist(_ playlist: SpotifyPlaylist, tracks: [SpotifyTrack]) async {
+        // Delta scan: filter to only uncached tracks
+        let uncachedTracks = tracks.filter { !BPMCacheService.shared.hasLookup(forTrackID: $0.id) }
+
+        // Update ScannedPlaylist coverage even if all cached
+        updateScannedPlaylist(playlistID: playlist.id, name: playlist.name, totalTracks: tracks.count)
+
+        if uncachedTracks.isEmpty {
+            return
+        }
+
+        scanProgress = ScanProgress(playlistName: playlist.name, scanned: 0, total: uncachedTracks.count)
+
+        for track in uncachedTracks {
+            var bpm: Int?
+            do {
+                bpm = try await GetSongBPMService.shared.fetchBPM(title: track.name, artist: track.artistName)
+            } catch {
+                // Cache with nil BPM on error (lookup was attempted)
+                bpm = nil
+            }
+
+            BPMCacheService.shared.cache(trackID: track.id, name: track.name, artist: track.artistName, bpm: bpm)
+            scanProgress?.scanned += 1
+        }
+
+        // Update ScannedPlaylist with final coverage
+        let allTrackIDs = tracks.map(\.id)
+        let stats = BPMCacheService.shared.coverageStats(forTrackIDs: allTrackIDs)
+        updateScannedPlaylistCoverage(playlistID: playlist.id, tracksWithBPM: stats.withBPM)
+
+        scanProgress = nil
+    }
+
+    // MARK: - Scan All Enabled Playlists
+
+    func scanEnabledPlaylists() async {
+        let context = BPMCacheService.shared.context
+
+        let descriptor = FetchDescriptor<ScannedPlaylist>(
+            predicate: #Predicate { $0.isEnabled }
+        )
+        guard let enabledPlaylists = try? context.fetch(descriptor), !enabledPlaylists.isEmpty else {
+            return
+        }
+
+        for scannedPlaylist in enabledPlaylists {
+            do {
+                // Load all tracks for this playlist
+                var allTracks: [SpotifyTrack] = []
+                var offset = 0
+                var hasMore = true
+
+                while hasMore {
+                    let response = try await SpotifyAPIService.shared.fetchPlaylistTracks(
+                        playlistID: scannedPlaylist.spotifyPlaylistID,
+                        offset: offset,
+                        limit: 100
+                    )
+                    let tracks = response.items.compactMap(\.track)
+                    allTracks.append(contentsOf: tracks)
+                    hasMore = response.hasMore
+                    offset = response.nextOffset
+                }
+
+                let playlist = SpotifyPlaylist(
+                    id: scannedPlaylist.spotifyPlaylistID,
+                    name: scannedPlaylist.name,
+                    description: nil,
+                    images: nil,
+                    tracks: TracksRef(total: allTracks.count),
+                    owner: nil
+                )
+                await scanPlaylist(playlist, tracks: allTracks)
+            } catch {
+                // Skip failed playlists, continue scanning others
+                continue
+            }
+        }
+    }
+
+    // MARK: - ScannedPlaylist Updates
+
+    private func updateScannedPlaylist(playlistID: String, name: String, totalTracks: Int) {
+        let context = BPMCacheService.shared.context
+        let descriptor = FetchDescriptor<ScannedPlaylist>(
+            predicate: #Predicate { $0.spotifyPlaylistID == playlistID }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            existing.totalTracks = totalTracks
+            existing.lastScanned = Date()
+        }
+        try? context.save()
+    }
+
+    private func updateScannedPlaylistCoverage(playlistID: String, tracksWithBPM: Int) {
+        let context = BPMCacheService.shared.context
+        let descriptor = FetchDescriptor<ScannedPlaylist>(
+            predicate: #Predicate { $0.spotifyPlaylistID == playlistID }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            existing.tracksWithBPM = tracksWithBPM
+            existing.lastScanned = Date()
+        }
+        try? context.save()
+    }
+}
