@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-20T17:51:20.681Z"
-last_activity: 2026-03-20 -- Completed Plan 03-02 (Run UI)
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-20T18:21:11.151Z"
+last_activity: 2026-03-20 -- Completed Plan 04-01 (RunEngineService + BPMTolerance)
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_plans: 9
+  completed_plans: 8
+  percent: 89
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 3: Cadence Detection -- COMPLETE. Ready for Phase 4: Beat Matching
+**Current focus:** Phase 4: Core Loop (Free Run) -- Plan 1 complete, Plan 2 remaining
 
 ## Current Position
 
-Phase: 3 of 5 (Cadence Detection) -- COMPLETE
-Plan: 2 of 2 in current phase (all complete)
-Status: Phase 03 complete, ready for Phase 4 (Beat Matching)
-Last activity: 2026-03-20 -- Completed Plan 03-02 (Run UI)
+Phase: 4 of 5 (Core Loop Free Run)
+Plan: 1 of 2 in current phase (04-01 complete)
+Status: Plan 04-01 complete (RunEngineService + BPMTolerance), ready for 04-02 (UI wiring)
+Last activity: 2026-03-20 -- Completed Plan 04-01 (RunEngineService + BPMTolerance)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [██████████] 100%
 | 01-spotify-integration | 2 | 31 min | 16 min |
 | 02-bpm-data-pipeline | 3 | multi-session | - |
 | 03-cadence-detection | 2/2 | multi-session | - |
+| 04-core-loop-free-run | 1/2 | in progress | - |
 
 **Recent Trend:**
 - Last 5 plans: 21 min, 4 min, multi-session, 8 min, multi-session
@@ -57,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 02-03 P03 | multi-session | 3 tasks | 9 files |
 | Phase 03-01 P01 | 8 min | 2 tasks | 5 files |
 | Phase 03-02 P02 | multi-session | 3 tasks | 6 files |
+| Phase 04-01 P01 | 7 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +95,10 @@ Recent decisions affecting current work:
 - [03-01]: processCadenceSample has internal access for direct unit testing without CMPedometer mocks
 - [03-01]: Secrets.example.swift excluded from build sources to fix duplicate symbol error
 - [03-02]: UILaunchScreen must be in project.yml info properties to prevent compatibility screen size after xcodegen regen
+- [04-01]: In-memory bpmMap loaded at run start to avoid repeated @MainActor BPMCacheService queries
+- [04-01]: evaluateCadenceChange is synchronous for testability; async debounce timer lives in cadence monitor
+- [04-01]: loadForTesting/setSustainedSPMForTesting helpers expose internal state for unit tests
+- [04-01]: play(uri:) without contextURI prevents Spotify auto-advance to next playlist track
 
 ### Pending Todos
 
@@ -105,6 +111,6 @@ None -- BPM data source resolved via Cloudflare Worker proxy (plan 02-03)
 
 ## Session Continuity
 
-Last session: 2026-03-20T17:51:20.675Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-core-loop-free-run/04-CONTEXT.md
+Last session: 2026-03-20T18:21:11.149Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
