@@ -13,7 +13,7 @@ BeatStep delivers a music-sync running experience in five phases. We start by es
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Spotify Integration** - Authenticate, play music, access library, and survive background transitions
-- [ ] **Phase 2: BPM Data Pipeline** - Source BPM data externally, cache it, and scan user libraries
+- [x] **Phase 2: BPM Data Pipeline** - Source BPM data externally, cache it, and scan user libraries (completed 2026-03-20)
 - [ ] **Phase 3: Cadence Detection** - Detect running cadence in real-time via CoreMotion with smoothing
 - [ ] **Phase 4: Core Loop (Free Run)** - Match cadence to BPM, queue songs, and deliver the core experience
 - [ ] **Phase 5: Guided Run + Polish** - Target-pace mode, warm-up/cool-down ramps, and smart song selection
@@ -49,7 +49,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md -- SwiftData models, GetSongBPM API client, BPM cache service, container setup
 - [x] 02-02-PLAN.md -- Library scan service, discovery service, SpotifyAPI extensions, all UI wiring, verification
-- [ ] 02-03-PLAN.md -- Gap closure: Cloudflare Worker proxy for GetSongBPM, rewire scan to use GetSongBPM instead of Spotify audio-features
+- [x] 02-03-PLAN.md -- Gap closure: Cloudflare Worker proxy for GetSongBPM, rewire scan to use GetSongBPM instead of Spotify audio-features
 
 ### Phase 3: Cadence Detection
 **Goal**: App accurately detects the runner's cadence in real-time and displays it
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Spotify Integration | 2/2 | Complete | 2026-03-19 |
-| 2. BPM Data Pipeline | 2/3 | Gap closure | - |
+| 2. BPM Data Pipeline | 3/3 | Complete   | 2026-03-20 |
 | 3. Cadence Detection | 0/1 | Not started | - |
 | 4. Core Loop (Free Run) | 0/2 | Not started | - |
 | 5. Guided Run + Polish | 0/2 | Not started | - |
