@@ -44,11 +44,11 @@ Plans:
   2. BPM data is cached locally so repeated lookups are instant
   3. User's Spotify library is pre-scanned with BPM coverage visible (e.g., "142 of 200 tracks have BPM data")
   4. App can search Spotify catalog for songs at a specific BPM when user's library lacks matches
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- SwiftData models, GetSongBPM API client, BPM cache service, container setup
+- [ ] 02-02-PLAN.md -- Library scan service, discovery service, SpotifyAPI extensions, all UI wiring, verification
 
 ### Phase 3: Cadence Detection
 **Goal**: App accurately detects the runner's cadence in real-time and displays it
