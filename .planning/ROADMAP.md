@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Spotify Integration** - Authenticate, play music, access library, and survive background transitions
 - [x] **Phase 2: BPM Data Pipeline** - Source BPM data externally, cache it, and scan user libraries (completed 2026-03-20)
 - [x] **Phase 3: Cadence Detection** - Detect running cadence in real-time via CoreMotion with smoothing (completed 2026-03-20)
-- [ ] **Phase 4: Core Loop (Free Run)** - Match cadence to BPM, queue songs, and deliver the core experience
+- [x] **Phase 4: Core Loop (Free Run)** - Match cadence to BPM, queue songs, and deliver the core experience (completed 2026-03-20)
 - [ ] **Phase 5: Guided Run + Polish** - Target-pace mode, warm-up/cool-down ramps, and smart song selection
 
 ## Phase Details
@@ -77,8 +77,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- RunEngineService orchestrator + BPMTolerance model with TDD (matching, half/double, sustained change, pool management)
-- [ ] 04-02-PLAN.md -- UI wiring: tolerance picker on RunView, Start/Stop engine controls, MiniPlayerView skip override, device verification
+- [x] 04-01-PLAN.md -- RunEngineService orchestrator + BPMTolerance model with TDD (matching, half/double, sustained change, pool management)
+- [x] 04-02-PLAN.md -- UI wiring: tolerance picker on RunView, Start/Stop engine controls, MiniPlayerView skip override, device verification
 
 ### Phase 5: Guided Run + Polish
 **Goal**: User can set a target pace and let the music guide their cadence, with smart song selection
@@ -104,5 +104,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Spotify Integration | 2/2 | Complete | 2026-03-19 |
 | 2. BPM Data Pipeline | 3/3 | Complete   | 2026-03-20 |
 | 3. Cadence Detection | 2/2 | Complete    | 2026-03-20 |
-| 4. Core Loop (Free Run) | 0/2 | Not started | - |
+| 4. Core Loop (Free Run) | 2/2 | Complete | 2026-03-20 |
 | 5. Guided Run + Polish | 0/2 | Not started | - |

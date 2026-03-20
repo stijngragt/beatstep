@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-20T18:21:11.151Z"
-last_activity: 2026-03-20 -- Completed Plan 04-01 (RunEngineService + BPMTolerance)
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-20T18:55:00.000Z"
+last_activity: 2026-03-20 -- Completed Plan 04-02 (UI wiring + device verification)
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
-  percent: 89
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 4: Core Loop (Free Run) -- Plan 1 complete, Plan 2 remaining
+**Current focus:** Phase 4 complete. Ready for Phase 5: Guided Run + Polish
 
 ## Current Position
 
-Phase: 4 of 5 (Core Loop Free Run)
-Plan: 1 of 2 in current phase (04-01 complete)
-Status: Plan 04-01 complete (RunEngineService + BPMTolerance), ready for 04-02 (UI wiring)
-Last activity: 2026-03-20 -- Completed Plan 04-01 (RunEngineService + BPMTolerance)
+Phase: 4 of 5 (Core Loop Free Run) -- COMPLETE
+Plan: 2 of 2 in current phase (all complete)
+Status: Phase 4 complete (core free run loop device-verified), ready for Phase 5
+Last activity: 2026-03-20 -- Completed Plan 04-02 (UI wiring + device verification)
 
-Progress: [█████████░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 9
 - Average duration: varied (mix of quick plans and multi-session)
 - Total execution time: multi-session
 
@@ -46,7 +46,7 @@ Progress: [█████████░] 89%
 | 01-spotify-integration | 2 | 31 min | 16 min |
 | 02-bpm-data-pipeline | 3 | multi-session | - |
 | 03-cadence-detection | 2/2 | multi-session | - |
-| 04-core-loop-free-run | 1/2 | in progress | - |
+| 04-core-loop-free-run | 2/2 | complete | 2026-03-20 |
 
 **Recent Trend:**
 - Last 5 plans: 21 min, 4 min, multi-session, 8 min, multi-session
@@ -59,6 +59,7 @@ Progress: [█████████░] 89%
 | Phase 03-01 P01 | 8 min | 2 tasks | 5 files |
 | Phase 03-02 P02 | multi-session | 3 tasks | 6 files |
 | Phase 04-01 P01 | 7 min | 3 tasks | 4 files |
+| Phase 04-02 P02 | multi-session | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ Recent decisions affecting current work:
 - [04-01]: evaluateCadenceChange is synchronous for testability; async debounce timer lives in cadence monitor
 - [04-01]: loadForTesting/setSustainedSPMForTesting helpers expose internal state for unit tests
 - [04-01]: play(uri:) without contextURI prevents Spotify auto-advance to next playlist track
+- [04-02]: Tolerance picker shown only in idle state (pre-run setting, not adjustable mid-run)
+- [04-02]: Skip button conditionally routes to RunEngineService.skipToNextMatch() during active run
+- [04-02]: RunView onDisappear calls stopRun() as cleanup safety net for mid-run navigation
 
 ### Pending Todos
 
@@ -111,6 +115,6 @@ None -- BPM data source resolved via Cloudflare Worker proxy (plan 02-03)
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:21:11.149Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-20T18:55:00.000Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
