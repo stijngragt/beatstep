@@ -23,7 +23,9 @@ targets:
     type: application
     platform: iOS
     sources:
-      - BeatStep
+      - path: BeatStep
+        excludes:
+          - "Secrets.example.swift"
     info:
       path: BeatStep/Resources/Info.plist
       properties:
@@ -35,6 +37,7 @@ targets:
               - beatstep
         UIBackgroundModes:
           - audio
+        NSMotionUsageDescription: "BeatStep needs motion access to detect your running cadence and match music to your pace."
     entitlements:
       path: BeatStep/Resources/BeatStep.entitlements
     settings:
