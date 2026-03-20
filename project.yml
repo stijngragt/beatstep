@@ -48,6 +48,7 @@ targets:
       - package: KeychainAccess
       - sdk: AVFoundation.framework
       - sdk: MediaPlayer.framework
+      - sdk: CoreMotion.framework
 
   BeatStepTests:
     type: bundle.unit-test
