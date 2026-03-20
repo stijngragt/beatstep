@@ -62,8 +62,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- CadenceService singleton, RunSession model, smoothing/trend logic, CoreMotion config, unit tests
-- [ ] 03-02-PLAN.md -- RunView dark UI, CadenceDisplayView, navigation wiring from PlaylistDetailView, human verification
+- [x] 03-01-PLAN.md -- CadenceService singleton, RunSession model, smoothing/trend logic, CoreMotion config, unit tests
+- [x] 03-02-PLAN.md -- RunView dark UI, CadenceDisplayView, navigation wiring from PlaylistDetailView, human verification
 
 ### Phase 4: Core Loop (Free Run)
 **Goal**: Runner's music automatically matches their stride -- the core value proposition works end to end
@@ -74,11 +74,11 @@ Plans:
   2. Half and double BPM matching works (e.g., a 85 BPM song plays at 170 SPM cadence)
   3. User can adjust BPM tolerance before or during a run (tight match vs. loose match)
   4. Song transitions feel natural -- cadence changes do not trigger immediate jarring switches
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- RunEngineService orchestrator + BPMTolerance model with TDD (matching, half/double, sustained change, pool management)
+- [ ] 04-02-PLAN.md -- UI wiring: tolerance picker on RunView, Start/Stop engine controls, MiniPlayerView skip override, device verification
 
 ### Phase 5: Guided Run + Polish
 **Goal**: User can set a target pace and let the music guide their cadence, with smart song selection
