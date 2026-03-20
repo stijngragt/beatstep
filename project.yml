@@ -38,6 +38,7 @@ targets:
         UIBackgroundModes:
           - audio
         NSMotionUsageDescription: "BeatStep needs motion access to detect your running cadence and match music to your pace."
+        UILaunchScreen: {}
     entitlements:
       path: BeatStep/Resources/BeatStep.entitlements
     settings:
