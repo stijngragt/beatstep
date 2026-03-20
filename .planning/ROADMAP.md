@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Spotify Integration** - Authenticate, play music, access library, and survive background transitions
 - [x] **Phase 2: BPM Data Pipeline** - Source BPM data externally, cache it, and scan user libraries (completed 2026-03-20)
-- [ ] **Phase 3: Cadence Detection** - Detect running cadence in real-time via CoreMotion with smoothing
+- [x] **Phase 3: Cadence Detection** - Detect running cadence in real-time via CoreMotion with smoothing (completed 2026-03-20)
 - [ ] **Phase 4: Core Loop (Free Run)** - Match cadence to BPM, queue songs, and deliver the core experience
 - [ ] **Phase 5: Guided Run + Polish** - Target-pace mode, warm-up/cool-down ramps, and smart song selection
 
@@ -103,6 +103,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Spotify Integration | 2/2 | Complete | 2026-03-19 |
 | 2. BPM Data Pipeline | 3/3 | Complete   | 2026-03-20 |
-| 3. Cadence Detection | 0/2 | Planning complete | - |
+| 3. Cadence Detection | 2/2 | Complete   | 2026-03-20 |
 | 4. Core Loop (Free Run) | 0/2 | Not started | - |
 | 5. Guided Run + Polish | 0/2 | Not started | - |
