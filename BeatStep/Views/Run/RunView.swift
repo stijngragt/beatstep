@@ -2,8 +2,12 @@ import SwiftUI
 
 struct RunView: View {
     let playlist: SpotifyPlaylist
+    let tracks: [SpotifyTrack]
 
     private var cadenceService: CadenceService { .shared }
+    private var runEngine: RunEngineService { .shared }
+
+    @State private var tolerance: BPMTolerance = .saved
 
     var body: some View {
         ZStack {
@@ -28,6 +32,7 @@ struct RunView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onDisappear {
+            runEngine.stopRun()
             UIApplication.shared.isIdleTimerDisabled = false
             cadenceService.stopDetecting()
         }
@@ -64,6 +69,9 @@ struct RunView: View {
             Text("Ready to Run")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.white)
+
+            TolerancePicker(tolerance: $tolerance)
+                .padding(.horizontal, 32)
         }
     }
 
@@ -160,8 +168,10 @@ struct RunView: View {
     private var controlsSection: some View {
         if cadenceService.state == .idle && !cadenceService.permissionDenied {
             Button {
+                runEngine.tolerance = tolerance
                 cadenceService.requestPermissionAndStart()
                 UIApplication.shared.isIdleTimerDisabled = true
+                Task { await runEngine.startRun(playlist: playlist, tracks: tracks) }
             } label: {
                 Label("Start Run", systemImage: "figure.run")
                     .font(.title3.weight(.bold))
@@ -173,6 +183,7 @@ struct RunView: View {
             }
         } else if cadenceService.state != .idle {
             Button {
+                runEngine.stopRun()
                 cadenceService.stopDetecting()
                 UIApplication.shared.isIdleTimerDisabled = false
             } label: {

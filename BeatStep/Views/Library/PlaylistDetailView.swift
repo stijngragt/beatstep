@@ -30,7 +30,7 @@ struct PlaylistDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
-                    RunView(playlist: playlist)
+                    RunView(playlist: playlist, tracks: tracks)
                 } label: {
                     Label("Run", systemImage: "figure.run")
                 }

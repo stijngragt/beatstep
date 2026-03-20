@@ -38,6 +38,7 @@
 		9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */; };
 		A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */; };
 		A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */; };
+		AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F53B43A668691E6914501E3 /* TolerancePicker.swift */; };
 		B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5818164758316FF4BD59C44C /* RunSession.swift */; };
 		B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891C60D8560980C95D3F6E61 /* BeatStepApp.swift */; };
 		BA8874F7D3FDA0EBB4354668 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = F71ECCFE50CC9E0DBDAD3512 /* KeychainAccess */; };
@@ -96,6 +97,7 @@
 		8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDisplayView.swift; sourceTree = "<group>"; };
 		891C60D8560980C95D3F6E61 /* BeatStepApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatStepApp.swift; sourceTree = "<group>"; };
 		8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BeatStepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F53B43A668691E6914501E3 /* TolerancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TolerancePicker.swift; sourceTree = "<group>"; };
 		A14CC2671949AE629FDB00C4 /* MockPedometerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPedometerData.swift; sourceTree = "<group>"; };
 		A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		A82812B49FA131871ECBA508 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -283,6 +285,7 @@
 			children = (
 				8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */,
 				51071A444A70CF8FE4921C0E /* RunView.swift */,
+				9F53B43A668691E6914501E3 /* TolerancePicker.swift */,
 			);
 			path = Run;
 			sourceTree = "<group>";
@@ -459,6 +462,7 @@
 				2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */,
 				36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */,
 				004D1293FB22774C11392D96 /* SpotifyUser.swift in Sources */,
+				AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
