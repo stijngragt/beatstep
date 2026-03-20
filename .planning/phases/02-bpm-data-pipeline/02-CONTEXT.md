@@ -16,7 +16,7 @@ Source BPM data for the user's Spotify library via external API (GetSongBPM), ca
 ### BPM source & fallbacks
 - GetSongBPM as the sole BPM provider for now -- no multi-API fallback
 - Tracks without BPM data are marked as unknown and excluded from BPM matching
-- Coverage stat shown per playlist (e.g., "142 of 200 tracks have BPM") -- no per-track badges
+- Coverage stat shown per playlist (e.g., "142 of 200 tracks have BPM") + per-track BPM badges in detail view
 - Researcher should investigate 2-3 alternative BPM APIs (coverage, rate limits, pricing) as contingency research, but we don't build them
 
 ### Library scan timing
