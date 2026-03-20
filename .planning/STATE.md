@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-20T07:19:52.705Z"
-last_activity: 2026-03-19 -- Completed Plan 01-02 (Playback, views, wiring)
+status: in-progress
+stopped_at: Completed 02-01-PLAN.md (BPM Data Foundation)
+last_updated: "2026-03-20T07:57:00.000Z"
+last_activity: 2026-03-20 -- Completed Plan 02-01 (BPM Data Foundation)
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 22
+  total_plans: 4
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 1: Spotify Integration
+**Current focus:** Phase 2: BPM Data Pipeline
 
 ## Current Position
 
-Phase: 1 of 5 (Spotify Integration) -- COMPLETE
-Plan: 2 of 2 in current phase (phase complete)
-Status: Phase 1 complete, ready for Phase 2
-Last activity: 2026-03-19 -- Completed Plan 01-02 (Playback, views, wiring)
+Phase: 2 of 5 (BPM Data Pipeline) -- IN PROGRESS
+Plan: 1 of 2 in current phase (plan 02-01 complete)
+Status: Plan 02-01 complete, ready for Plan 02-02
+Last activity: 2026-03-20 -- Completed Plan 02-01 (BPM Data Foundation)
 
-Progress: [██░░░░░░░░] 22%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -44,13 +44,14 @@ Progress: [██░░░░░░░░] 22%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-spotify-integration | 2 | 31 min | 16 min |
+| 02-bpm-data-pipeline | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 10 min, 21 min
-- Trend: Stable
+- Last 5 plans: 10 min, 21 min, 4 min
+- Trend: Accelerating
 
 *Updated after each plan completion*
-| Phase 01-02 P02 | 21 min | 3 tasks | 11 files |
+| Phase 02-01 P01 | 4 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - [01-02]: clientID/redirectURL exposed as internal on SpotifyAuthService for shared access
 - [Phase 01-02]: SpotifyPlayerService inherits NSObject for SPTAppRemote delegate conformance
 - [Phase 01-02]: MiniPlayerView shows BPM placeholder; real BPM populated in Phase 2
+- [02-01]: BPMCacheService uses singleton with setContainer pattern for SwiftData access outside views
+- [02-01]: GetSongBPMService title sanitization strips Remastered/Live/feat/Deluxe suffixes via regex
+- [02-01]: coverageStats takes trackIDs array for flexible usage
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:19:52.700Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-bpm-data-pipeline/02-CONTEXT.md
+Last session: 2026-03-20T07:57:00.000Z
+Stopped at: Completed 02-01-PLAN.md (BPM Data Foundation)
+Resume file: .planning/phases/02-bpm-data-pipeline/02-01-SUMMARY.md
