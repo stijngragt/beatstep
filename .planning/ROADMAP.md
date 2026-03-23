@@ -41,7 +41,7 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md -- Design tokens + dark mode enforcement (DARK-01, DARK-02, DS-01, DS-02, DS-03)
+- [x] 06-01-PLAN.md -- Design tokens + dark mode enforcement (DARK-01, DARK-02, DS-01, DS-02, DS-03)
 - [ ] 06-02-PLAN.md -- Token approval gate (DS-05)
 
 ### Phase 7: Tab Navigation Shell
@@ -99,7 +99,7 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 3. Cadence Detection | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 4. Core Loop (Free Run) | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 5. Guided Run + Polish | v1.0 | 2/2 | Complete | 2026-03-23 |
-| 6. Design System Foundation | v1.1 | 0/2 | Planning complete | - |
+| 6. Design System Foundation | v1.1 | 1/2 | In progress | - |
 | 7. Tab Navigation Shell | v1.1 | 0/TBD | Not started | - |
 | 8. Token Adoption + RunHomeView | v1.1 | 0/TBD | Not started | - |
 | 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |

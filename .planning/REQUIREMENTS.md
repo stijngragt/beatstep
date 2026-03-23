@@ -9,14 +9,14 @@ Requirements for milestone v1.1 "Dark by Design". Each maps to roadmap phases.
 
 ### Dark Mode
 
-- [ ] **DARK-01**: App enforces dark mode globally (Info.plist + window-level override)
-- [ ] **DARK-02**: All light-mode-specific code paths and conditional styling are removed
+- [x] **DARK-01**: App enforces dark mode globally (Info.plist + window-level override)
+- [x] **DARK-02**: All light-mode-specific code paths and conditional styling are removed
 
 ### Design System
 
-- [ ] **DS-01**: Color tokens defined: accent (electric green), 3 background levels, primary/secondary/tertiary text, success/warning/error states
-- [ ] **DS-02**: Typography tokens defined: heading, body, caption scales with SF Pro; numeric display scale with SF Pro Rounded
-- [ ] **DS-03**: Spacing and component tokens defined: padding scale, corner radii, component sizing
+- [x] **DS-01**: Color tokens defined: accent (electric green), 3 background levels, primary/secondary/tertiary text, success/warning/error states
+- [x] **DS-02**: Typography tokens defined: heading, body, caption scales with SF Pro; numeric display scale with SF Pro Rounded
+- [x] **DS-03**: Spacing and component tokens defined: padding scale, corner radii, component sizing
 - [ ] **DS-04**: All existing views migrated from hardcoded colors to design tokens
 - [ ] **DS-05**: Design system approved by user before view migration begins
 
@@ -72,11 +72,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DARK-01 | Phase 6 | Pending |
-| DARK-02 | Phase 6 | Pending |
-| DS-01 | Phase 6 | Pending |
-| DS-02 | Phase 6 | Pending |
-| DS-03 | Phase 6 | Pending |
+| DARK-01 | Phase 6 | Complete |
+| DARK-02 | Phase 6 | Complete |
+| DS-01 | Phase 6 | Complete |
+| DS-02 | Phase 6 | Complete |
+| DS-03 | Phase 6 | Complete |
 | DS-04 | Phase 8 | Pending |
 | DS-05 | Phase 6 | Pending |
 | NAV-01 | Phase 7 | Pending |
