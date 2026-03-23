@@ -1,7 +1,7 @@
 # Requirements: BeatStep
 
 **Defined:** 2026-03-23
-**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
+**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
 
 ## v1.1 Requirements
 
@@ -72,26 +72,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DARK-01 | — | Pending |
-| DARK-02 | — | Pending |
-| DS-01 | — | Pending |
-| DS-02 | — | Pending |
-| DS-03 | — | Pending |
-| DS-04 | — | Pending |
-| DS-05 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| NAV-04 | — | Pending |
-| BUG-01 | — | Pending |
-| BRAND-01 | — | Pending |
-| BRAND-02 | — | Pending |
+| DARK-01 | Phase 6 | Pending |
+| DARK-02 | Phase 6 | Pending |
+| DS-01 | Phase 6 | Pending |
+| DS-02 | Phase 6 | Pending |
+| DS-03 | Phase 6 | Pending |
+| DS-04 | Phase 8 | Pending |
+| DS-05 | Phase 6 | Pending |
+| NAV-01 | Phase 7 | Pending |
+| NAV-02 | Phase 7 | Pending |
+| NAV-03 | Phase 7 | Pending |
+| NAV-04 | Phase 8 | Pending |
+| BUG-01 | Phase 9 | Pending |
+| BRAND-01 | Phase 9 | Pending |
+| BRAND-02 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-23*
-*Last updated: 2026-03-23 after initial definition*
+*Last updated: 2026-03-23 after roadmap creation*
