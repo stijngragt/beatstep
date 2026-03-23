@@ -66,11 +66,11 @@ Plans:
   2. All existing views (PlaylistListView, RunView, MiniPlayerView, SettingsView, LoginView, CadenceDisplayView) use design tokens for all colors, fonts, and spacing
   3. Run tab shows the last-used playlist name and artwork when available; shows a prompt to select a playlist when no previous run exists
   4. LoginView uses a named SpotifyBrand token instead of a local spotifyGreen constant
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [ ] 08-01-PLAN.md -- Migrate all views to design tokens (DS-04)
+- [ ] 08-02-PLAN.md -- RunTabView last-used playlist context (NAV-04)
 
 ### Phase 9: Bug Fix + Brand Assets
 **Goal**: Track count displays correctly and BeatStep has an app icon and wordmark establishing brand identity
@@ -101,5 +101,5 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 5. Guided Run + Polish | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 6. Design System Foundation | 2/2 | Complete   | 2026-03-23 | - |
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
-| 8. Token Adoption + RunHomeView | v1.1 | 0/TBD | Not started | - |
+| 8. Token Adoption + RunHomeView | v1.1 | 0/2 | Not started | - |
 | 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |
