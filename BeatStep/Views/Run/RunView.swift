@@ -8,6 +8,12 @@ struct RunView: View {
     private var runEngine: RunEngineService { .shared }
 
     @State private var tolerance: BPMTolerance = .saved
+    @State private var runMode: RunMode = .saved
+    @State private var selectedPreset: PacePreset = {
+        let saved = RunMode.savedTargetBPM
+        return PacePreset.allCases.first(where: { $0.bpm == saved }) ?? .steady
+    }()
+    @State private var customBPM: Int = RunMode.savedTargetBPM
 
     var body: some View {
         ZStack {
@@ -66,6 +72,14 @@ struct RunView: View {
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.5))
 
+            ModePicker(mode: $runMode)
+                .padding(.horizontal, 32)
+
+            if runMode == .guided {
+                PacePresetPicker(selectedPreset: $selectedPreset, customBPM: $customBPM)
+                    .padding(.horizontal, 16)
+            }
+
             Text("Ready to Run")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.white)
@@ -103,6 +117,13 @@ struct RunView: View {
             Text(playlist.name)
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.5))
+
+            // Phase label for guided mode
+            if let phase = runEngine.rampPhase {
+                Text(phase.displayLabel)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.6))
+            }
 
             CadenceDisplayView(
                 spm: cadenceService.currentSPM,
@@ -164,11 +185,20 @@ struct RunView: View {
 
     // MARK: - Controls
 
+    /// Computed target BPM from preset picker
+    private var targetBPM: Int {
+        selectedPreset.bpm ?? customBPM
+    }
+
     @ViewBuilder
     private var controlsSection: some View {
         if cadenceService.state == .idle && !cadenceService.permissionDenied {
             Button {
                 runEngine.tolerance = tolerance
+                runEngine.runMode = runMode
+                if runMode == .guided {
+                    RunMode.savedTargetBPM = targetBPM
+                }
                 cadenceService.requestPermissionAndStart()
                 UIApplication.shared.isIdleTimerDisabled = true
                 Task { await runEngine.startRun(playlist: playlist, tracks: tracks) }
@@ -182,19 +212,48 @@ struct RunView: View {
                     .padding(.horizontal, 40)
             }
         } else if cadenceService.state != .idle {
-            Button {
-                runEngine.stopRun()
-                cadenceService.stopDetecting()
-                UIApplication.shared.isIdleTimerDisabled = false
-            } label: {
-                Label("Stop Run", systemImage: "stop.fill")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Capsule().fill(.red.opacity(0.8)))
-                    .padding(.horizontal, 40)
+            guidedRunControls
+        }
+    }
+
+    @ViewBuilder
+    private var guidedRunControls: some View {
+        if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
+            // Guided run: show both Cool Down and Stop
+            VStack(spacing: 12) {
+                Button {
+                    runEngine.startCoolDown()
+                } label: {
+                    Label("Cool Down", systemImage: "arrow.down.heart")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Capsule().fill(.orange.opacity(0.8)))
+                        .padding(.horizontal, 40)
+                }
+
+                stopRunButton
             }
+        } else {
+            // Free run or cool-down already active: just Stop
+            stopRunButton
+        }
+    }
+
+    private var stopRunButton: some View {
+        Button {
+            runEngine.stopRun()
+            cadenceService.stopDetecting()
+            UIApplication.shared.isIdleTimerDisabled = false
+        } label: {
+            Label("Stop Run", systemImage: "stop.fill")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Capsule().fill(.red.opacity(0.8)))
+                .padding(.horizontal, 40)
         }
     }
 }
