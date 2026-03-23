@@ -9,32 +9,32 @@ struct PacePresetPicker: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             // Preset picker
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     ForEach(PacePreset.allCases) { preset in
                         presetButton(preset)
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, Spacing.xs)
             }
 
             // Custom BPM input
             if selectedPreset == .custom {
-                HStack(spacing: 16) {
+                HStack(spacing: Spacing.md) {
                     Text("Target BPM")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
 
                     Stepper(value: $customBPM, in: 120...200) {
                         Text("\(customBPM)")
-                            .font(.system(.title3, design: .monospaced, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .font(.subheading)
+                            .foregroundStyle(Color.textPrimary)
                     }
-                    .tint(.white)
+                    .tint(Color.textPrimary)
                 }
-                .padding(.horizontal, 8)
+                .padding(.horizontal, Spacing.sm)
                 .onChange(of: customBPM) { _, newValue in
                     RunMode.savedTargetBPM = newValue
                 }
@@ -51,26 +51,26 @@ struct PacePresetPicker: View {
         Button {
             selectedPreset = preset
         } label: {
-            VStack(spacing: 2) {
+            VStack(spacing: Spacing.xxs) {
                 Text(preset.displayName)
-                    .font(.caption.weight(.semibold))
+                    .font(.captionBold)
                 if let bpm = preset.bpm {
                     Text("\(bpm)")
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.5))
+                        .font(.labelText)
+                        .foregroundStyle(Color.textSecondary)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
             .background(
                 Capsule().fill(
                     selectedPreset == preset
-                        ? Color.white.opacity(0.25)
-                        : Color.white.opacity(0.08)
+                        ? Color.surfaceOverlay
+                        : Color.surfaceElevated
                 )
             )
             .foregroundStyle(
-                selectedPreset == preset ? .white : .white.opacity(0.6)
+                selectedPreset == preset ? Color.textPrimary : Color.textSecondary
             )
         }
     }

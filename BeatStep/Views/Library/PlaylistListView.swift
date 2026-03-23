@@ -42,12 +42,12 @@ struct PlaylistListView: View {
         List {
             // Scan progress banner
             if let progress = scanService.scanProgress {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     ProgressView()
                         .scaleEffect(0.8)
                     Text("Scanning BPM data... \(progress.scanned)/\(progress.total)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 .listRowSeparator(.hidden)
             }
@@ -79,14 +79,14 @@ struct PlaylistListView: View {
     }
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.textSecondary)
 
             Text(message)
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(.bodyText)
+                .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button("Try Again") {
@@ -140,7 +140,7 @@ private struct PlaylistRow: View {
     var coverageText: String? = nil
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             // Cover art
             if let imageURL = playlist.images?.first?.url,
                let url = URL(string: imageURL) {
@@ -149,40 +149,40 @@ private struct PlaylistRow: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.3))
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(Color.surfaceOverlay)
                 }
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .frame(width: ComponentSize.coverArtSmall, height: ComponentSize.coverArtSmall)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             } else {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 44, height: 44)
+                RoundedRectangle(cornerRadius: Radius.sm)
+                    .fill(Color.surfaceOverlay)
+                    .frame(width: ComponentSize.coverArtSmall, height: ComponentSize.coverArtSmall)
                     .overlay {
                         Image(systemName: "music.note.list")
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(Color.textTertiary)
                     }
             }
 
             // Text
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(playlist.name)
-                    .font(.body)
+                    .font(.bodyText)
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xs) {
                     Text("\(playlist.trackCount) tracks")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
 
                     if let coverageText {
-                        Text("·")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Text("\u{00B7}")
+                            .font(.captionText)
+                            .foregroundStyle(Color.textSecondary)
                         Text(coverageText)
-                            .font(.caption)
-                            .foregroundStyle(.orange)
+                            .font(.captionText)
+                            .foregroundStyle(Color.stateWarning)
                     }
                 }
             }

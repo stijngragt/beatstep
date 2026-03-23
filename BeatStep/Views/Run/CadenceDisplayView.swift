@@ -5,18 +5,18 @@ struct CadenceDisplayView: View {
     let trend: CadenceTrend
 
     var body: some View {
-        VStack(spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+        VStack(spacing: Spacing.xs) {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.md) {
                 Text("\(spm)")
-                    .font(.system(size: 76, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white)
+                    .font(.displaySPM)
+                    .foregroundStyle(Color.textPrimary)
 
                 trendArrow
             }
 
             Text("SPM")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
+                .font(.displaySecondary)
+                .foregroundStyle(Color.textSecondary)
         }
     }
 
@@ -25,13 +25,13 @@ struct CadenceDisplayView: View {
             switch trend {
             case .speedingUp:
                 Image(systemName: "arrow.up")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.stateSuccess)
             case .steady:
                 Image(systemName: "arrow.right")
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(Color.textSecondary)
             case .slowingDown:
                 Image(systemName: "arrow.down")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.stateWarning)
             }
         }
         .font(.system(size: 24, weight: .semibold))

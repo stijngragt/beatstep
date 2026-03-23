@@ -6,48 +6,47 @@ struct MiniPlayerView: View {
 
     var body: some View {
         if let track = playerService.currentTrack {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.md) {
                 // BPM display
                 VStack(spacing: 0) {
                     if let bpm = currentBPM {
                         Text("\(bpm)")
-                            .font(.system(size: 14, weight: .bold, design: .monospaced))
-                            .foregroundStyle(.orange)
+                            .font(.captionBold)
+                            .foregroundStyle(Color.stateWarning)
                         Text("BPM")
-                            .font(.system(size: 8, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .font(.labelText)
+                            .foregroundStyle(Color.textSecondary)
                     } else {
                         Text("--")
-                            .font(.system(size: 14, weight: .bold, design: .monospaced))
-                            .foregroundStyle(.secondary)
+                            .font(.captionBold)
+                            .foregroundStyle(Color.textSecondary)
                         Text("BPM")
-                            .font(.system(size: 8, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .font(.labelText)
+                            .foregroundStyle(Color.textSecondary)
                     }
                 }
                 .frame(width: 52, height: 44)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.15))
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(Color.surfaceElevated)
                 )
 
                 // Track info
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(track.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .font(.bodyBold)
                         .lineLimit(1)
 
                     Text(track.artistName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
                         .lineLimit(1)
                 }
 
                 Spacer()
 
                 // Controls
-                HStack(spacing: 20) {
+                HStack(spacing: Spacing.lg) {
                     Button {
                         SpotifyPlayerService.shared.togglePlayPause()
                     } label: {
@@ -66,10 +65,10 @@ struct MiniPlayerView: View {
                             .font(.title3)
                     }
                 }
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.textPrimary)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
             .background(
                 Rectangle()
                     .fill(.ultraThinMaterial)

@@ -11,7 +11,7 @@ struct SettingsView: View {
                     if let name = user.displayName {
                         HStack {
                             Text("Name")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.textSecondary)
                             Spacer()
                             Text(name)
                         }
@@ -19,7 +19,7 @@ struct SettingsView: View {
 
                     HStack {
                         Text("Plan")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.textSecondary)
                         Spacer()
                         Text(user.isPremium ? "Premium" : "Free")
                     }
