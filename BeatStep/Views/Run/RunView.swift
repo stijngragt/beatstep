@@ -34,9 +34,7 @@ struct RunView: View {
                 MiniPlayerView()
             }
         }
-        .preferredColorScheme(.dark)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .onDisappear {
             runEngine.stopRun()
             UIApplication.shared.isIdleTimerDisabled = false

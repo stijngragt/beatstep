@@ -19,6 +19,14 @@ struct BeatStepApp: App {
         WindowGroup {
             ContentView()
                 .environment(authService)
+                .onAppear {
+                    for scene in UIApplication.shared.connectedScenes {
+                        guard let windowScene = scene as? UIWindowScene else { continue }
+                        for window in windowScene.windows {
+                            window.overrideUserInterfaceStyle = .dark
+                        }
+                    }
+                }
         }
         .modelContainer(container)
         .onChange(of: scenePhase) { _, newPhase in
