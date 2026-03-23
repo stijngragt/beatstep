@@ -23,7 +23,7 @@
 **Milestone Goal:** Establish BeatStep's visual identity -- dark-only fitness aesthetic, design system with electric green accent, tab-based navigation, and brand mark.
 
 - [x] **Phase 6: Design System Foundation** - Dark-mode commitment, color/type/spacing tokens, user approval gate (completed 2026-03-23)
-- [ ] **Phase 7: Tab Navigation Shell** - Bottom tab bar with Library/Run/Settings, MiniPlayer persistence, nav state
+- [x] **Phase 7: Tab Navigation Shell** - Bottom tab bar with Library/Run/Settings, MiniPlayer persistence, nav state (completed 2026-03-23)
 - [ ] **Phase 8: Token Adoption + RunHomeView** - Migrate all views to design tokens, build Run tab landing screen
 - [ ] **Phase 9: Bug Fix + Brand Assets** - Fix track count display, app icon, wordmark
 
@@ -55,7 +55,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md -- Tab navigation shell with TabView, per-tab NavigationStack, MiniPlayer safeAreaInset (NAV-01, NAV-02, NAV-03)
+- [x] 07-01-PLAN.md -- Tab navigation shell with TabView, per-tab NavigationStack, MiniPlayer safeAreaInset (NAV-01, NAV-02, NAV-03)
 
 ### Phase 8: Token Adoption + RunHomeView
 **Goal**: Every screen uses design tokens (zero hardcoded colors) and the Run tab has a usable landing screen showing playlist context
@@ -100,6 +100,6 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 4. Core Loop (Free Run) | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 5. Guided Run + Polish | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 6. Design System Foundation | 2/2 | Complete   | 2026-03-23 | - |
-| 7. Tab Navigation Shell | v1.1 | 0/TBD | Not started | - |
+| 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | v1.1 | 0/TBD | Not started | - |
 | 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |

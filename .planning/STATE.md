@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dark by Design
-status: completed
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-23T20:22:26.689Z"
-last_activity: 2026-03-23 -- Phase 6 complete, DS-05 token approval gate cleared
+status: phase-complete
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-23T20:53:46Z"
+last_activity: 2026-03-23 -- Phase 7 complete, tab navigation shell approved
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 50
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 6 complete -- ready for Phase 7
+**Current focus:** Phase 7 complete -- ready for Phase 8
 
 ## Current Position
 
-Phase: 6 of 9 (Design System Foundation) -- COMPLETE
-Plan: 2 of 2 in current phase (all complete)
+Phase: 7 of 9 (Tab Navigation Shell) -- COMPLETE
+Plan: 1 of 1 in current phase (all complete)
 Status: phase-complete
-Last activity: 2026-03-23 -- Phase 6 complete, DS-05 token approval gate cleared
+Last activity: 2026-03-23 -- Phase 7 complete, tab navigation shell approved
 
-Progress: [##########..........] 50% (Phase 6 complete, Phase 7 next)
+Progress: [###############.....] 75% (Phase 7 complete, Phase 8 next)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13 (11 v1.0, 2 v1.1)
+- Total plans completed: 14 (11 v1.0, 3 v1.1)
 - Average duration: carried from v1.0
 - Total execution time: carried from v1.0
 
@@ -46,10 +46,12 @@ Progress: [##########..........] 50% (Phase 6 complete, Phase 7 next)
 | 1-5 (v1.0) | 11 | -- | -- |
 | 6 (06-01) | 1 | 6min | 6min |
 | 6 (06-02) | 1 | 4min | 4min |
+| 7 (07-01) | 1 | 18min | 18min |
 
 **Recent Trend:**
 - v1.0 completed in 5 days across 11 plans
 - Phase 6 completed in 10min across 2 plans
+- Phase 7 completed in 18min across 1 plan
 
 *Updated after each plan completion*
 
@@ -67,6 +69,8 @@ Recent decisions affecting current work:
 - Named captionText/captionBold to avoid shadowing SwiftUI built-in Font.caption
 - Belt-and-suspenders dark mode: Info.plist + window override for complete coverage
 - [Phase 06]: DS-05 gate cleared: user approved all design token definitions without changes
+- [Phase 07]: Used SwiftUI .tint() on TabView instead of UIKit tintColor for reliable accent color
+- [Phase 07]: RunTabView shows idle CTA only -- active RunView stays in Library tab's NavigationStack
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T20:22:26.687Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-tab-navigation-shell/07-CONTEXT.md
+Last session: 2026-03-23T20:53:46Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-tab-navigation-shell/07-01-SUMMARY.md

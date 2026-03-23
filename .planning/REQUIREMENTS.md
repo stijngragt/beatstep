@@ -22,9 +22,9 @@ Requirements for milestone v1.1 "Dark by Design". Each maps to roadmap phases.
 
 ### Navigation
 
-- [ ] **NAV-01**: Bottom tab bar with three tabs: Library, Run, Settings
-- [ ] **NAV-02**: Each tab maintains its own navigation state (NavigationStack per tab)
-- [ ] **NAV-03**: MiniPlayer persists across all tabs via safeAreaInset
+- [x] **NAV-01**: Bottom tab bar with three tabs: Library, Run, Settings
+- [x] **NAV-02**: Each tab maintains its own navigation state (NavigationStack per tab)
+- [x] **NAV-03**: MiniPlayer persists across all tabs via safeAreaInset
 - [ ] **NAV-04**: Run tab shows last-used playlist context when available, otherwise prompts to select a playlist
 
 ### Bug Fix
@@ -79,9 +79,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DS-03 | Phase 6 | Complete |
 | DS-04 | Phase 8 | Pending |
 | DS-05 | Phase 6 | Complete |
-| NAV-01 | Phase 7 | Pending |
-| NAV-02 | Phase 7 | Pending |
-| NAV-03 | Phase 7 | Pending |
+| NAV-01 | Phase 7 | Complete |
+| NAV-02 | Phase 7 | Complete |
+| NAV-03 | Phase 7 | Complete |
 | NAV-04 | Phase 8 | Pending |
 | BUG-01 | Phase 9 | Pending |
 | BRAND-01 | Phase 9 | Pending |
