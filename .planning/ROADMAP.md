@@ -30,7 +30,7 @@
 ## Phase Details
 
 ### Phase 6: Design System Foundation
-**Goal**: Users see a consistent dark UI with a cohesive electric green accent -- the visual language is defined and approved before any view migration begins
+**Goal**: Users see a consistent dark UI with a cohesive heartbeat red accent -- the visual language is defined and approved before any view migration begins
 **Depends on**: Phase 5 (v1.0 complete)
 **Requirements**: DARK-01, DARK-02, DS-01, DS-02, DS-03, DS-05
 **Success Criteria** (what must be TRUE):
@@ -38,11 +38,11 @@
   2. No conditional light/dark styling code remains in the codebase (grep for preferredColorScheme returns zero hits outside AppEntry)
   3. Color, typography, and spacing token files exist and compile; tokens cover accent, 3 background levels, primary/secondary/tertiary text, state colors, heading/body/caption/numeric scales, and padding/radii/sizing
   4. User has reviewed and approved the token definitions (palette, type scale, spacing) before any view migration work begins
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md -- Design tokens + dark mode enforcement (DARK-01, DARK-02, DS-01, DS-02, DS-03)
+- [ ] 06-02-PLAN.md -- Token approval gate (DS-05)
 
 ### Phase 7: Tab Navigation Shell
 **Goal**: Users navigate BeatStep through a bottom tab bar with Library, Run, and Settings tabs -- the structural container for all screens
@@ -99,7 +99,7 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 3. Cadence Detection | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 4. Core Loop (Free Run) | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 5. Guided Run + Polish | v1.0 | 2/2 | Complete | 2026-03-23 |
-| 6. Design System Foundation | v1.1 | 0/TBD | Not started | - |
+| 6. Design System Foundation | v1.1 | 0/2 | Planning complete | - |
 | 7. Tab Navigation Shell | v1.1 | 0/TBD | Not started | - |
 | 8. Token Adoption + RunHomeView | v1.1 | 0/TBD | Not started | - |
 | 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |
