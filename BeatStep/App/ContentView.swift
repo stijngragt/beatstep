@@ -10,7 +10,6 @@ struct ContentView: View {
         appearance.shadowColor = .clear
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
-        UITabBar.appearance().tintColor = UIColor(Color.accent)
         UITabBar.appearance().unselectedItemTintColor = UIColor(Color.textTertiary)
     }
 
@@ -53,6 +52,7 @@ struct ContentView: View {
                 Label("Settings", systemImage: "gearshape")
             }
         }
+        .tint(Color.accent)
         .safeAreaInset(edge: .bottom) {
             if SpotifyPlayerService.shared.currentTrack != nil {
                 MiniPlayerView()
