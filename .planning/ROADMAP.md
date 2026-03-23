@@ -52,10 +52,10 @@ Plans:
   1. Bottom tab bar shows three tabs (Library, Run, Settings) with appropriate SF Symbol icons and electric green tint
   2. User can navigate deep into a tab (e.g., Library > Playlist), switch to another tab, switch back, and find their navigation state preserved
   3. MiniPlayer is visible and functional across all three tabs without duplication or disappearing behind the tab bar
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md -- Tab navigation shell with TabView, per-tab NavigationStack, MiniPlayer safeAreaInset (NAV-01, NAV-02, NAV-03)
 
 ### Phase 8: Token Adoption + RunHomeView
 **Goal**: Every screen uses design tokens (zero hardcoded colors) and the Run tab has a usable landing screen showing playlist context
