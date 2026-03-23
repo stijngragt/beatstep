@@ -22,7 +22,7 @@
 
 **Milestone Goal:** Establish BeatStep's visual identity -- dark-only fitness aesthetic, design system with electric green accent, tab-based navigation, and brand mark.
 
-- [ ] **Phase 6: Design System Foundation** - Dark-mode commitment, color/type/spacing tokens, user approval gate
+- [x] **Phase 6: Design System Foundation** - Dark-mode commitment, color/type/spacing tokens, user approval gate (completed 2026-03-23)
 - [ ] **Phase 7: Tab Navigation Shell** - Bottom tab bar with Library/Run/Settings, MiniPlayer persistence, nav state
 - [ ] **Phase 8: Token Adoption + RunHomeView** - Migrate all views to design tokens, build Run tab landing screen
 - [ ] **Phase 9: Bug Fix + Brand Assets** - Fix track count display, app icon, wordmark
@@ -99,7 +99,7 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 3. Cadence Detection | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 4. Core Loop (Free Run) | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 5. Guided Run + Polish | v1.0 | 2/2 | Complete | 2026-03-23 |
-| 6. Design System Foundation | v1.1 | 1/2 | In progress | - |
+| 6. Design System Foundation | 2/2 | Complete   | 2026-03-23 | - |
 | 7. Tab Navigation Shell | v1.1 | 0/TBD | Not started | - |
 | 8. Token Adoption + RunHomeView | v1.1 | 0/TBD | Not started | - |
 | 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |

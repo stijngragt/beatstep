@@ -18,7 +18,7 @@ Requirements for milestone v1.1 "Dark by Design". Each maps to roadmap phases.
 - [x] **DS-02**: Typography tokens defined: heading, body, caption scales with SF Pro; numeric display scale with SF Pro Rounded
 - [x] **DS-03**: Spacing and component tokens defined: padding scale, corner radii, component sizing
 - [ ] **DS-04**: All existing views migrated from hardcoded colors to design tokens
-- [ ] **DS-05**: Design system approved by user before view migration begins
+- [x] **DS-05**: Design system approved by user before view migration begins
 
 ### Navigation
 
@@ -78,7 +78,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DS-02 | Phase 6 | Complete |
 | DS-03 | Phase 6 | Complete |
 | DS-04 | Phase 8 | Pending |
-| DS-05 | Phase 6 | Pending |
+| DS-05 | Phase 6 | Complete |
 | NAV-01 | Phase 7 | Pending |
 | NAV-02 | Phase 7 | Pending |
 | NAV-03 | Phase 7 | Pending |
