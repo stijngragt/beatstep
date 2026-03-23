@@ -88,11 +88,11 @@ Plans:
   1. User can set a target BPM before starting a run, and the app plays music at that tempo
   2. Warm-up/cool-down ramp works: BPM gradually increases from warm-up pace to target, then decreases at cool-down
   3. When multiple songs match the target BPM, selection considers genre or mood preferences rather than random picks
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md -- Guided mode engine: RunMode/RampPhase/PacePreset models, danceability caching, ramp state machine, smart selection, discovery integration (TDD)
+- [ ] 05-02-PLAN.md -- UI wiring: mode picker, pace preset selector, phase labels, cool down button, device verification
 
 ## Progress
 
