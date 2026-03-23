@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 4 complete. Ready for Phase 5: Guided Run + Polish
+**Current focus:** Phase 5 in progress -- guided run engine complete, UI wiring next
 
 ## Current Position
 
-Phase: 4 of 5 (Core Loop Free Run) -- COMPLETE
-Plan: 2 of 2 in current phase (all complete)
-Status: Phase 4 complete (core free run loop device-verified), ready for Phase 5
-Last activity: 2026-03-20 -- Completed Plan 04-02 (UI wiring + device verification)
+Phase: 5 of 5 (Guided Run + Polish)
+Plan: 1 of 2 in current phase (plan 01 complete)
+Status: Plan 05-01 complete (guided run engine with ramp, smart selection, discovery)
+Last activity: 2026-03-23 -- Completed Plan 05-01 (guided run engine)
 
 Progress: [██████████] 100%
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 03-02 P02 | multi-session | 3 tasks | 6 files |
 | Phase 04-01 P01 | 7 min | 3 tasks | 4 files |
 | Phase 04-02 P02 | multi-session | 3 tasks | 5 files |
+| Phase 05-01 P01 | 11 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,10 @@ Recent decisions affecting current work:
 - [04-02]: Tolerance picker shown only in idle state (pre-run setting, not adjustable mid-run)
 - [04-02]: Skip button conditionally routes to RunEngineService.skipToNextMatch() during active run
 - [04-02]: RunView onDisappear calls stopRun() as cleanup safety net for mid-run navigation
+- [05-01]: Smart selection picks best-ranked deterministically with 1-3 matches, random top 3 with 4+
+- [05-01]: 8 BPM step per song for warm-up/cool-down ramp; starts at 140 BPM
+- [05-01]: effectiveBPM dispatches free (cadence) vs guided (ramp target) for song selection
+- [05-01]: Cool-down auto-stops run when ramp reaches 140 BPM
 
 ### Pending Todos
 
@@ -115,6 +120,6 @@ None -- BPM data source resolved via Cloudflare Worker proxy (plan 02-03)
 
 ## Session Continuity
 
-Last session: 2026-03-23T07:46:28.864Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-guided-run-polish/05-CONTEXT.md
+Last session: 2026-03-23T08:30:38Z
+Stopped at: Completed 05-01-PLAN.md (guided run engine)
+Resume file: .planning/phases/05-guided-run-polish/05-01-SUMMARY.md

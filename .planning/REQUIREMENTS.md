@@ -28,13 +28,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **BPM-03**: Half/double BPM matching expands the matchable song pool (e.g., 85 BPM song at 170 cadence)
 - [x] **BPM-04**: User can configure BPM tolerance (how tight the match needs to be)
 - [x] **BPM-05**: App pre-scans and caches BPM data for user's Spotify library *(functionally complete after 02-03 gap closure: scan uses GetSongBPM via proxy)*
-- [ ] **BPM-06**: When multiple songs match BPM, selection considers genre/mood preferences
+- [x] **BPM-06**: When multiple songs match BPM, selection considers genre/mood preferences
 
 ### Run Modes
 
 - [x] **RUN-01**: Free run mode -- music adapts to the runner's natural pace
-- [ ] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
-- [ ] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
+- [x] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
+- [x] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
 
 ## v2 Requirements
 
@@ -88,10 +88,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BPM-03 | Phase 4 | Complete |
 | BPM-04 | Phase 4 | Complete |
 | BPM-05 | Phase 2 | Complete (02-03 gap closure) |
-| BPM-06 | Phase 5 | Pending |
+| BPM-06 | Phase 5 | Complete |
 | RUN-01 | Phase 4 | Complete |
-| RUN-02 | Phase 5 | Pending |
-| RUN-03 | Phase 5 | Pending |
+| RUN-02 | Phase 5 | Complete |
+| RUN-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total
