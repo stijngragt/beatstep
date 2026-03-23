@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_complete
-stopped_at: v1.0 milestone archived
+milestone: v1.1
+milestone_name: Dark by Design
+status: defining_requirements
+stopped_at: null
 last_updated: "2026-03-23"
-last_activity: 2026-03-23 -- Completed v1.0 milestone
+last_activity: 2026-03-23 -- Milestone v1.1 started
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,21 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** v1.0 milestone complete — planning next milestone
+**Current focus:** v1.1 Dark by Design — defining requirements
 
 ## Current Position
 
-Milestone: v1.0 MVP — SHIPPED 2026-03-23
-Status: Milestone archived, ready for next milestone
-Last activity: 2026-03-23 -- v1.0 milestone archived
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-23 — Milestone v1.1 started
 
 ## Accumulated Context
 
 ### Decisions
 
-Full decision log archived in PROJECT.md Key Decisions table.
+Full decision log in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
@@ -43,10 +42,10 @@ None
 
 ### Blockers/Concerns
 
-None — all v1.0 blockers resolved
+None
 
 ## Session Continuity
 
 Last session: 2026-03-23
-Stopped at: v1.0 milestone archived
+Stopped at: Milestone v1.1 initialization
 Resume file: None

@@ -25,7 +25,13 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(None — define with next milestone)
+<!-- v1.1 Dark by Design -->
+
+- [ ] Dark-mode-only UI with light-mode logic stripped
+- [ ] Design system: typeface, color palette (electric green accent), spacing/component tokens
+- [ ] Bottom tab navigation: Library, Run, Settings
+- [ ] Fix track count displaying zero in playlist view
+- [ ] App icon and wordmark (rough brand mark)
 
 ### Out of Scope
 
@@ -73,5 +79,18 @@ BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 202
 | Danceability for smart selection | Only viable audio attribute from GetSongBPM (energy/genre not available) | ✓ Good — fallback to 50 when missing |
 | 8 BPM step per song for ramp | Balance between gradual ramp and reaching target in reasonable songs | — Pending user feedback |
 
+## Current Milestone: v1.1 Dark by Design
+
+**Goal:** Establish BeatStep's visual identity — dark-only fitness aesthetic, design system with electric green accent, tab-based navigation, and brand mark.
+
+**Target features:**
+- Dark-mode-only commitment (strip light-mode logic)
+- Design system: typeface, electric green accent palette, spacing/component tokens
+- Bottom tab navigation (Library, Run, Settings)
+- Fix track count bug in playlist view
+- App icon and wordmark
+
+**Design workflow:** Approve design system (tokens, palette, type) first, then build screens — review after.
+
 ---
-*Last updated: 2026-03-23 after v1.0 milestone*
+*Last updated: 2026-03-23 after v1.1 milestone started*
