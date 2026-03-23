@@ -9,13 +9,15 @@ final class CachedBPM {
     var bpm: Int?
     var lookupAttempted: Bool
     var lastUpdated: Date
+    var danceability: Int?
 
-    init(spotifyTrackID: String, trackName: String, artistName: String, bpm: Int? = nil, lookupAttempted: Bool = false) {
+    init(spotifyTrackID: String, trackName: String, artistName: String, bpm: Int? = nil, lookupAttempted: Bool = false, danceability: Int? = nil) {
         self.spotifyTrackID = spotifyTrackID
         self.trackName = trackName
         self.artistName = artistName
         self.bpm = bpm
         self.lookupAttempted = lookupAttempted
         self.lastUpdated = Date()
+        self.danceability = danceability
     }
 }

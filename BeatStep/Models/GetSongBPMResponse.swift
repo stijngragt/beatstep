@@ -34,6 +34,7 @@ struct GetSongBPMSong: Codable {
     let tempo: String?
     let artist: GetSongBPMArtist?
     let album: GetSongBPMAlbum?
+    let danceability: Int?
 }
 
 struct GetSongBPMArtist: Codable {

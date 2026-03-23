@@ -209,4 +209,190 @@ final class RunEngineServiceTests: XCTestCase {
         XCTAssertFalse(engine.isRunActive)
         XCTAssertNil(engine.currentMatchedTrack)
     }
+
+    // MARK: - Guided Mode
+
+    func testGuidedModeUsesTargetBPM() {
+        // Track at 170 BPM, runner at 120 SPM -- guided mode should match at 170 (target), not 120
+        let track150 = SpotifyTrack(
+            id: "t150", name: "Song 150", uri: "spotify:track:t150",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let bpmMap: [String: Int] = ["t170": 170, "t150": 150]
+        let tracks = [track170, track150]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.tolerance = .normal // +/-7
+        engine.setRunModeForTesting(.guided, targetBPM: 170)
+        engine.setRampPhaseForTesting(.atPace, songsPlayed: 0)
+        engine.setSustainedSPMForTesting(120)
+
+        // In guided mode at-pace with target 170, effectiveBPM should be 170
+        let selected = engine.selectNextMatch(forSPM: engine.effectiveBPM)
+        XCTAssertNotNil(selected)
+        XCTAssertEqual(selected?.id, "t170", "Guided mode should select based on target BPM (170), not runner cadence (120)")
+    }
+
+    // MARK: - Warm-Up Ramp
+
+    func testWarmUpRampProgression() {
+        engine.setRunModeForTesting(.guided, targetBPM: 180)
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 0)
+
+        // Start: 140 + 0*8 = 140
+        XCTAssertEqual(engine.effectiveBPM, 140, "Warm-up starts at 140")
+
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 1)
+        XCTAssertEqual(engine.effectiveBPM, 148, "After 1 song: 140 + 1*8 = 148")
+
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 2)
+        XCTAssertEqual(engine.effectiveBPM, 156, "After 2 songs: 140 + 2*8 = 156")
+
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 3)
+        XCTAssertEqual(engine.effectiveBPM, 164, "After 3 songs: 140 + 3*8 = 164")
+    }
+
+    // MARK: - Cool-Down Ramp
+
+    func testCoolDownRampProgression() {
+        engine.setRunModeForTesting(.guided, targetBPM: 180)
+        engine.setRampPhaseForTesting(.coolDown, songsPlayed: 0)
+
+        // Start: 180 - 0*8 = 180
+        XCTAssertEqual(engine.effectiveBPM, 180, "Cool-down starts at target BPM")
+
+        engine.setRampPhaseForTesting(.coolDown, songsPlayed: 1)
+        XCTAssertEqual(engine.effectiveBPM, 172, "After 1 song: 180 - 1*8 = 172")
+
+        engine.setRampPhaseForTesting(.coolDown, songsPlayed: 2)
+        XCTAssertEqual(engine.effectiveBPM, 164, "After 2 songs: 180 - 2*8 = 164")
+    }
+
+    // MARK: - Ramp Clamping
+
+    func testRampClampsToTarget() {
+        engine.setRunModeForTesting(.guided, targetBPM: 175)
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 5)
+
+        // 140 + 5*8 = 180, but should clamp to target 175
+        XCTAssertEqual(engine.effectiveBPM, 175, "Warm-up should clamp at target BPM, not overshoot")
+    }
+
+    func testCoolDownClampsAtWarmUpBPM() {
+        engine.setRunModeForTesting(.guided, targetBPM: 160)
+        engine.setRampPhaseForTesting(.coolDown, songsPlayed: 5)
+
+        // 160 - 5*8 = 120, but should clamp at 140
+        XCTAssertEqual(engine.effectiveBPM, 140, "Cool-down should clamp at 140, not go below")
+    }
+
+    // MARK: - Smart Selection (Danceability)
+
+    func testSmartSelectionRanksByDanceability() {
+        let trackHigh = SpotifyTrack(
+            id: "tHigh", name: "High Dance", uri: "spotify:track:tHigh",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let trackLow = SpotifyTrack(
+            id: "tLow", name: "Low Dance", uri: "spotify:track:tLow",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let bpmMap: [String: Int] = ["tHigh": 170, "tLow": 170]
+        let danceMap: [String: Int] = ["tHigh": 90, "tLow": 20]
+
+        engine.loadForTesting(tracks: [trackHigh, trackLow], bpmMap: bpmMap)
+        engine.setDanceabilityMapForTesting(danceMap)
+        engine.tolerance = .normal
+
+        // preferHighEnergy = true (free run or guided at-pace): should prefer tHigh
+        engine.setRunModeForTesting(.free, targetBPM: 160)
+
+        // Run multiple selections to verify bias
+        var highCount = 0
+        for _ in 0..<20 {
+            engine.loadForTesting(tracks: [trackHigh, trackLow], bpmMap: bpmMap)
+            engine.setDanceabilityMapForTesting(danceMap)
+            if let selected = engine.selectNextMatch(forSPM: 170) {
+                if selected.id == "tHigh" { highCount += 1 }
+            }
+        }
+        XCTAssertGreaterThan(highCount, 10, "With preferHighEnergy=true, high danceability track should be selected more often")
+    }
+
+    func testSmartSelectionLowDanceabilityForRamp() {
+        let trackHigh = SpotifyTrack(
+            id: "tHigh", name: "High Dance", uri: "spotify:track:tHigh",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let trackLow = SpotifyTrack(
+            id: "tLow", name: "Low Dance", uri: "spotify:track:tLow",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let bpmMap: [String: Int] = ["tHigh": 170, "tLow": 170]
+        let danceMap: [String: Int] = ["tHigh": 90, "tLow": 20]
+
+        engine.loadForTesting(tracks: [trackHigh, trackLow], bpmMap: bpmMap)
+        engine.setDanceabilityMapForTesting(danceMap)
+        engine.tolerance = .normal
+        engine.setRunModeForTesting(.guided, targetBPM: 170)
+        engine.setRampPhaseForTesting(.warmUp, songsPlayed: 0)
+
+        // preferHighEnergy = false (warm-up phase): should prefer tLow
+        var lowCount = 0
+        for _ in 0..<20 {
+            engine.loadForTesting(tracks: [trackHigh, trackLow], bpmMap: bpmMap)
+            engine.setDanceabilityMapForTesting(danceMap)
+            engine.setRunModeForTesting(.guided, targetBPM: 170)
+            engine.setRampPhaseForTesting(.warmUp, songsPlayed: 0)
+            if let selected = engine.selectNextMatch(forSPM: 170) {
+                if selected.id == "tLow" { lowCount += 1 }
+            }
+        }
+        XCTAssertGreaterThan(lowCount, 10, "With preferHighEnergy=false (warm-up), low danceability track should be selected more often")
+    }
+
+    func testMissingDanceabilityFallback() {
+        let trackWithDance = SpotifyTrack(
+            id: "tWith", name: "Has Dance", uri: "spotify:track:tWith",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let trackNoDance = SpotifyTrack(
+            id: "tNo", name: "No Dance", uri: "spotify:track:tNo",
+            durationMs: 200_000, artists: [Artist(name: "A")],
+            album: Album(name: "Album", images: nil)
+        )
+        let bpmMap: [String: Int] = ["tWith": 170, "tNo": 170]
+        // Only tWith has danceability data, tNo is missing (should default to 50)
+        let danceMap: [String: Int] = ["tWith": 50]
+
+        engine.loadForTesting(tracks: [trackWithDance, trackNoDance], bpmMap: bpmMap)
+        engine.setDanceabilityMapForTesting(danceMap)
+        engine.tolerance = .normal
+
+        // Both should be selectable -- missing danceability defaults to 50 (same as tWith)
+        let selected = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNotNil(selected, "Should still select a track even when danceability data is missing")
+    }
+
+    // MARK: - Discovery Flag
+
+    func testDiscoveryFlagSetWhenPoolLow() {
+        // Only 2 tracks match -- less than 3 threshold
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85]
+        let tracks = [track170, track85]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.tolerance = .normal
+
+        _ = engine.selectNextMatch(forSPM: 170)
+
+        // After selection with < 3 matches, needsDiscovery should be true
+        XCTAssertTrue(engine.needsDiscovery, "Discovery flag should be set when pool has fewer than 3 matches")
+    }
 }

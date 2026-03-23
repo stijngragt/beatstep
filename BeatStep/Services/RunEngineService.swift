@@ -241,6 +241,27 @@ final class RunEngineService {
         SpotifyPlayerService.shared.play(uri: track.uri)
     }
 
+    // MARK: - Guided Mode (stubs for TDD RED)
+
+    @ObservationIgnored
+    var runMode: RunMode = .free
+    @ObservationIgnored
+    var rampPhase: RampPhase? = nil
+    @ObservationIgnored
+    private var targetBPM: Int = 160
+    @ObservationIgnored
+    private var rampSongsPlayed: Int = 0
+    @ObservationIgnored
+    private var danceabilityMap: [String: Int] = [:]
+    @ObservationIgnored
+    private(set) var needsDiscovery: Bool = false
+
+    /// Effective BPM for song selection. Free mode uses cadence, guided uses ramp target.
+    var effectiveBPM: Int {
+        // Stub: always returns sustainedSPM (guided behavior not yet implemented)
+        return sustainedSPM
+    }
+
     // MARK: - Testing Helpers
 
     func loadForTesting(tracks: [SpotifyTrack], bpmMap: [String: Int]) {
@@ -251,5 +272,19 @@ final class RunEngineService {
 
     func setSustainedSPMForTesting(_ spm: Int) {
         sustainedSPM = spm
+    }
+
+    func setDanceabilityMapForTesting(_ map: [String: Int]) {
+        danceabilityMap = map
+    }
+
+    func setRunModeForTesting(_ mode: RunMode, targetBPM: Int) {
+        runMode = mode
+        self.targetBPM = targetBPM
+    }
+
+    func setRampPhaseForTesting(_ phase: RampPhase, songsPlayed: Int) {
+        rampPhase = phase
+        rampSongsPlayed = songsPlayed
     }
 }
