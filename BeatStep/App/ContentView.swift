@@ -3,6 +3,17 @@ import SwiftUI
 struct ContentView: View {
     @Environment(SpotifyAuthService.self) private var authService
 
+    init() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithDefaultBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+        appearance.shadowColor = .clear
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().tintColor = UIColor(Color.accent)
+        UITabBar.appearance().unselectedItemTintColor = UIColor(Color.textTertiary)
+    }
+
     var body: some View {
         Group {
             if authService.isAuthenticated {
@@ -20,31 +31,34 @@ struct ContentView: View {
     // MARK: - Authenticated View
 
     private var authenticatedView: some View {
-        ZStack(alignment: .bottom) {
+        TabView {
             NavigationStack {
                 PlaylistListView()
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            NavigationLink {
-                                SettingsView()
-                            } label: {
-                                Image(systemName: "gearshape")
-                            }
-                        }
-                    }
             }
-            .safeAreaInset(edge: .bottom) {
-                // Reserve space for mini-player so content scrolls above it
-                if SpotifyPlayerService.shared.currentTrack != nil {
-                    Color.clear.frame(height: 64)
-                }
+            .tabItem {
+                Label("Library", systemImage: "music.note.list")
             }
 
-            // Mini-player overlay at bottom
-            MiniPlayerView()
+            NavigationStack {
+                RunTabView()
+            }
+            .tabItem {
+                Label("Run", systemImage: "waveform.path.ecg")
+            }
+
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if SpotifyPlayerService.shared.currentTrack != nil {
+                MiniPlayerView()
+            }
         }
         .task {
-            // Background delta scan on app launch
             await LibraryScanService.shared.scanEnabledPlaylists()
         }
     }

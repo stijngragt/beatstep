@@ -29,9 +29,6 @@ struct RunView: View {
                 // Controls
                 controlsSection
                     .padding(.bottom, 16)
-
-                // Mini-player
-                MiniPlayerView()
             }
         }
         .navigationBarTitleDisplayMode(.inline)

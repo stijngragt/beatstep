@@ -36,6 +36,7 @@
 		7F4BF1B63B24CFBFB608DB82 /* BPMDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC3F32F251BB6DCD836C9C8 /* BPMDiscoveryService.swift */; };
 		8759BAC4EDE9798BF8F2A1A3 /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */; };
 		96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51071A444A70CF8FE4921C0E /* RunView.swift */; };
+		A7B3C1D2E4F5068912345678 /* RunTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C4D2E3F5A6179023456789 /* RunTabView.swift */; };
 		9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */; };
 		A05EEC0B3797877D8200C9AB /* ModePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7285840ABEDB8CE1F63DBD /* ModePicker.swift */; };
 		A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */; };
@@ -98,6 +99,7 @@
 		4A5B70810916CFBD9793F505 /* MockSpotifyResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSpotifyResponses.swift; sourceTree = "<group>"; };
 		50AD42E658902F242BCCC303 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		51071A444A70CF8FE4921C0E /* RunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
+		B7C4D2E3F5A6179023456789 /* RunTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunTabView.swift; sourceTree = "<group>"; };
 		5818164758316FF4BD59C44C /* RunSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSession.swift; sourceTree = "<group>"; };
 		5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		5B8DE2A72602B504DACE8177 /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 				8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */,
 				0D7285840ABEDB8CE1F63DBD /* ModePicker.swift */,
 				42E6E0CCDFEFD9E667209984 /* PacePresetPicker.swift */,
+				B7C4D2E3F5A6179023456789 /* RunTabView.swift */,
 				51071A444A70CF8FE4921C0E /* RunView.swift */,
 				9F53B43A668691E6914501E3 /* TolerancePicker.swift */,
 			);
@@ -491,6 +494,7 @@
 				9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */,
 				AB560042A7F124F1EAEA6BCD /* RunMode.swift in Sources */,
 				B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */,
+				A7B3C1D2E4F5068912345678 /* RunTabView.swift in Sources */,
 				96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */,
 				A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */,
 				6BEDB7282D5E48187B944D80 /* Secrets.swift in Sources */,
