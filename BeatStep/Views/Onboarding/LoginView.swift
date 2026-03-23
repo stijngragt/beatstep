@@ -59,7 +59,7 @@ struct LoginView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.md)
                 .background(Color.spotifyBrand)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.textOnAccent)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.pill))
             }
         }
