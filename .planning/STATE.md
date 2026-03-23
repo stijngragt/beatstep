@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-23T07:46:28.871Z"
-last_activity: 2026-03-20 -- Completed Plan 04-02 (UI wiring + device verification)
+status: completed
+stopped_at: Completed 05-02-PLAN.md (guided run UI wiring)
+last_updated: "2026-03-23T14:51:41.272Z"
+last_activity: 2026-03-23 -- Completed Plan 05-02 (guided run UI wiring)
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 5 of 5 (Guided Run + Polish)
-Plan: 1 of 2 in current phase (plan 01 complete)
-Status: Plan 05-01 complete (guided run engine with ramp, smart selection, discovery)
-Last activity: 2026-03-23 -- Completed Plan 05-01 (guided run engine)
+Phase: 5 of 5 (Guided Run + Polish) -- COMPLETE
+Plan: 2 of 2 in current phase (all plans complete)
+Status: All phases complete -- v1.0 milestone feature-complete
+Last activity: 2026-03-23 -- Completed Plan 05-02 (guided run UI wiring)
 
 Progress: [██████████] 100%
 
@@ -61,6 +61,7 @@ Progress: [██████████] 100%
 | Phase 04-01 P01 | 7 min | 3 tasks | 4 files |
 | Phase 04-02 P02 | multi-session | 3 tasks | 5 files |
 | Phase 05-01 P01 | 11 min | 3 tasks | 10 files |
+| Phase 05 P02 | multi-session | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,9 @@ Recent decisions affecting current work:
 - [05-01]: 8 BPM step per song for warm-up/cool-down ramp; starts at 140 BPM
 - [05-01]: effectiveBPM dispatches free (cadence) vs guided (ramp target) for song selection
 - [05-01]: Cool-down auto-stops run when ramp reaches 140 BPM
+- [Phase 05-02]: PacePresetPicker uses horizontal scrolling capsule buttons for preset selection
+- [Phase 05-02]: Cool Down button shown only during warm-up and at-pace phases
+- [Phase 05-02]: runMode set on engine as property before startRun (no parameter change)
 
 ### Pending Todos
 
@@ -120,6 +124,6 @@ None -- BPM data source resolved via Cloudflare Worker proxy (plan 02-03)
 
 ## Session Continuity
 
-Last session: 2026-03-23T08:30:38Z
-Stopped at: Completed 05-01-PLAN.md (guided run engine)
-Resume file: .planning/phases/05-guided-run-polish/05-01-SUMMARY.md
+Last session: 2026-03-23T14:51:41.269Z
+Stopped at: Completed 05-02-PLAN.md (guided run UI wiring)
+Resume file: None
