@@ -1,183 +1,299 @@
 # Stack Research
 
 **Domain:** Native iOS running music-sync app (accelerometer cadence to Spotify BPM matching)
-**Researched:** 2026-03-19
-**Confidence:** MEDIUM (critical BPM data source issue discovered -- see Pitfalls)
+**Researched:** 2026-03-23
+**Confidence:** HIGH (all v1.1 additions use first-party Apple APIs; no third-party libraries required)
 
-## Recommended Stack
+---
 
-### Core Technologies
+## v1.0 Foundation (Validated — Do Not Re-Research)
+
+All of the following are working in production. No changes needed:
+
+| Technology | Status |
+|------------|--------|
+| Swift 6 / SwiftUI + @Observable | Working |
+| CoreMotion (CMPedometer) | Working |
+| Spotify Web API (PKCE) | Working |
+| GetSongBPM API via Cloudflare Worker | Working |
+| SwiftData (BPM cache) | Working |
+| SpotifyiOS SDK v5 | Working |
+
+---
+
+## v1.1 Stack Additions: Dark by Design
+
+All v1.1 capabilities use **zero new external dependencies**. Every item below is a first-party Apple pattern or asset convention.
+
+### Core Technologies (v1.1)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| Swift | 6.x (Xcode 16+) | Language | Current standard. Swift concurrency (async/await, actors) is essential for managing concurrent sensor data + network + playback streams. Swift 6 strict concurrency checking catches data races at compile time. |
-| SwiftUI | iOS 17+ APIs | UI framework | Declarative, reactive UI. The @Observable macro (iOS 17+) eliminates Combine boilerplate for state management. SwiftUI's lifecycle integrates cleanly with background audio modes. |
-| CoreMotion | System framework | Accelerometer + pedometer | Apple's first-party framework. CMPedometer provides `currentCadence` (steps/sec) directly -- no manual signal processing needed for basic cadence. CMMotionManager gives raw accelerometer for custom peak detection if higher fidelity is needed. |
-| Spotify iOS SDK (SpotifyiOS) | v5.0.1 | Playback control + auth | The only way to control Spotify playback from a third-party iOS app. SPTAppRemote handles play/pause/skip/queue. Requires Spotify app installed. Supports SPM. |
-| Spotify Web API | Current | Track metadata, user library, search | REST API for fetching user playlists, searching tracks, getting track metadata. Auth via OAuth 2.0 PKCE. **Critical: Audio Features endpoint is deprecated for new apps (see below).** |
+| SwiftUI `Color` extension (static tokens) | iOS 17+ | Semantic color tokens | Extend `Color` with `static var` properties to create a single source of truth for palette. Callers use `Color.accent` not hardcoded hex. Survives refactor, easy to audit. |
+| SwiftUI `Font` extension (static tokens) | iOS 17+ | Typography scale tokens | Mirror pattern: `Font.beatstepTitle`, `Font.beatstepLabel`. Centralizes typeface + weight + size decisions. |
+| SwiftUI `ViewModifier` (component tokens) | iOS 17+ | Reusable styling contracts | Encapsulate multi-property styles (font + color + spacing) into named modifiers: `.beatstepCardStyle()`, `.beatstepHeadlineStyle()`. Prevents style drift across 5,000+ LOC. |
+| `UIUserInterfaceStyle = Dark` in Info.plist | iOS 13+ | Force dark-only appearance | Single key in Info.plist strips the system-level light/dark toggle for this app. No runtime logic needed. The entire UIKit + SwiftUI render pipeline honors it. |
+| SwiftUI `TabView` | iOS 17+ | Bottom tab navigation | Native Apple component. Handles safe area, tab badges, accessibility labels. Use `.tabViewStyle(.automatic)` (default) for standard iOS bottom bar. No custom tab bar needed. |
+| Asset Catalog (AppIcon.appiconset) | Xcode 14+ | App icon | Since Xcode 14, a single 1024×1024 PNG in the asset catalog is sufficient. System auto-scales to all required sizes. No icon generator tools needed. |
 
-### BPM Data Strategy (Critical Decision)
+### Supporting Libraries (v1.1)
 
-**Problem:** Spotify deprecated the Audio Features API (which provided BPM/tempo) for all new apps as of November 27, 2024. New developer accounts get 403 errors. This is the single biggest technical risk for BeatStep.
+None. All v1.1 work is first-party SwiftUI patterns.
 
-**Recommended approach -- layered BPM sourcing:**
+If the electric green exact hex color needs to be available across multiple contexts (SwiftUI + UIKit), define it in the asset catalog as a named color resource instead of only in a `Color` extension. Xcode 15+ auto-generates `Color(.beatstepAccent)` access from asset catalog entries.
 
-| Priority | Source | Coverage | Confidence |
-|----------|--------|----------|------------|
-| 1 | GetSongBPM API | Large catalog, free with attribution | MEDIUM |
-| 2 | AcousticBrainz (via MusicBrainz IDs) | ~29M recordings, CC0 data, but no new data since 2022 | MEDIUM |
-| 3 | On-device BPM detection (Accelerate/vDSP) | Any audio, but requires local audio access | LOW -- feasibility unclear with Spotify streaming |
-| 4 | User-contributed BPM cache | Grows over time | LOW initially |
-
-**Recommendation:** Use GetSongBPM API as primary source. Cross-reference with AcousticBrainz for validation. Cache BPM data aggressively on-device per Spotify track ID. Build the architecture so the BPM source is swappable (protocol-based abstraction). If Spotify re-opens Audio Features for certain app categories (music tools), you can slot it back in.
-
-### Supporting Libraries
-
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Accelerate (vDSP) | System framework | Signal processing / FFT | Custom step detection from raw accelerometer data if CMPedometer cadence proves too laggy or imprecise for real-time beat matching. Also useful for on-device BPM detection of audio if that path is pursued. |
-| KeychainAccess | Latest (SPM) | Secure token storage | Store Spotify OAuth tokens securely. Simpler API than raw Security framework. |
-| SwiftData | iOS 17+ | Local persistence | Cache BPM data per track, user preferences, playlist metadata. Replaces Core Data with Swift-native API. |
-
-### Development Tools
+### Development Tools (v1.1)
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
-| Xcode 16+ | IDE, build, debug | Required for iOS 18 SDK submission. Use Instruments for CoreMotion profiling. |
-| Swift Package Manager | Dependency management | Native to Xcode. SpotifyiOS supports SPM. Avoid CocoaPods -- it's legacy. |
-| Instruments (CoreMotion template) | Sensor debugging | Essential for testing accelerometer + pedometer on real devices. Simulator has no accelerometer. |
-| Charles Proxy / Proxyman | Network debugging | Debug Spotify API calls, inspect OAuth flow, verify BPM API responses. |
+| SF Symbols 6 | Icon system for tab bar glyphs | Use `Image(systemName:)`. Provides "music.library", "figure.run", "gearshape" or equivalents. No icon font licensing needed. |
+| Figma / Sketch (optional) | Wordmark + app icon design | Design the wordmark externally, export as SVG or 1024×1024 PNG, import to asset catalog. Xcode is not a design tool. |
 
-## Architecture Patterns
+---
 
-### App Architecture: MVVM with @Observable
+## Design System Architecture (Recommended Pattern)
 
-Use `@Observable` (iOS 17+) for ViewModels. No Combine pipelines needed for basic state management. Reserve Combine only for CoreMotion sensor streams where `AsyncStream` bridging is complex.
+### Token Hierarchy
+
+```
+DesignTokens (namespace enum — not instantiable)
+├── Color tokens     → extension Color { static var ... }
+├── Font tokens      → extension Font { static var ... }
+├── Spacing tokens   → enum Spacing { static let xs: CGFloat = 4; ... }
+└── Radius tokens    → enum Radius { static let card: CGFloat = 12; ... }
+```
+
+Use an `enum` (not `struct` or `class`) for namespace groups because an enum with no cases cannot be accidentally instantiated.
+
+### Color Token Pattern
+
+Define tokens in two layers: **primitive** (raw hex) and **semantic** (named by role):
 
 ```swift
-@Observable
-final class RunSessionViewModel {
-    var currentCadence: Double = 0
-    var currentTrack: SpotifyTrack?
-    var isRunning: Bool = false
+// Layer 1: Primitives (private) — never use directly in views
+private extension Color {
+    static let _electricGreen = Color(hex: "#39FF14")
+    static let _nearBlack     = Color(hex: "#0A0A0A")
+    static let _surfaceGray   = Color(hex: "#1A1A1A")
+    static let _textPrimary   = Color.white
+    static let _textSecondary = Color.white.opacity(0.55)
+}
 
-    private let cadenceService: CadenceDetecting
-    private let playbackService: PlaybackControlling
-    private let bpmMatcher: BPMMatcher
+// Layer 2: Semantic tokens (public) — use these in views
+extension Color {
+    static let accent          = _electricGreen     // Primary brand accent
+    static let background      = _nearBlack          // App background
+    static let surface         = _surfaceGray        // Card / elevated surfaces
+    static let textPrimary     = _textPrimary        // Primary readable text
+    static let textSecondary   = _textSecondary      // Labels, captions
+    static let textOnAccent    = Color.black         // Text on green accent buttons
 }
 ```
 
-### Concurrency Model
+This pattern means every call in 5,000+ LOC that says `.foregroundStyle(.white.opacity(0.5))` becomes `.foregroundStyle(.textSecondary)` — and changing the opacity project-wide is a one-line edit.
 
-| Concern | Pattern | Why |
-|---------|---------|-----|
-| Sensor data flow | `AsyncStream<CadenceUpdate>` | Bridges CoreMotion callbacks to structured concurrency |
-| Network calls | `async/await` | Native Swift concurrency for Spotify API + BPM API calls |
-| State isolation | `@MainActor` on ViewModels | UI state stays on main thread, sensor processing off-main |
-| Background work | `actor` for BPM cache | Thread-safe BPM database access |
-
-### Background Execution
-
-The app needs two background modes enabled in Info.plist:
-
-1. **Audio** (`audio`) -- Required because Spotify playback runs through the Spotify app, but BeatStep needs to stay active to detect cadence and queue tracks. The audio background mode keeps your app process alive.
-2. **Location** -- NOT needed. CoreMotion pedometer updates work in foreground. For background cadence, the audio mode is sufficient to keep the process alive.
-
-**Important caveat:** CMPedometer `startUpdates` delivers updates only while the app is in foreground or has an active background mode. The audio background mode satisfies this requirement.
-
-## Installation
+### Font Token Pattern
 
 ```swift
-// Package.swift dependencies (or via Xcode SPM UI)
-dependencies: [
-    .package(url: "https://github.com/spotify/ios-sdk.git", from: "5.0.1"),
-    .package(url: "https://github.com/kishikawakatsumi/KeychainAccess.git", from: "4.2.2"),
-]
+extension Font {
+    // Headline — large BPM readout, run mode display
+    static let beatstepDisplay = Font.system(size: 48, weight: .bold, design: .monospaced)
+    // Title — section headers
+    static let beatstepTitle   = Font.system(size: 22, weight: .semibold)
+    // Body — general readable text
+    static let beatstepBody    = Font.system(.body)
+    // Label — captions, metadata, secondary info
+    static let beatstepLabel   = Font.system(.subheadline)
+    // Caption — smallest; timestamps, tolerances
+    static let beatstepCaption = Font.system(.caption)
+}
 ```
 
-System frameworks (no package needed):
-- `CoreMotion`
-- `Accelerate` (vDSP)
-- `SwiftData`
+Note: If a custom typeface (not SF Pro) is chosen, replace `Font.system(...)` with `Font.custom("TypefaceName", size: ..., relativeTo: .body)`. The `relativeTo:` parameter enables Dynamic Type scaling on custom fonts — do not omit it.
+
+### ViewModifier Token Pattern
+
+```swift
+struct BeatstepCard: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(Color.surface)
+            .cornerRadius(Radius.card)
+            .padding(Spacing.md)
+    }
+}
+
+extension View {
+    func beatstepCard() -> some View { modifier(BeatstepCard()) }
+}
+```
+
+### Spacing Tokens
+
+```swift
+enum Spacing {
+    static let xs: CGFloat  = 4
+    static let sm: CGFloat  = 8
+    static let md: CGFloat  = 16
+    static let lg: CGFloat  = 24
+    static let xl: CGFloat  = 32
+    static let xxl: CGFloat = 48
+}
+```
+
+---
+
+## Dark-Mode-Only Configuration
+
+### Info.plist Key
+
+Add to `/BeatStep/Resources/Info.plist`:
+
+```xml
+<key>UIUserInterfaceStyle</key>
+<string>Dark</string>
+```
+
+This forces dark appearance app-wide regardless of system setting. No SwiftUI modifier needed. No runtime logic needed.
+
+### What This Replaces
+
+All existing code in the codebase currently uses `Color.black` backgrounds and `.white` foreground styles — this is already written for dark mode. Once `UIUserInterfaceStyle = Dark` is set, the `.colorScheme(.dark)` modifier on individual views (if any exist) can be removed as redundant.
+
+Do NOT add `.preferredColorScheme(.dark)` on the root `WindowGroup` — the Info.plist key is the correct approach. The SwiftUI modifier only works below the view hierarchy and can be accidentally overridden; the Info.plist key applies to the entire process.
+
+---
+
+## TabView Integration
+
+### Current Navigation (v1.0)
+
+`ContentView` uses a single `NavigationStack` with `PlaylistListView` as root, settings in a toolbar nav link, and `MiniPlayerView` as a ZStack overlay. The mini-player is manually positioned with `.safeAreaInset`.
+
+### Target Navigation (v1.1)
+
+Replace with a `TabView` containing three tabs: Library, Run, Settings.
+
+```swift
+TabView {
+    Tab("Library", systemImage: "music.note.list") {
+        NavigationStack { PlaylistListView() }
+    }
+    Tab("Run", systemImage: "figure.run") {
+        NavigationStack { RunView() }
+    }
+    Tab("Settings", systemImage: "gearshape") {
+        NavigationStack { SettingsView() }
+    }
+}
+```
+
+The `Tab(_:systemImage:)` initializer is the iOS 18 API. For iOS 17 compatibility, use the `.tabItem { Label(...) }` modifier form instead.
+
+### Mini-Player with TabView
+
+The existing `MiniPlayerView` ZStack overlay pattern must survive the TabView refactor. Two options:
+
+1. **Wrap TabView in a ZStack** — place MiniPlayerView above TabView. Use `.safeAreaInset(edge: .bottom)` on the TabView to push tab content above the mini-player height.
+2. **TabView accessory** — iOS 26+ adds `tabViewBottomAccessory()` which places content directly above the tab bar. This is the cleanest approach but targets iOS 26 only. Since BeatStep targets iOS 17+, use option 1.
+
+Option 1 is the right choice for v1.1. The existing ZStack pattern in `ContentView` already does this — it just needs the inner `NavigationStack` replaced with a `TabView`.
+
+### Tab Bar Appearance
+
+To style the tab bar (dark background, green selection tint), use `UITabBar.appearance()` in the app initializer:
+
+```swift
+init() {
+    // ... existing SwiftData setup ...
+    let tabBarAppearance = UITabBarAppearance()
+    tabBarAppearance.configureWithOpaqueBackground()
+    tabBarAppearance.backgroundColor = UIColor(Color.background)
+    UITabBar.appearance().standardAppearance = tabBarAppearance
+    UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+    UITabBar.appearance().tintColor = UIColor(Color.accent)
+}
+```
+
+This is the correct way to customize tab bar background and selection color in SwiftUI. SwiftUI's `.tint()` modifier on `TabView` only controls the selected icon color (acceptable alternative), but for background color the UIAppearance API is required.
+
+---
+
+## App Icon Requirements
+
+### Asset Catalog Setup
+
+Xcode 14+ supports single-size app icons. Workflow:
+
+1. Design a 1024×1024 PNG (no transparency, no rounded corners — system applies squircle mask)
+2. Open `Assets.xcassets` → `AppIcon` → Attributes Inspector → Device: "Single Size"
+3. Drag the PNG into the single 1024×1024 slot
+4. Xcode auto-generates all required sizes at build time
+
+### File Requirements
+
+| Requirement | Spec |
+|-------------|------|
+| Format | PNG (not JPG, not SVG) |
+| Size | 1024 × 1024 px |
+| Color space | sRGB |
+| Transparency | None (fully opaque) |
+| Rounded corners | Do not add — system applies squircle mask |
+| Dark mode variant | Optional (iOS 18+ allows dark/tinted variants via asset catalog) |
+
+### Dark/Tinted Variants (Optional for v1.1)
+
+iOS 18 added support for alternative app icon appearances (dark, tinted) in the asset catalog. Users can choose via Settings > Home Screen. Not required for v1.1 but worth noting the asset catalog slot is available if desired.
+
+---
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| SwiftUI + @Observable | UIKit + Combine | Never for a greenfield 2026 app. UIKit adds boilerplate with no benefit here. |
-| CMPedometer (cadence) | Raw CMMotionManager + custom peak detection | If CMPedometer cadence updates are too infrequent (updates every ~1-2 sec). Raw accelerometer at 50-100Hz with vDSP peak detection gives sub-second cadence response. Start with CMPedometer, fall back to raw if needed. |
-| SwiftData | Core Data | Never. SwiftData is the modern replacement, simpler API, same SQLite backing. |
-| GetSongBPM API | Soundcharts API | If you need commercial-grade coverage. Soundcharts is paid but has 70M+ tracks. GetSongBPM is free with attribution. |
-| SPM | CocoaPods | Never for new projects. CocoaPods is maintenance-mode. SPM is Apple-native. |
-| @Observable | Combine ObservableObject | Only if targeting iOS 16 or below (you shouldn't). @Observable is cleaner and more performant. |
+| `UIUserInterfaceStyle = Dark` in Info.plist | `.preferredColorScheme(.dark)` on root view | Never — Info.plist is global and cannot be overridden by subsystems |
+| `Color` extension static tokens | Asset catalog named colors | If colors need to be shared across SwiftUI + UIKit extensively. For a pure SwiftUI app, extension is simpler. |
+| Native `TabView` | Custom tab bar view | If Apple's tab bar visual cannot be themed to match the design (unlikely — `UITabBarAppearance` is highly configurable) |
+| Single 1024px icon in asset catalog | Multi-size icon set | Only use multi-size if you need different artwork at different sizes (very unusual) |
+| SF Symbols for tab icons | Custom SVG tab icons | Custom icons only if SF Symbols cannot represent the concept. The three tabs (Library, Run, Settings) all have strong SF Symbol equivalents. |
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Spotify Audio Features API | Deprecated Nov 2024 for new apps. Returns 403. | GetSongBPM API + AcousticBrainz as BPM sources |
-| Spotify Audio Analysis API | Same deprecation as Audio Features. | Same alternatives as above |
-| CocoaPods | Legacy package manager, slow builds, Podfile complexity | Swift Package Manager |
-| Combine for state management | @Observable makes it unnecessary for ViewModel state. Combine is over-engineered for this use case. | @Observable macro |
-| RxSwift | Third-party reactive framework. Swift concurrency + @Observable covers all use cases natively now. | async/await + @Observable |
-| UIKit | No benefit for a greenfield SwiftUI app. Adds bridging complexity. | SwiftUI |
-| Real-time audio tempo stretching | Explicitly out of scope per PROJECT.md. Extremely complex DSP. | Queue BPM-matched tracks instead |
-| React Native / Flutter | Cross-platform frameworks lack direct CoreMotion access and Spotify SDK integration quality. iOS-only per constraints. | Native Swift/SwiftUI |
+| Third-party design system libraries (DesignKit, etc.) | No library integrates with BeatStep's specific token needs. Adds dependency overhead with zero benefit. | SwiftUI native `Color`/`Font` extensions + `ViewModifier` |
+| Hardcoded hex strings in view files | Already present in v1.0 (e.g. `.foregroundStyle(.white.opacity(0.5))`). Not wrong to ship, but creates drift. | Semantic `Color` token extensions |
+| `UITabBarController` directly | Unnecessary UIKit reach-in. SwiftUI's `TabView` wraps it cleanly. | SwiftUI `TabView` |
+| `tabViewStyle(.page)` | This creates a horizontally-pageable tab view (like onboarding flows), not a bottom nav bar. | Default `TabView` without style modifier |
+| Icon generator tools (MakeAppIcon, etc.) | Xcode 14+ does this natively via single-size asset catalog. | Asset catalog single-size slot |
+| `.colorScheme(.dark)` on individual views | Creates per-view overrides. Light-mode devices still show light chrome in unstyled areas. | Info.plist `UIUserInterfaceStyle = Dark` |
 
-## Minimum Deployment Target
-
-**iOS 17.0** -- This gives access to:
-- `@Observable` macro (eliminates Combine boilerplate)
-- SwiftData (modern persistence)
-- Improved SwiftUI navigation APIs
-- All CoreMotion APIs needed
-- Covers ~85%+ of active iPhones as of early 2026
-
-Do NOT target iOS 16 or lower. The DX improvements of iOS 17+ APIs (especially @Observable) dramatically reduce code complexity for a reactive sensor-driven app like BeatStep.
+---
 
 ## Version Compatibility
 
-| Component | Compatible With | Notes |
-|-----------|-----------------|-------|
-| SpotifyiOS v5.0.1 | iOS 12+, arm64 | Works fine with iOS 17+ target. SPM compatible. |
-| Swift 6.x | Xcode 16+ | Strict concurrency checking. Enable gradually with `-strict-concurrency=targeted` then `complete`. |
-| SwiftData | iOS 17+ | Cannot be used below iOS 17. |
-| @Observable | iOS 17+ | Requires `import Observation`. |
-| CMPedometer.currentCadence | iOS 9+ | Available on all modern devices. |
-| Accelerate/vDSP | iOS 4+ | System framework, always available. |
+| Feature | Min iOS | Notes |
+|---------|---------|-------|
+| `UIUserInterfaceStyle` in Info.plist | iOS 13 | Works on all supported devices |
+| `TabView` with `Tab(_:systemImage:)` initializer | iOS 18 | Use `.tabItem { Label(...) }` form for iOS 17 |
+| Asset catalog single-size icon | Xcode 14 | Project-level, not runtime |
+| `UITabBarAppearance` | iOS 15 | Required for opaque background + custom color |
+| Dark/tinted app icon variants | iOS 18 | Optional; ship without for v1.1 |
+| `Color` extension static tokens | iOS 15+ | No iOS version dependency for the pattern itself |
 
-## Key API Constraints
-
-### Spotify iOS SDK (SPTAppRemote)
-- Requires Spotify app installed on device
-- Requires Spotify Premium for playback control
-- App must have active audio to stay connected in background
-- Queue management: `play(uri:)` no longer clears the queue (changed ~2022) -- use `setShuffle(false)` and explicit queue management
-- OAuth flow uses app-switch (opens Spotify app, returns via URL scheme)
-
-### Spotify Web API
-- Rate limits: standard tier, no published exact limits but ~30 req/sec is safe
-- OAuth 2.0 with PKCE (no client secret on mobile)
-- Track search, playlist access, user library -- all still available
-- **Audio Features and Audio Analysis -- DEPRECATED for new apps**
-
-### CoreMotion
-- No accelerometer in Simulator -- must test on real device
-- CMPedometer updates stop when app is backgrounded WITHOUT an active background mode
-- `currentCadence` is in steps/second -- multiply by 60 for BPM (steps per minute)
-- Updates arrive every ~1-2 seconds, not per-step
+---
 
 ## Sources
 
-- [Spotify iOS SDK GitHub](https://github.com/spotify/ios-sdk) -- v5.0.1, SPM support, SPTAppRemote API (HIGH confidence)
-- [Spotify Developer Blog: Web API Changes Nov 2024](https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api) -- Audio Features deprecation confirmed (HIGH confidence)
-- [Apple CoreMotion Documentation](https://developer.apple.com/documentation/coremotion/) -- CMPedometer, currentCadence (HIGH confidence)
-- [Apple vDSP Documentation](https://developer.apple.com/documentation/accelerate/vdsp) -- FFT, signal processing (HIGH confidence)
-- [GetSongBPM API](https://getsongbpm.com/api) -- BPM database alternative (MEDIUM confidence -- need to verify rate limits and coverage)
-- [AcousticBrainz](https://acousticbrainz.org/) -- Open BPM data, 29M recordings, no new data since 2022 (MEDIUM confidence)
-- [Swift Package Index: SpotifyiOS](https://swiftpackageindex.com/spotify/ios-sdk) -- SPM compatibility confirmed (HIGH confidence)
-- [Spotify Community: Audio Features 403 errors](https://community.spotify.com/t5/Spotify-for-Developers/Web-API-Get-Track-s-Audio-Features-403-error/td-p/6654507) -- Deprecation confirmed by community reports (HIGH confidence)
+- [Apple Documentation: Choosing a specific interface style](https://developer.apple.com/documentation/uikit/choosing-a-specific-interface-style-for-your-ios-app) — `UIUserInterfaceStyle` Info.plist key (HIGH confidence)
+- [Apple Documentation: Configuring your app icon](https://developer.apple.com/documentation/xcode/configuring-your-app-icon/) — asset catalog single-size requirements (HIGH confidence)
+- [Apple Documentation: Enhancing your app's content with tab navigation](https://developer.apple.com/documentation/SwiftUI/Enhancing-your-app-content-with-tab-navigation) — `Tab(_:systemImage:)` API (HIGH confidence)
+- [SwiftLee: App Icon Generator no longer needed with Xcode 14](https://www.avanderlee.com/xcode/replacing-app-icon-generators/) — single-size icon confirmed (MEDIUM confidence)
+- [magnuskahr: SwiftUI Design System Considerations: Semantic Colors](https://www.magnuskahr.dk/posts/2025/06/swiftui-design-system-considerations-semantic-colors/) — semantic token patterns (MEDIUM confidence)
+- [Design Systems Collective: Building a SwiftUI Design System Part 1: Color](https://www.designsystemscollective.com/building-a-swiftui-design-system-part-1-color-2ea75035e691) — primitive/semantic layer pattern (MEDIUM confidence)
+- [Design Systems Collective: Building a SwiftUI Design System Part 2: Typography](https://www.designsystemscollective.com/building-a-swiftui-design-system-part-2-typography-4dd6b819b711) — font token patterns (MEDIUM confidence)
+- [Donny Wals: Using iOS 18's new TabView with a sidebar](https://www.donnywals.com/using-ios-18s-new-tabview-with-a-sidebar/) — TabView iOS 18 API changes (MEDIUM confidence)
 
 ---
-*Stack research for: BeatStep -- iOS running cadence to Spotify BPM sync*
-*Researched: 2026-03-19*
+*Stack research for: BeatStep v1.1 Dark by Design — design system, dark mode, tab navigation, app icon*
+*Researched: 2026-03-23*

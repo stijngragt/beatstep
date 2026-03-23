@@ -1,184 +1,228 @@
 # Pitfalls Research
 
-**Domain:** iOS running cadence-to-music sync (BeatStep)
-**Researched:** 2026-03-19
+**Domain:** Dark-mode design system, tab navigation, and brand assets — adding to existing SwiftUI iOS app
+**Researched:** 2026-03-23
 **Confidence:** HIGH
+
+---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Spotify Audio Features API Is Deprecated -- No BPM Data for New Apps
+### Pitfall 1: preferredColorScheme Does Not Control System-Presented UI
 
 **What goes wrong:**
-The Spotify Web API `get-audio-features` endpoint (which provided tempo/BPM per track) was deprecated on November 27, 2024. New apps created after that date receive a 403 Forbidden response. This is the single biggest blocker for BeatStep -- without BPM data, you cannot match songs to cadence.
+Setting `.preferredColorScheme(.dark)` on your root view forces dark appearance on SwiftUI views, but system-vended presentations ignore it. `confirmationDialog`, `DatePicker` (sheet presentation style), and UIKit-backed alerts (UIAlertController) continue rendering in whatever the device system setting dictates. On a user's phone set to light mode, these components flash white while the rest of the app is dark.
 
 **Why it happens:**
-Developers assume the Spotify API still provides BPM data because tutorials and documentation from pre-2024 reference it extensively. The deprecation is recent and many resources have not been updated.
+`preferredColorScheme` operates at the SwiftUI rendering layer. When UIKit presents a new window (alerts, action sheets) or SwiftUI passes control to a system sheet host, the override does not propagate. Apple never documented this scope boundary clearly, so developers assume the modifier is global.
 
 **How to avoid:**
-Do NOT rely on Spotify's audio features API for BPM data. Instead:
-1. Use a third-party BPM database or API (e.g., MusicBrainz AcousticBrainz data, or services like GetSongBPM).
-2. Run on-device BPM detection using Essentia.js (WebAssembly) or a native port of Essentia's rhythm extraction algorithms on audio previews.
-3. Build a server-side BPM analysis pipeline that processes audio and caches results.
-4. Allow users to manually tag/correct BPM values for their library tracks.
-5. Investigate whether the Spotify iOS SDK provides any audio analysis data locally.
+Use `UIWindow.overrideUserInterfaceStyle = .dark` at the window level in addition to the SwiftUI modifier. Set this in `BeatStepApp.init()` or in the `WindowGroup` `onAppear` by reaching into `UIApplication.shared.connectedScenes`. The window-level override propagates through UIKit's view controller hierarchy including system alerts.
+
+```swift
+// In BeatStepApp body, after WindowGroup
+.onAppear {
+    UIApplication.shared
+        .connectedScenes
+        .compactMap { $0 as? UIWindowScene }
+        .flatMap { $0.windows }
+        .forEach { $0.overrideUserInterfaceStyle = .dark }
+}
+```
+
+This must be combined with `UIUserInterfaceStyle = Dark` in Info.plist to prevent any flash of light mode at launch before SwiftUI renders.
 
 **Warning signs:**
-- 403 errors when calling `/v1/audio-features`
-- Planning documents that reference Spotify BPM data as a given
+- Light-colored alert dialogs appearing in the app during testing on a light-mode device
+- Safari web view (Spotify OAuth login) appearing in light mode
 
 **Phase to address:**
-Phase 1 (Foundation) -- this must be solved before any song-matching logic is built. BPM data source is an architectural prerequisite.
+Design System Foundation phase — set both the Info.plist key and window override before any other visual work begins. Treating this as a "cleanup later" item means every screenshot and review video will show broken system UI.
 
 ---
 
-### Pitfall 2: Spotify Developer Platform Lockdown -- Premium Required, 5-User Limit
+### Pitfall 2: MiniPlayer Overlay Breaks When TabView Introduces Its Own Tab Bar
 
 **What goes wrong:**
-As of February 2026, Spotify requires the developer account to have Spotify Premium, limits Development Mode to 5 test users (down from 25), and restricts each developer to one Client ID. Getting "Extended Quota" approval now requires a legally registered business, 250,000 MAU, and presence in key Spotify markets. This makes it nearly impossible to launch a new consumer app through normal channels.
+The existing app uses `ZStack` + `safeAreaInset` to float `MiniPlayerView` above a `NavigationStack`. When `TabView` is introduced, the tab bar occupies the bottom safe area. The MiniPlayer's `safeAreaInset` reservation now stacks on top of the tab bar safe area, creating a double-height gap below the last list item. Alternatively, if the MiniPlayer is placed incorrectly in the hierarchy, it renders behind the tab bar and becomes invisible.
 
 **Why it happens:**
-Spotify is aggressively restricting API access due to AI/automation abuse. The barrier to entry has risen dramatically in 2025-2026, and most indie developers building Spotify-dependent apps are caught off guard.
+`TabView` inserts its own safe area inset for the tab bar. A custom bottom overlay that was already accounting for the bottom safe area ends up doubled. The exact behavior depends on whether the MiniPlayer is inside or outside the `TabView`, and whether `.ignoresSafeArea` is applied.
 
 **How to avoid:**
-1. Apply for Extended Quota as early as possible -- before building features that depend on wide user access.
-2. Design the app to be fully functional for 5 test users during development (this is actually fine for MVP).
-3. Have a clear "Spotify approval strategy" in the roadmap -- what the app needs to demonstrate to get extended access.
-4. Consider whether the app can function with a degraded experience for non-Premium Spotify users (it likely cannot -- Premium is required for on-demand playback control anyway).
-5. Have a contingency plan if Extended Quota is denied.
+Restructure so `TabView` is the outermost navigation container. The MiniPlayer should live in a `ZStack` that wraps the `TabView`, not inside any individual tab. Use `.toolbar(.hidden, for: .tabBar)` on the inner `NavigationStack` if needed to gain manual control, then render both the custom tab bar and MiniPlayer from the outer `ZStack`. On iOS 18+, evaluate `.tabViewBottomAccessory()` which is designed exactly for a "Now Playing" mini-player row above the tab bar.
+
+The content scroll inset reservation (`safeAreaInset`) must account for both the tab bar height and the MiniPlayer height combined, not each individually.
 
 **Warning signs:**
-- No plan for the Spotify approval process in the roadmap
-- Building features that require >5 users before getting extended access
-- Assuming free Spotify accounts will work (they will not for on-demand playback)
+- Empty white space at the bottom of list content after adding TabView
+- MiniPlayer invisible or clipped on devices with home indicator
 
 **Phase to address:**
-Phase 1 (Foundation) -- Spotify auth setup must account for these constraints from day one. Extended Quota application should happen during beta/pre-launch phase.
+Tab Navigation phase — the MiniPlayer integration must be designed as part of the TabView structure, not retrofitted afterward.
 
 ---
 
-### Pitfall 3: Background Accelerometer Access Is Not Allowed on iOS
+### Pitfall 3: NavigationStack Inside TabView — State Lost on Tab Switch
 
 **What goes wrong:**
-iOS does not permit direct accelerometer access (CMMotionManager) when the app is backgrounded or the screen is locked. The app gets suspended, and cadence detection stops. Runners routinely lock their phone and pocket it, so this breaks the core experience.
+Each tab needs its own `NavigationStack`. When the user navigates from Library into a PlaylistDetailView, then switches to Run, then switches back to Library — the navigation stack resets to the root (PlaylistListView). The user loses their place.
 
 **Why it happens:**
-Developers prototype with the app in foreground and assume it will keep working. iOS background execution is heavily restricted -- accelerometer access is not one of the blessed background modes.
+SwiftUI's `TabView` recreates tab content when switching tabs unless the state is preserved explicitly. View structs are value types that get discarded on tab switch. This is a known SwiftUI limitation.
 
 **How to avoid:**
-Use a combination of strategies:
-1. **Audio background mode** -- Since BeatStep plays music, it qualifies for the `audio` background mode. This keeps the app process alive. However, you must be the audio source (or have an active AVAudioSession) for this to work. Since Spotify handles actual playback, you need to verify the Spotify SDK's audio session keeps your app alive.
-2. **CMPedometer** -- Apple's pedometer API provides real-time cadence data (`currentCadence` in steps/second) and works with background delivery. This is the most reliable path for cadence detection without raw accelerometer access.
-3. **Location background mode** -- As a fallback, location updates keep the app alive, but this is an abuse of the API and will likely be rejected by App Store review.
-4. **CMSensorRecorder** -- Can record up to 12 hours of accelerometer data in background, but data is only available after the fact (not real-time). Not suitable for real-time song matching.
+Bind each tab's `NavigationStack` to a `@State` (or `@SceneStorage` for persistence across launches) path variable. The path binding keeps SwiftUI from discarding the navigation state:
+
+```swift
+@State private var libraryPath = NavigationPath()
+
+TabView {
+    NavigationStack(path: $libraryPath) {
+        PlaylistListView()
+    }
+    .tabItem { Label("Library", systemImage: "music.note.list") }
+}
+```
+
+Keep the `NavigationStack` inside `TabView` (not outside). Placing `TabView` inside a parent `NavigationStack` causes the entire TabView — all tabs — to share one navigation hierarchy, which is wrong.
 
 **Warning signs:**
-- Cadence detection works perfectly in development but fails when phone is locked
-- Using CMMotionManager without a background execution strategy
-- No testing with screen locked and app backgrounded
+- Navigating into a playlist, switching tabs, switching back: playlist detail is gone
+- Back button disappears after tab switching
 
 **Phase to address:**
-Phase 1 (Foundation) -- Background execution strategy must be validated before building cadence detection. Use CMPedometer for cadence, not raw accelerometer, unless you can prove background accelerometer access works via audio session.
+Tab Navigation phase — navigation path state must be established when building the tab structure. This is not fixable without restructuring.
 
 ---
 
-### Pitfall 4: Spotify SDK 30-Second Timeout Kills Idle Connections
+### Pitfall 4: Hardcoded Colors Missed in Migration — Incomplete Token Adoption
 
 **What goes wrong:**
-The Spotify iOS SDK (SPTAppRemote) disconnects after approximately 30 seconds of paused playback. If the runner stops (e.g., at a traffic light, water break), the SDK connection drops. Resuming playback requires reconnecting to the Spotify app, which causes a noticeable delay and can fail silently.
+The codebase currently has hardcoded color references scattered across views: `.green` (BPM match indicator, start button), `.orange` (BPM display, guided mode warning), `.white.opacity(0.5)` (secondary text in RunView), `Color.gray.opacity(0.3)` (placeholder backgrounds), `Color.red.opacity(0.08)` (error state background), and the local `spotifyGreen` constant in LoginView. When a design token layer is added, developers migrate the visible screens and miss edge cases — especially states only visible during a run (low cadence, BPM mismatch indicator, end-of-ramp state).
 
 **Why it happens:**
-The Spotify app suspends its background connection to conserve resources when no audio is playing. The SDK is designed as a "remote control" for the Spotify app, not a persistent connection.
+Color migration is tedious and grep-based searches miss colors defined as computed properties, colors inside closures, or colors constructed with opacity modifiers rather than named colors. RunView has the highest density of hardcoded colors (11 white-based references) because it was built dark-first, so it "works" without migration and gets deprioritized.
 
 **How to avoid:**
-1. Implement robust reconnection logic -- detect disconnection and automatically reconnect when the user resumes running.
-2. Consider playing inaudible audio or a very low-volume ambient track to keep the connection alive during brief pauses (risky -- may violate Spotify TOS or drain battery).
-3. Show clear UI state when disconnected and make reconnection one-tap.
-4. Queue multiple tracks ahead so there is always a next track ready, reducing the need for just-in-time communication during brief connectivity gaps.
-5. Test extensively with pause/resume scenarios during real runs.
+1. Define all tokens in a single `AppColors` enum before touching any views.
+2. Use a SwiftLint custom rule to flag `Color.white`, `Color.black`, `Color.green`, `Color.orange`, `Color.red`, `Color.gray` usages outside `AppColors.swift` after migration.
+3. Migrate one file at a time. For BeatStep: LoginView (has `spotifyGreen` local var), MiniPlayerView, PlaylistDetailView, PlaylistListView, RunView (largest surface), CadenceDisplayView, SettingsView.
+4. After each migration, build and run — do not batch migrations.
+
+The `spotifyGreen` local variable in LoginView is a specific debt item: the Spotify brand green (`#1DB954`) must remain distinct from BeatStep's electric green accent. Define both in `AppColors` with explicit names (`AppColors.spotifyBrand` vs `AppColors.accent`).
 
 **Warning signs:**
-- "Works great in the lab" but breaks during actual runs with stops
-- No reconnection handling in the Spotify integration layer
-- Users reporting songs stopping and not resuming
+- A color looks right in normal use but the wrong shade in high-contrast mode
+- `spotifyGreen` still defined as a local constant after design system work
+- A color that doesn't update when you change the token value
 
 **Phase to address:**
-Phase 2 (Spotify Integration) -- Must be designed into the Spotify communication layer from the start, not bolted on later.
+Design System Foundation phase — establish all tokens before migrating. Do not migrate in the same commit as token definition; define first, then migrate file-by-file.
 
 ---
 
-### Pitfall 5: Spotify BPM Data Is Frequently Wrong (Half/Double Tempo Problem)
+### Pitfall 5: Electric Green Fails Accessibility Contrast in Some States
 
 **What goes wrong:**
-Even if you obtain BPM data (from a third-party source or cached data), automated tempo detection commonly reports half or double the actual BPM. A 160 BPM song may be reported as 80 BPM or 320 BPM. For a running app, this means a fast song gets matched to a slow cadence (or vice versa), completely ruining the experience.
+WCAG AA requires 4.5:1 contrast ratio for normal text, 3:1 for large text and UI components. Electric green (e.g., `#39FF14` neon green) against a near-black background (`#0A0A0A`) looks high-contrast visually but can fail when the green is used at reduced opacity — such as `.green.opacity(0.5)` for "dim" states, placeholder text, or secondary indicators. The current codebase already uses `.foregroundStyle(.green)` for BPM match indicators and a green Capsule for the Start Run button — if these get swapped to a bright electric green without checking text-on-green contrast, the black text on the green button may fail.
 
 **Why it happens:**
-Tempo detection algorithms struggle with ambiguity -- a 4/4 beat at 160 BPM can be interpreted as 80 BPM (half-time feel) or 320 BPM (double-time). This is a fundamental limitation of automated BPM analysis, not a bug in any specific API.
+Designers pick a color that looks vivid and on-brand. The contrast failure isn't in the primary use case (bright accent text on dark background) — it's in secondary uses: muted versions for inactive states, black text on a green button fill, green against the `ultraThinMaterial` background which is not pure black.
 
 **How to avoid:**
-1. **Clamp BPM to running range** -- Running cadence is 140-200 SPM. If a song's BPM falls outside this range, check if half or double BPM falls within it. A song at 85 BPM should be treated as 170 BPM for running purposes.
-2. **BPM normalization layer** -- Build a module that normalizes all BPM values to the 130-200 range using halving/doubling.
-3. **Confidence scoring** -- If your BPM source provides confidence values, weight high-confidence matches higher.
-4. **User correction** -- Allow users to flag songs that feel "off beat" and manually adjust BPM.
-5. **Pre-compute and cache** -- Analyze and normalize BPM for the user's entire library upfront rather than at queue time.
+Before finalizing the electric green token value, verify three scenarios:
+1. Electric green text on `#000000` (pure black) — this almost always passes
+2. Black text on the electric green fill (the Start Run button) — electric greens that are too saturated or too light fail here
+3. Electric green text on `ultraThinMaterial` dark background — material is not pure black; the effective background is approximately `#1C1C1E` in dark mode
+
+Use the WebAIM contrast checker at exact hex values. Target a green around `#4ADE80` (Tailwind green-400) or `#39FF14` (neon) rather than Apple's system green `#30D158` which is designed for light mode contexts. Also define a `dimAccent` token (e.g., 40% opacity) and verify that passes 3:1 for non-text UI components.
 
 **Warning signs:**
-- Songs that "feel wrong" during testing but have the "right" BPM number
-- BPM values outside the 60-220 range for pop/rock/electronic music
-- No normalization logic for half/double tempo
+- Electric green chosen by looking at it on a monitor rather than measuring contrast ratio
+- Same green token used for both interactive and decorative elements at different opacities
 
 **Phase to address:**
-Phase 2 (Song Matching) -- BPM normalization must be part of the matching algorithm, not an afterthought.
+Design System Foundation phase — measure contrast before committing token values. Changing the green later requires updating the asset catalog and all references.
 
 ---
 
-### Pitfall 6: Cadence Detection Latency Ruins Real-Time Sync
+### Pitfall 6: App Icon Requires Separate Dark and Tinted Variants for iOS 18+
 
 **What goes wrong:**
-Cadence detection inherently has latency -- you need multiple steps to calculate a reliable BPM. If the algorithm needs 10-15 seconds of data, the runner has already been at a new pace for 15 seconds before the app reacts. Frequent cadence changes (speed intervals, hills) result in the music always being "behind" the runner.
+On iOS 18+, users can set their device to use dark app icons. If BeatStep only provides the standard light icon, iOS applies an automatic dark conversion that looks desaturated and wrong — especially bad for an app whose brand is electric green on black (the auto-dark version may invert to a light background).
 
 **Why it happens:**
-There is a fundamental trade-off between accuracy and latency in cadence detection. Longer sampling windows give more accurate BPM but react slower. Short windows are noisy and produce jittery BPM estimates.
+Most icon design guides focus on the single 1024x1024 PNG. The dark and tinted variants are new (iOS 18) and require explicit design work: a true dark variant needs the icon to be designed for dark context, not just darkened automatically.
 
 **How to avoid:**
-1. **Sliding window with weighted recent bias** -- Use a 5-10 second window but weight recent steps more heavily. Do not use a simple average over 30 seconds.
-2. **CMPedometer's currentCadence** -- Apple's built-in cadence updates every few seconds and has already solved the smoothing problem. Use this as the primary signal rather than building custom step detection.
-3. **Hysteresis / dead zone** -- Do not switch songs for small cadence changes (e.g., 170 to 173 SPM). Only react when cadence changes by more than the configured tolerance (e.g., 8-10 SPM sustained for 10+ seconds).
-4. **Predictive queuing** -- Queue the next song based on cadence trend, not just current value. If cadence is rising, queue a slightly faster song.
-5. **Do not switch mid-song constantly** -- Let songs play through. Queue the next appropriate song rather than cutting the current one short.
+Design three icon variants from the start:
+- **Standard (light):** What most users see
+- **Dark:** Designed explicitly for dark icon mode (typically dark background, lighter/glowing elements)
+- **Tinted:** Grayscale source image that iOS tints to the user's chosen wallpaper color
+
+In Xcode 16+, configure the AppIcon asset with `Appearances: Any, Dark, Tinted` in the asset catalog. For BeatStep's electric green / dark aesthetic, the dark variant may actually be the preferred design — consider making it the primary icon and ensuring the light variant still reads well.
+
+Do not use Icon Composer's layered `.icon` format unless confirmed supported by the target iOS version. For iOS 17 and below support, provide flat PNGs in the asset catalog.
 
 **Warning signs:**
-- Songs changing every 30 seconds during testing
-- Music feels like it is "chasing" your pace rather than matching it
-- Users feel disrupted rather than supported by the sync
+- Only one entry in the AppIcon asset catalog
+- Dark mode device shows an auto-converted icon that looks wrong
+- Icon review screenshots not taken on a dark-mode device
 
 **Phase to address:**
-Phase 2 (Cadence Detection) -- The cadence smoothing algorithm and song-switch threshold logic are tightly coupled and must be designed together.
+Brand Assets phase — design all three variants before submitting. App Store Connect requires the 1024x1024 be the standard variant.
 
 ---
 
-### Pitfall 7: Battery Drain Makes the App Unusable for Long Runs
+### Pitfall 7: ultraThinMaterial in MiniPlayer Looks Wrong Without Dark Commitment
 
 **What goes wrong:**
-Running apps that combine continuous sensor polling (accelerometer/pedometer), active network connections (Spotify API), and audio session management drain battery rapidly. A 10-15% battery drop per hour is typical for poorly optimized apps. For a 2-hour long run, that is 20-30% battery -- unacceptable when the runner also needs GPS from their fitness app.
+The existing MiniPlayer uses `.ultraThinMaterial` for its background, which creates a frosted glass effect. In dark mode this looks intentional and elegant — the blur over dark content is dark. But if the window-level dark mode override is not set correctly (Pitfall 1), the material will use light-mode blur when presented over the Spotify OAuth web view or any UIKit-backed content. The result is a white/grey glass pill floating above dark content — completely broken visually.
 
 **Why it happens:**
-Multiple always-on systems compound: high-frequency sensor polling (50-100Hz accelerometer), persistent Spotify SDK connection, frequent Web API calls for track metadata, and active audio session management. Each is modest alone but devastating in combination.
+Material appearance is determined by the environment's color scheme, not the view's modifier. If a parent UIKit window or view controller has a different interface style, the material resolves to the wrong variant.
 
 **How to avoid:**
-1. **Use CMPedometer instead of raw accelerometer** -- CMPedometer uses the co-processor (M-series chip) which is dramatically more power-efficient than polling CMMotionManager.
-2. **Batch API calls** -- Pre-fetch BPM data for the user's library at launch, not per-song. Cache aggressively.
-3. **Reduce cadence polling frequency** -- You do not need 100Hz accelerometer data. CMPedometer updates every few seconds, which is sufficient.
-4. **Profile battery usage during development** -- Use Xcode's Energy Impact gauge. Test with a full 60-minute simulated run.
-5. **Minimize network calls during the run** -- Pre-build a queue of candidate songs before the run starts. Only make API calls when the queue runs low.
+This is resolved by the same fix as Pitfall 1 (window-level `overrideUserInterfaceStyle`). Verify explicitly by testing the MiniPlayer overlay while the Spotify login web view is active — this is the most likely context where the material environment is wrong.
 
 **Warning signs:**
-- No battery profiling in the test plan
-- Using CMMotionManager at high frequency for step detection
-- Making Spotify API calls on every cadence change
-- Users complaining about battery in TestFlight feedback
+- MiniPlayer background appears light/grey during Spotify auth flow
+- Material looks correct in the app but wrong on certain screens
 
 **Phase to address:**
-Phase 3 (Polish/Optimization) -- But architectural decisions in Phase 1-2 determine battery baseline. Using CMPedometer vs. raw accelerometer is a Phase 1 decision.
+Design System Foundation phase — dark mode commitment at the window level must precede any material/overlay styling.
+
+---
+
+### Pitfall 8: Custom Font Registration Silently Falls Back to System Font
+
+**What goes wrong:**
+If the design system specifies a custom typeface (e.g., a geometric sans-serif for the BeatStep wordmark or UI numerics), and the font file is added to the project but not listed in `Info.plist` under `UIAppFonts`, SwiftUI silently falls back to the system font with no runtime error. The app builds and runs; the font just looks like SF Pro everywhere. This is especially insidious for monospaced numeric fonts used in the cadence/BPM display — the fallback SF Pro Mono looks similar enough that the issue is not caught until a side-by-side comparison.
+
+**Why it happens:**
+Xcode does not validate that font filenames in `UIAppFonts` match the actual PostScript font name required in `.font(.custom("PostScriptName", size:))`. Developers add the file to the bundle but use the filename instead of the PostScript name, or forget the Info.plist entry entirely.
+
+**How to avoid:**
+Use a font verification helper in debug builds that logs all registered fonts at launch:
+```swift
+#if DEBUG
+UIFont.familyNames.sorted().forEach { family in
+    UIFont.fontNames(forFamilyName: family).forEach { print("FONT:", $0) }
+}
+#endif
+```
+This confirms the PostScript names available. If a custom font is not listed, it is not registered.
+
+For the design system, define font constants using the verified PostScript name once, and reference the constant everywhere rather than string literals.
+
+**Warning signs:**
+- UI looks "almost right" but numerics feel wrong weight
+- Font renders differently on device vs. simulator
+- No font verification step in the design system setup
+
+**Phase to address:**
+Design System Foundation phase — validate font registration in the first design system commit before building any screen that uses the new typeface.
 
 ---
 
@@ -186,101 +230,109 @@ Phase 3 (Polish/Optimization) -- But architectural decisions in Phase 1-2 determ
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Hardcoded BPM tolerance (e.g., +/-5) | Fast to implement | Cannot adapt to user preference or genre; some genres need wider tolerance | MVP only -- must be configurable by Phase 2 |
-| Polling Spotify player state on a timer | Simple to implement | Battery drain, race conditions, missed state changes | Never -- use SPTAppRemote delegate callbacks instead |
-| Storing BPM data only in memory | No persistence layer needed | Library re-analysis on every launch, slow startup | MVP only -- must cache to disk by Phase 2 |
-| Skipping song mid-playback on cadence change | Immediately responsive | Terrible UX, songs feel interrupted | Never -- always let current song finish or use crossfade |
-| Using Spotify Web API for playback control instead of iOS SDK | Works in simulator | Higher latency, requires network, breaks offline scenarios | Never for playback control -- use iOS SDK |
+| Add `.preferredColorScheme(.dark)` without window override | Looks correct in most views | System alerts, sheets, Spotify OAuth flicker light | Never — fix window level at the same time |
+| Migrate colors file-by-file over multiple milestones | Less risky per commit | Mixed token/hardcoded state makes theme changes inconsistent | Never — do all files in one milestone |
+| Use `.green` as the electric green placeholder during design | Fast prototyping | System green is not BeatStep's brand green; builds muscle memory for wrong value | OK in design spike, must be replaced before any review |
+| Skip dark icon variant for v1.1 | Saves design time | Auto-converted dark icon looks wrong on iOS 18 dark home screen | Acceptable for TestFlight; must be done before App Store submission |
+| Define `spotifyGreen` locally in each view | Easy to read in context | Drift — values diverge across files | Never — one `AppColors.spotifyBrand` constant |
+
+---
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Spotify iOS SDK | Assuming the SDK handles playback directly (it is a remote control for the Spotify app) | Design around the remote-control model: Spotify app must be installed, Premium required, connection can drop |
-| Spotify Web API | Calling audio-features endpoint for BPM data | This endpoint is deprecated for new apps (403). Use alternative BPM source |
-| Spotify OAuth | Not handling token refresh during long runs | Tokens expire; implement silent refresh. A 2-hour run will outlast most token lifetimes |
-| CMPedometer | Assuming cadence data is always available | `currentCadence` can be nil (e.g., user standing still). Handle nil gracefully |
-| CMPedometer | Reading cadence in steps/second and treating it as steps/minute | Multiply by 60 to convert steps/second to SPM |
-| Spotify Add-to-Queue API | Assuming queue order is guaranteed | The API docs state "order of execution is not guaranteed when used with other Player API endpoints" |
-| AVAudioSession | Not configuring audio session category | Must set `.playback` category to maintain background execution |
+| TabView + MiniPlayer | Place MiniPlayer inside a single tab | MiniPlayer must wrap TabView in outer ZStack, visible across all tabs |
+| TabView + NavigationStack | Wrap TabView in a single NavigationStack | Each tab gets its own NavigationStack; TabView is the outer container |
+| preferredColorScheme | Apply only to SwiftUI root view | Also set UIWindow.overrideUserInterfaceStyle for system UI coverage |
+| Spotify OAuth WebView | Assume it inherits app dark mode | WKWebView and ASWebAuthenticationSession use system appearance; window override needed |
+| accentColor / tintColor | Set in asset catalog only | TabView tab bar tint must also be set via UITabBar.appearance() init-time on iOS 15; iOS 16+ use toolbarBackground |
+
+---
 
 ## Performance Traps
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Fetching BPM data per-song at queue time | Noticeable delay before songs play; gaps between tracks | Pre-fetch and cache BPM for entire library at app launch or first sync | Immediately -- any network latency creates gaps |
-| Re-analyzing entire Spotify library on every app launch | 30+ second loading screen, high data usage | Persist BPM cache to disk (Core Data or UserDefaults for small libraries) | Libraries with 500+ saved songs |
-| Raw accelerometer at 100Hz for cadence detection | Battery drain, thermal throttling on long runs | Use CMPedometer or reduce to 10-20Hz with low-pass filter | Runs longer than 30 minutes |
-| Synchronous Spotify API calls on main thread | UI freezes, dropped frames, app feels janky | All network calls on background queues with async/await | Immediately -- even one blocking call is noticeable |
+| NavigationPath for all tabs stored as @State in root view | Tab switch causes root view re-render, all tabs rebuild | Keep each tab's path state scoped to the tab's view, not the root | Immediately on complex navigation hierarchies |
+| Heavy view construction in TabView tab label closures | Tab bar renders slowly, stutter on tab switch | Tab label closures must be lightweight (Image + Text only) | Any non-trivial view in the label |
+| Re-running full library scan on every ContentView appear | Extra API calls when returning to Library tab | Guard scan with a "last scanned" timestamp; scan once per session | Any tab-switching interaction |
 
-## Security Mistakes
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Storing Spotify OAuth tokens in UserDefaults (unencrypted) | Token theft if device is compromised | Use Keychain Services for all token storage |
-| Shipping Client Secret in the app binary | Secret can be extracted via reverse engineering | Use PKCE auth flow (no client secret needed for mobile) or proxy through a backend |
-| Not validating Spotify callback URLs | OAuth redirect attacks | Register exact callback URL schemes; validate state parameter |
+---
 
 ## UX Pitfalls
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Switching songs too frequently when cadence fluctuates | Music feels chaotic; runners hate constant interruptions | Use hysteresis: only switch when cadence changes by 8+ SPM for 10+ seconds |
-| No visual feedback of detected cadence | Runner does not know if the app is working; loses trust | Show real-time cadence number prominently, even in minimal lock-screen UI |
-| Requiring complex setup before a run | Runners want to start quickly; too many screens = abandonment | One-tap "Start Run" after initial Spotify auth. Pre-configure defaults |
-| Abrupt song transitions (hard cut) | Jarring audio experience; feels broken | Use Spotify's crossfade setting or queue songs with matching energy levels |
-| No fallback when no BPM match exists | Silence or error when library has no matching song | Fall back to closest available BPM, or play a random song rather than nothing |
-| Guided mode feeling too rigid | Runner feels controlled rather than supported | Allow BPM drift in guided mode; the music guides, not dictates |
+| Active run tab showing same content as Library tab | Confusing — is the run on the Library screen? | Run tab should show the run screen only when a run is active; a "Start Run" CTA when idle |
+| Tab switching during an active run resets BPM display | Runner glances at phone, sees wrong cadence number | Tab switch should not interrupt RunEngineService; state lives in the service, not the view |
+| Settings accessible from a gear icon AND a Settings tab | Duplicate navigation paths confuse mental model | Pick one: Settings tab in TabView OR gear icon in nav bar. Not both |
+| Brand mark too small in icon at 60px (iPhone notification) | Icon unreadable at small sizes | Test wordmark/icon at 29x29, 40x40, 60x60 — wordmarks rarely survive below 60px |
+| Electric green badge/indicator on dark background looks neon | Feels like a toy, not a premium running app | Use a slightly desaturated electric green for small indicators; reserve full saturation for primary CTAs |
+
+---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Cadence detection:** Works in foreground but verify it works with screen locked, phone in pocket, and another app (Strava) in foreground
-- [ ] **Spotify playback:** Works in development but verify with only 5 Development Mode users and Spotify Premium requirement
-- [ ] **Song queuing:** Works for one song but verify queue behavior when rapidly changing cadence (does not double-queue or skip songs)
-- [ ] **BPM matching:** Works for electronic music but verify with genres that have complex rhythms (jazz, classical, hip-hop with variable tempo)
-- [ ] **OAuth flow:** Works on fresh login but verify token refresh after 1+ hours of continuous use during a long run
-- [ ] **Background execution:** Works for 5 minutes but verify after 30+ minutes of background execution (iOS may still kill the process)
-- [ ] **Battery impact:** Acceptable for 20-minute test but measure actual drain over 60-90 minute simulated run alongside other running apps
+- [ ] **Dark mode commitment:** Verify on a physical device set to light mode — no white flashes, no light-mode alerts, Spotify OAuth web view looks dark
+- [ ] **Tab navigation:** Test navigate-deep → switch tabs → switch back — navigation state preserved on every tab
+- [ ] **Design tokens:** grep for `Color.green`, `Color.orange`, `Color.white`, `Color.gray`, `Color.red`, `Color.black` across all Swift files — zero hits outside AppColors.swift
+- [ ] **MiniPlayer visibility:** Confirm MiniPlayer is visible and properly inset on all three tabs, not just the tab it was originally on
+- [ ] **Electric green contrast:** Run all three contrast checks (text on black, black on green, text on material) through a contrast checker with actual hex values
+- [ ] **App icon dark variant:** Switch device to dark home screen icons (iOS 18+ Settings > Wallpaper > Customise > Dark) — icon looks intentional, not auto-converted grey
+- [ ] **Custom fonts:** Run the font registration debug log on device — confirm PostScript names appear as expected
+- [ ] **Active run across tabs:** Start a run, switch to Library tab, switch to Settings tab, switch back to Run tab — run is still active, BPM display correct
+
+---
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Built on deprecated Spotify audio features API | HIGH | Must find and integrate alternative BPM source; refactor data layer |
-| Raw accelerometer instead of CMPedometer | MEDIUM | Replace CMMotionManager calls with CMPedometer; logic layer mostly unchanged |
-| No reconnection logic for Spotify SDK | MEDIUM | Add connection state machine and auto-reconnect; test all edge cases |
-| Hardcoded BPM tolerance | LOW | Extract to user-configurable setting; add UI control |
-| No BPM normalization (half/double) | MEDIUM | Add normalization layer between BPM source and matching algorithm |
-| Battery drain from high-frequency polling | MEDIUM | Switch to CMPedometer; batch API calls; requires profiling to verify fix |
-| Spotify Extended Quota denied | HIGH | Limited to 5 users permanently; may need to pivot business model or platform |
+| System alerts appear in light mode after ship | LOW | Add window overrideUserInterfaceStyle + Info.plist key; no view changes needed |
+| MiniPlayer invisible behind tab bar | MEDIUM | Restructure ZStack hierarchy; MiniPlayer must be outside TabView; requires layout rethink |
+| NavigationStack state lost on tab switch | MEDIUM | Add NavigationPath bindings to each tab's NavigationStack; state preservation falls into place |
+| Incomplete color token migration | LOW-MEDIUM | grep + fix file-by-file; non-breaking changes |
+| Electric green fails contrast | LOW | Change token value in AppColors.swift; update asset catalog; all references update automatically |
+| Missing dark app icon variant | LOW | Design dark variant, add to asset catalog, submit update |
+| Font not registering | LOW | Add PostScript name to UIAppFonts in Info.plist; rebuild |
+
+---
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Spotify audio features API deprecated | Phase 1 (Foundation) | BPM data source identified and validated for 100+ songs |
-| Spotify developer platform lockdown | Phase 1 (Foundation) | Dev Mode set up with Premium account; extended quota strategy documented |
-| Background accelerometer access blocked | Phase 1 (Foundation) | Cadence detection tested with screen locked for 30+ minutes |
-| Spotify SDK 30-second timeout | Phase 2 (Spotify Integration) | Pause/resume tested with 60-second pauses; auto-reconnect verified |
-| BPM half/double tempo problem | Phase 2 (Song Matching) | BPM normalization tested across 50+ songs in different genres |
-| Cadence detection latency | Phase 2 (Cadence + Matching) | Song transitions tested during interval runs with pace changes |
-| Battery drain | Phase 3 (Optimization) | Battery impact measured over 60-minute run; under 8% drain target |
-| OAuth token refresh during long runs | Phase 2 (Spotify Integration) | Token refresh tested during 2-hour continuous session |
+| System UI ignores preferredColorScheme | Design System Foundation | Test alerts, confirmationDialog on light-mode device — must appear dark |
+| MiniPlayer breaks with TabView | Tab Navigation | MiniPlayer visible and correctly inset on all three tabs |
+| NavigationStack state lost on tab switch | Tab Navigation | Deep navigation preserved after round-trip tab switching |
+| Incomplete color token migration | Design System Foundation | grep for raw Color references returns zero outside AppColors.swift |
+| Electric green contrast failures | Design System Foundation | Contrast ratios documented for all three background scenarios before tokens locked |
+| Missing dark/tinted icon variants | Brand Assets | Dark icon mode on iOS 18 device shows intentional design |
+| ultraThinMaterial wrong mode | Design System Foundation | MiniPlayer tested during Spotify auth flow — material appears dark |
+| Custom font silent fallback | Design System Foundation | Font debug log confirms PostScript name registration on device |
+
+---
 
 ## Sources
 
-- [Spotify Web API Changes (Nov 2024)](https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api) -- Audio features deprecation announcement
-- [Spotify Developer Access Update (Feb 2026)](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) -- Premium requirement, 5-user limit
-- [Spotify Extended Quota Criteria (Apr 2025)](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) -- 250K MAU requirement
-- [TechCrunch: Spotify API Changes](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/)
-- [Spotify iOS SDK GitHub](https://github.com/spotify/ios-sdk) -- SDK capabilities and limitations
-- [Apple CoreMotion Documentation](https://developer.apple.com/documentation/coremotion/) -- CMPedometer, background access
-- [Apple Developer Forums: Background Sensor Data](https://developer.apple.com/forums/thread/115056) -- CMSensorRecorder, HKWorkoutSession
-- [Spotify Web API Issue #1565](https://github.com/spotify/web-api/issues/1565) -- Tempo accuracy problems
-- [Spotify Community: SDK Connection Timeout](https://community.spotify.com/t5/Spotify-for-Developers/iOS-amp-Android-Remote-SDK-loses-connection-after-paused-for-30s/td-p/7077461) -- 30-second timeout behavior
-- [Apple Energy Efficiency Guide](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/MotionBestPractices.html) -- Motion best practices
-- [Essentia BPM Detection](https://essentia.upf.edu/tutorial_rhythm_beatdetection.html) -- Alternative BPM analysis
+- [Apple Developer Forums: preferredColorScheme not affecting DatePicker and confirmationDialog](https://www.hackingwithswift.com/forums/swiftui/preferredcolorscheme-not-affecting-datepicker-and-confirmationdialog/11796)
+- [Apple Developer Forums: Sheet dark theme issues](https://developer.apple.com/forums/thread/740489)
+- [Apple Documentation: Choosing a specific interface style](https://developer.apple.com/documentation/uikit/choosing-a-specific-interface-style-for-your-ios-app)
+- [SwiftUI TabView state — Apple Developer Forums](https://developer.apple.com/forums/thread/124749)
+- [NavigationStack in iOS 18 TabView double-push bug — Apple Developer Forums](https://developer.apple.com/forums/thread/759542)
+- [The Ideal TabView Behaviour With SwiftUI NavigationStack](https://betterprogramming.pub/swiftui-navigation-stack-and-ideal-tab-view-behaviour-e514cc41a029)
+- [Reading and Setting Color Scheme in SwiftUI — nilcoalescing.com](https://nilcoalescing.com/blog/ReadingAndSettingColorSchemeInSwiftUI/)
+- [Overriding Dark Mode — Use Your Loaf](https://useyourloaf.com/blog/overriding-dark-mode/)
+- [Preparing App Icons for iOS 18 Dark and Tinted Modes — Koombea](https://www.koombea.com/blog/preparing-your-app-icon-for-ios-18-dark-and-tinted-modes/)
+- [Apple Developer Documentation: Configuring your app icon using an asset catalog](https://developer.apple.com/documentation/xcode/configuring-your-app-icon/)
+- [tabViewBottomAccessory — Apple Developer Documentation](https://developer.apple.com/documentation/SwiftUI/TabViewBottomAccessoryPlacement)
+- [Mastering Safe Area in SwiftUI — fatbobman.com](https://fatbobman.com/en/posts/safearea/)
+- [What can go wrong when using custom fonts in SwiftUI](https://blog.eidinger.info/what-can-go-wrong-when-using-custom-fonts-in-swiftui)
+- [WCAG Contrast Requirements — WebAIM](https://webaim.org/articles/contrast/)
+- [SwiftUI Design System: Semantic Colors — magnuskahr.dk](https://www.magnuskahr.dk/posts/2025/06/swiftui-design-system-considerations-semantic-colors/)
+- [Master SwiftUI Design Systems: From Scattered Colors to Unified UI Components — DEV Community](https://dev.to/swift_pal/master-swiftui-design-systems-from-scattered-colors-to-unified-ui-components-4i9c)
 
 ---
-*Pitfalls research for: iOS running cadence-to-music sync (BeatStep)*
-*Researched: 2026-03-19*
+*Pitfalls research for: Dark-mode design system, tab navigation, and brand assets (BeatStep v1.1)*
+*Researched: 2026-03-23*

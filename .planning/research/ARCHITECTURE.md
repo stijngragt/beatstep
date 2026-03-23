@@ -1,412 +1,401 @@
 # Architecture Research
 
-**Domain:** iOS cadence-to-music sync running app
-**Researched:** 2026-03-19
-**Confidence:** MEDIUM
+**Domain:** iOS SwiftUI — Dark-mode design system, tab navigation, brand assets (v1.1 addendum)
+**Researched:** 2026-03-23
+**Confidence:** HIGH (based on direct codebase reading + SwiftUI documented patterns)
 
-## System Overview
+---
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Presentation Layer                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │  Run Screen  │  │ Library Mgmt │  │  Settings    │           │
-│  │  (SwiftUI)   │  │  (SwiftUI)   │  │  (SwiftUI)   │           │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
-├─────────┴──────────────────┴──────────────────┴──────────────────┤
-│                        Service Layer                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │   Cadence    │  │    Song      │  │   Playback   │           │
-│  │   Engine     │  │   Matcher    │  │   Controller │           │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
-├─────────┴──────────────────┴──────────────────┴──────────────────┤
-│                        Integration Layer                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │  CoreMotion  │  │  Spotify     │  │    BPM       │           │
-│  │  Adapter     │  │  Adapter     │  │    Store     │           │
-│  └──────────────┘  └──────────────┘  └──────────────┘           │
-├─────────────────────────────────────────────────────────────────┤
-│                        Data Layer                                │
-│  ┌──────────────┐  ┌──────────────┐                              │
-│  │  SwiftData   │  │  Keychain    │                              │
-│  │  (BPM cache) │  │  (tokens)    │                              │
-│  └──────────────┘  └──────────────┘                              │
-└─────────────────────────────────────────────────────────────────┘
+## v1.1 Scope
 
-External:
-  ┌──────────────┐     ┌──────────────┐
-  │ iPhone       │     │ Spotify App  │
-  │ Sensors      │     │ (playback)   │
-  │ (accel/gyro) │     │ + Web API    │
-  └──────────────┘     └──────────────┘
-```
+This document covers only the v1.1 "Dark by Design" milestone additions. The original v1.0 architecture (cadence pipeline, BPM cache, Spotify adapters) is unchanged and documented in the v1.0 retrospective. The questions answered here are:
 
-### Component Responsibilities
+1. Where do design tokens live?
+2. How does TabView replace the current navigation structure?
+3. Where does MiniPlayerView live in the new structure?
+4. What is the suggested build order given dependencies?
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Cadence Engine | Detect footstrikes, compute running BPM in real-time | CoreMotion CMPedometer + optional raw accelerometer fallback |
-| Song Matcher | Match cadence BPM to available songs, respect tolerance, handle half/double time | Pure Swift logic operating on BPM cache |
-| Playback Controller | Orchestrate what plays next, handle transitions, manage run session state | Coordinates between Song Matcher output and Spotify Adapter |
-| CoreMotion Adapter | Abstract sensor access, handle permissions, background lifecycle | Wraps CMPedometer and CMMotionManager behind protocol |
-| Spotify Adapter | Abstract all Spotify communication (auth, playback control, metadata) | Wraps SPTAppRemote + Spotify Web API behind protocol |
-| BPM Store | Cache track BPM data so matching is instant | SwiftData or Core Data with pre-analyzed BPM per track |
+---
 
-## Critical Architecture Decision: BPM Data Source
-
-**IMPORTANT: Spotify's Audio Features API (which provided BPM/tempo data) was deprecated in November 2024 for all new applications.** New apps cannot access the `GET /audio-features` endpoint. This is the single most impactful constraint on this project's architecture.
-
-### BPM Acquisition Strategy (ordered by recommendation)
-
-1. **On-device BPM analysis** (RECOMMENDED) -- Use a library like Superpowered SDK or a custom FFT-based beat detection algorithm to analyze audio and extract BPM locally. This is how TrailMix and similar apps work. Requires access to audio samples, which is complex when Spotify controls playback.
-
-2. **Community BPM databases** -- Services like GetSongBPM.com or MusicBrainz have crowd-sourced BPM data for many popular tracks. Use as a lookup/cache layer.
-
-3. **User-assisted tagging** -- Let users tap-to-BPM or confirm/correct detected BPM values. Builds a local database over time.
-
-4. **Hybrid approach** (MOST PRACTICAL) -- Combine community database lookup with user correction. Pre-fetch BPM data when users add playlists, cache locally. Fall back to tap-to-BPM for unknown tracks.
-
-**Why not on-device analysis of Spotify streams:** Spotify's iOS SDK offloads all playback to the Spotify app. Your app never receives raw audio samples. You cannot pipe Spotify audio through a BPM detector. The only way to do on-device BPM analysis would be via the microphone, which is unreliable and power-hungry during a run.
-
-## Recommended Project Structure
+## Current Architecture Snapshot (v1.0)
 
 ```
-BeatStep/
-├── App/                        # App entry point, configuration
-│   ├── BeatStepApp.swift       # @main, dependency injection root
-│   └── AppState.swift          # Global app state (run active, auth status)
-├── Features/                   # Feature modules (SwiftUI views + view models)
-│   ├── Run/                    # Active run experience
-│   │   ├── RunView.swift       # Main run screen
-│   │   ├── RunViewModel.swift  # Coordinates cadence + playback
-│   │   └── CadenceDisplay.swift
-│   ├── Library/                # Song pool management
-│   │   ├── LibraryView.swift
-│   │   └── LibraryViewModel.swift
-│   └── Settings/               # BPM tolerance, mode selection
-│       ├── SettingsView.swift
-│       └── SettingsViewModel.swift
-├── Services/                   # Business logic (no UI dependency)
-│   ├── CadenceEngine/          # Step detection + BPM calculation
-│   │   ├── CadenceEngine.swift         # Protocol
-│   │   ├── PedometerCadenceEngine.swift # CMPedometer implementation
-│   │   └── CadenceSmoothing.swift       # Rolling average, spike filtering
-│   ├── SongMatcher/            # BPM matching algorithm
-│   │   ├── SongMatcher.swift           # Protocol
-│   │   ├── BPMMatcher.swift            # Core matching logic
-│   │   └── HarmonicMatcher.swift       # Half/double time handling
-│   └── PlaybackController/     # Run session orchestration
-│       ├── PlaybackController.swift
-│       └── TransitionStrategy.swift     # When/how to switch tracks
-├── Adapters/                   # External service wrappers (protocol-based)
-│   ├── Spotify/
-│   │   ├── SpotifyAdapter.swift        # Protocol
-│   │   ├── SpotifyAppRemote.swift      # SPTAppRemote wrapper
-│   │   ├── SpotifyWebAPI.swift         # REST API calls
-│   │   └── SpotifyAuth.swift           # OAuth flow
-│   └── Motion/
-│       ├── MotionAdapter.swift         # Protocol
-│       └── CoreMotionAdapter.swift     # CMPedometer + CMMotionManager
-├── Data/                       # Persistence
-│   ├── Models/
-│   │   ├── CachedTrack.swift           # Track + BPM cache
-│   │   └── RunSession.swift            # Minimal session data
-│   ├── BPMStore.swift                  # BPM lookup + cache
-│   └── TokenStore.swift                # Keychain wrapper for OAuth
-└── Shared/                     # Utilities, extensions
-    ├── BPMUtils.swift                  # BPM math (harmonic matching, rounding)
-    └── Protocols.swift                 # Shared protocol definitions
+BeatStepApp (@main)
+  ModelContainer (SwiftData)
+  SpotifyAuthService injected via .environment()
+
+ContentView
+  Auth gate: isAuthenticated? → authenticatedView : LoginView()
+
+authenticatedView (ZStack)
+  NavigationStack
+    PlaylistListView
+      PlaylistDetailView → RunView
+    ToolbarItem: gear → SettingsView (NavigationLink)
+  safeAreaInset(.bottom): Color.clear spacer hack
+  MiniPlayerView overlay (ZStack .bottom)
 ```
 
-### Structure Rationale
+Key observation: `MiniPlayerView` is also embedded directly inside `RunView` (separate instance). There are two instances in v1.0.
 
-- **Features/:** Organized by screen/feature, each with its own View + ViewModel. Keeps UI concerns isolated.
-- **Services/:** Pure business logic with no UIKit/SwiftUI imports. Testable in isolation. Protocol-first design for easy mocking.
-- **Adapters/:** All external dependencies behind protocols. CoreMotion and Spotify are wrapped so the service layer never touches frameworks directly. This is critical for testability (you cannot run CoreMotion in the simulator).
-- **Data/:** Single source of truth for persistence. BPM cache is the most important data store in the app.
+---
 
-## Architectural Patterns
+## Target Architecture (v1.1)
 
-### Pattern 1: Protocol-First Adapters
+```
+BeatStepApp (@main)
+  ModelContainer (SwiftData)
+  SpotifyAuthService injected via .environment()
 
-**What:** Every external dependency (CoreMotion, Spotify SDK, network) is accessed through a Swift protocol. Concrete implementations wrap the real SDK.
-**When to use:** Always, for every external dependency in this app.
-**Trade-offs:** Slight indirection overhead, but enables testing without real sensors/Spotify and allows swapping implementations.
+ContentView
+  .preferredColorScheme(.dark)        ← moved here from RunView
+  Auth gate: isAuthenticated? → MainTabView : LoginView()
 
-**Example:**
+MainTabView (TabView)
+  .tint(.accent)                      ← electric green tab selected state
+  .safeAreaInset(edge: .bottom)
+    MiniPlayerView()                  ← single instance, persists across tabs
+
+  Tab 1: Library
+    NavigationStack
+      PlaylistListView
+        PlaylistDetailView → RunView
+
+  Tab 2: Run
+    RunHomeView                       ← new landing screen for Run tab
+
+  Tab 3: Settings
+    NavigationStack
+      SettingsView
+```
+
+---
+
+## Design Token Architecture
+
+### Decision: Color extensions + Font extensions (not Environment values)
+
+**Recommendation:** Static `Color` and `Font` extensions in a `DesignSystem/` group. No `@Environment` for tokens.
+
+**Rationale:**
+- Static extensions are zero-overhead — no environment propagation, no view rebuilds on token reads
+- `.preferredColorScheme(.dark)` applied once at `ContentView` makes all light/dark branching inside tokens unnecessary
+- `@Environment` adds boilerplate and re-render surface area for a single, static theme
+- ViewModifiers are appropriate for *composite component styles* (button, card) but not for primitive color/type tokens
+
+**Token layers:**
+
+```
+Primitive tokens  →  Color("AccentGreen") in Asset Catalog
+Semantic tokens   →  Color.accent, Color.textPrimary (Color+Theme.swift)
+Component styles  →  PrimaryButtonStyle, CardStyle (ViewModifiers/)
+```
+
+**Pattern — Color+Theme.swift:**
+
 ```swift
-protocol CadenceProviding {
-    var cadenceUpdates: AsyncStream<Double> { get }  // BPM
-    func startTracking() async throws
-    func stopTracking()
+extension Color {
+    // Accent
+    static let accent    = Color("AccentGreen")
+    static let accentDim = Color("AccentGreenDim")
+
+    // Surfaces
+    static let surface         = Color(white: 0.08)
+    static let surfaceElevated = Color(white: 0.12)
+
+    // Text
+    static let textPrimary   = Color.white
+    static let textSecondary = Color(white: 1.0, opacity: 0.5)
+    static let textTertiary  = Color(white: 1.0, opacity: 0.3)
 }
+```
 
-final class PedometerCadenceProvider: CadenceProviding {
-    private let pedometer = CMPedometer()
+**Why Asset Catalog for accent colors (not hardcoded hex):**
+The electric green accent must appear in the app icon. Asset Catalog entries work in SwiftUI previews, Xcode canvas, and allow future Dynamic Color support without code changes. Named colors are the correct primitive for brand values.
 
-    var cadenceUpdates: AsyncStream<Double> {
-        AsyncStream { continuation in
-            pedometer.startUpdates(from: Date()) { data, error in
-                guard let cadence = data?.currentCadence?.doubleValue else { return }
-                let bpm = cadence * 60.0  // steps/sec -> steps/min
-                continuation.yield(bpm)
+**Why NOT @Environment for tokens:**
+Every view declaring `@Environment(\.appTheme)` re-renders on any token change. Since BeatStep has a single, static dark theme, this is pure overhead. Reserve `@Environment` for genuinely dynamic values (`SpotifyAuthService`, `RunEngineService` state).
+
+**Why NOT ViewModifier for primitive tokens:**
+ViewModifiers are for *component styling* (button, card). Conflating modifier layers makes token extraction harder. Keep the two layers distinct: tokens are static values; modifiers apply composed styles that reference those tokens.
+
+---
+
+## TabView Integration
+
+### New component: MainTabView
+
+`BeatStep/App/MainTabView.swift` replaces `authenticatedView` inside `ContentView`.
+
+`ContentView` becomes:
+
+```swift
+struct ContentView: View {
+    @Environment(SpotifyAuthService.self) private var authService
+
+    var body: some View {
+        Group {
+            if authService.isAuthenticated {
+                MainTabView()
+            } else {
+                LoginView()
             }
         }
-    }
-}
-
-// For tests / simulator:
-final class MockCadenceProvider: CadenceProviding {
-    var cadenceUpdates: AsyncStream<Double> {
-        // Emit test values
-    }
-}
-```
-
-### Pattern 2: Reactive Cadence Pipeline
-
-**What:** Cadence data flows as an async stream through a pipeline: raw sensor -> smoothing -> BPM calculation -> song matching trigger. Each stage is composable.
-**When to use:** For the real-time cadence-to-music data flow.
-**Trade-offs:** AsyncStream/Combine adds complexity vs. simple polling, but the reactive model naturally handles the continuous, time-varying nature of cadence data.
-
-**Example:**
-```swift
-// RunViewModel orchestrates the pipeline
-func startRun() async {
-    for await rawBPM in cadenceEngine.cadenceUpdates {
-        let smoothedBPM = smoother.smooth(rawBPM)
-
-        // Only trigger song change if BPM shifted significantly
-        if abs(smoothedBPM - currentTargetBPM) > tolerance {
-            currentTargetBPM = smoothedBPM
-            if let nextTrack = songMatcher.bestMatch(for: smoothedBPM) {
-                await playbackController.queueTrack(nextTrack)
-            }
+        .preferredColorScheme(.dark)
+        .onAppear {
+            AudioSessionService.shared.setupAudioSession()
+            SpotifyAuthService.shared.checkExistingAuth()
         }
     }
 }
 ```
 
-### Pattern 3: Layered Spotify Integration
+**Tab structure in MainTabView:**
 
-**What:** Use both Spotify iOS SDK (App Remote) for playback control AND Spotify Web API for metadata/search. They serve different purposes and have different auth flows.
-**When to use:** This dual approach is required -- App Remote controls the Spotify app's player, Web API provides track search, user library access, and queue management.
-**Trade-offs:** Two integration surfaces means more auth complexity, but each API does what the other cannot.
+```swift
+TabView {
+    NavigationStack {
+        PlaylistListView()
+    }
+    .tabItem { Label("Library", systemImage: "music.note.list") }
+    .tag(Tab.library)
 
-**Integration split:**
-- **App Remote (SPTAppRemote):** Play URI, pause, resume, skip, get current track info, subscribe to player state changes
-- **Web API (REST):** Search tracks, get user playlists/saved tracks, add to queue, get user profile
+    RunHomeView()
+    .tabItem { Label("Run", systemImage: "figure.run") }
+    .tag(Tab.run)
 
-## Data Flow
-
-### Core Run Loop
-
-```
-iPhone Accelerometer
-    |
-    v
-CMPedometer (currentCadence: steps/sec)
-    |
-    v
-CadenceEngine (convert to BPM, apply smoothing)
-    |  Emits: smoothed BPM every ~2-3 seconds
-    v
-RunViewModel (compare to current track BPM)
-    |  If delta > tolerance threshold
-    v
-SongMatcher (query BPM cache for best match)
-    |  Considers: exact match, half-time, double-time
-    |  Filters: recently played, user preferences
-    v
-PlaybackController (queue next track)
-    |
-    v
-SpotifyAdapter --> Spotify App (plays audio)
+    NavigationStack {
+        SettingsView()
+    }
+    .tabItem { Label("Settings", systemImage: "gearshape") }
+    .tag(Tab.settings)
+}
+.tint(.accent)
+.safeAreaInset(edge: .bottom) {
+    MiniPlayerView()
+}
+.task {
+    await LibraryScanService.shared.scanEnabledPlaylists()
+}
 ```
 
-### BPM Cache Population Flow
+Note: the `.task` for background library scan moves from `ContentView.authenticatedView` to `MainTabView` since that is the new authenticated root.
+
+### MiniPlayerView placement
+
+`safeAreaInset(edge: .bottom)` on the `TabView` itself. This renders MiniPlayer above the tab bar across all three tabs with a single instance, no per-tab duplication.
+
+This replaces both the v1.0 `ZStack` overlay approach in `ContentView` and the embedded `MiniPlayerView()` instance inside `RunView`. Both are removed.
+
+**How safeAreaInset works here:** `safeAreaInset` on a `TabView` inserts content into the safe area that all child views (including their scroll views and list views) automatically respect. The tab bar sits below. MiniPlayer floats above the tab bar. Scroll content stops above MiniPlayer without any manual `Color.clear.frame(height: 64)` spacer hack.
+
+### NavigationStack per navigable tab
+
+Each tab with navigation (Library, Settings) gets its own `NavigationStack`. A single shared `NavigationStack` wrapping the `TabView` causes navigation state to bleed across tabs — this is a documented SwiftUI pitfall. The Run tab (RunHomeView) does not need a NavigationStack unless RunView is pushed from within it.
+
+### SettingsView toolbar removal
+
+In v1.0, `SettingsView` is reached via a `ToolbarItem` gear icon in `PlaylistListView`. In v1.1:
+
+- `PlaylistListView` toolbar loses the gear `ToolbarItem`
+- `SettingsView` becomes the root of the Settings `NavigationStack` tab
+- `SettingsView` gains `.navigationTitle("Settings")` (already present) as the visible tab title
+
+---
+
+## RunHomeView (new component)
+
+In v1.0, `RunView` requires `playlist: SpotifyPlaylist` and `tracks: [SpotifyTrack]` injected at construction (navigated from `PlaylistDetailView`). The Run tab needs a landing state when no run is active.
+
+**Recommended approach:** `RunHomeView` as the tab root.
 
 ```
-User adds playlist in Library screen
-    |
-    v
-SpotifyWebAPI.getPlaylistTracks()
-    |  Returns: track URIs, names, artists
-    v
-BPMStore.lookupBPM(trackURIs)
-    |  Check local cache first
-    |  For misses: query community BPM database
-    |  For remaining misses: mark as "unknown"
-    v
-SwiftData (persist BPM cache)
-    |
-    v
-User can tap-to-BPM for unknown tracks
+RunHomeView
+  If run is active (RunEngineService.shared.isRunActive):
+    Show run state inline (cadence display, stop/cool-down controls)
+  Else:
+    Show "Pick a playlist from Library to start a run" prompt
+    Optional: shortcut to last-used playlist
 ```
 
-### Authentication Flow
+`RunHomeView` reads `RunEngineService.shared` observation state. When a run is active, it surfaces the active run UI without requiring the playlist parameter (the engine already holds that state). When idle, it provides a clear call-to-action pointing users to Library.
+
+This is a new file: `BeatStep/Views/Run/RunHomeView.swift`. It does not replace `RunView` — `RunView` remains as the navigated destination from `PlaylistDetailView`.
+
+---
+
+## Asset Catalog Structure
 
 ```
-App Launch
-    |
-    v
-Check Keychain for stored tokens
-    |
-    ├── Valid token found --> Connected state
-    |
-    └── No token / expired
-        |
-        v
-    SPTAppRemote.authorizeAndPlayURI("")
-        |  Opens Spotify app for OAuth consent
-        v
-    Callback URL with auth code
-        |
-        v
-    Exchange for access + refresh tokens
-        |
-        v
-    Store in Keychain --> Connected state
+BeatStep/Resources/Assets.xcassets/
+├── AppIcon.appiconset/
+│     Single 1024x1024 PNG, "All" platform selected
+│     Xcode auto-generates all required sizes
+├── AccentGreen.colorset/
+│     Single swatch (Appearances: None)
+│     Dark-only app means one value is correct
+├── AccentGreenDim.colorset/
+│     Dimmed variant for disabled / secondary accent usage
+└── Wordmark.imageset/
+      SVG or @3x PNG for splash / about screen
 ```
 
-### Key Data Flows
+**Color asset configuration — single swatch (not dark/light pair):**
+Set "Appearances" to "None" (no appearance variants). Because `.preferredColorScheme(.dark)` is enforced at `ContentView`, the OS always resolves colors in dark context. A single swatch is the correct, unambiguous representation of a dark-only color.
 
-1. **Cadence-to-music loop:** Continuous during a run. Sensor data (every ~2-3 sec from CMPedometer) flows through smoothing, triggers song matching when BPM change exceeds tolerance, queues next track via Spotify. This is the core product loop.
+**App icon:** Xcode 15+ accepts a single 1024x1024 PNG in the `AppIcon` appiconset. Icon should use the electric green mark on black background to match app aesthetic.
 
-2. **Library sync:** User-initiated. Fetches user's Spotify playlists/saved tracks, looks up BPM for each track, caches locally. Must happen before first run so the matcher has data to work with.
+---
 
-3. **Playback state sync:** Bidirectional. App sends play/queue commands to Spotify. Spotify player state changes (track ended, user skipped) flow back via App Remote delegate callbacks. App must stay in sync with what Spotify is actually doing.
+## Component Responsibilities
 
-## Background Execution Strategy
+| Component | New / Modified | Responsibility in v1.1 |
+|-----------|---------------|------------------------|
+| `BeatStepApp` | Modified | No code change needed — `.preferredColorScheme` moves to `ContentView` |
+| `ContentView` | Modified | Add `.preferredColorScheme(.dark)`, route to `MainTabView` |
+| `MainTabView` | **New** | TabView shell, MiniPlayer safeAreaInset, library scan task |
+| `RunHomeView` | **New** | Run tab landing — idle prompt or active run state |
+| `Color+Theme.swift` | **New** | All semantic color tokens |
+| `Font+Theme.swift` | **New** | All semantic type tokens |
+| `Spacing.swift` | **New** | Spacing constants (xs, sm, md, lg, xl) |
+| `PrimaryButtonStyle` | **New** | Accent capsule button (replaces hardcoded .green capsule in RunView) |
+| `Assets.xcassets` | Modified | Add AppIcon, AccentGreen, AccentGreenDim, Wordmark |
+| `PlaylistListView` | Modified | Remove toolbar gear ToolbarItem, adopt design tokens |
+| `RunView` | Modified | Remove embedded `MiniPlayerView()`, remove `.preferredColorScheme(.dark)`, adopt tokens (replace `.green`, `.orange`, `.white.opacity`) |
+| `MiniPlayerView` | Modified | Remove from per-view usage — now lives only at `MainTabView.safeAreaInset` |
+| `SettingsView` | Modified | Adopt design tokens, now NavigationStack root in Settings tab |
+| `LoginView` | Modified | Adopt dark design tokens |
+| `CadenceDisplayView` | Modified | Replace `.white` / `.green` / `.orange` with tokens |
 
-This is the hardest architectural challenge. The app must keep cadence detection AND Spotify playback control active while the phone is in the runner's pocket (screen off, app backgrounded).
+---
 
-### The Constraint
+## Suggested Build Order
 
-iOS does not have a general-purpose "keep my app running in background" API. CoreMotion pedometer updates stop when the app is backgrounded. There is no CoreMotion-specific background mode.
+Dependencies determine order. Each step must complete before the next begins.
 
-### The Solution: Audio Background Mode
+### Step 1 — Design tokens (no UI dependencies)
 
-**Use the `audio` background mode.** Since the Spotify app handles actual audio playback, this needs careful handling:
+Create `BeatStep/DesignSystem/` group. Add `Color+Theme.swift`, `Font+Theme.swift`, `Spacing.swift`. Add `AccentGreen.colorset` and `AccentGreenDim.colorset` to `Assets.xcassets`. No existing files are modified.
 
-1. **Register for `audio` background mode** in Info.plist -- this keeps your app process alive while "playing audio."
-2. **Play a silent audio track** via AVAudioSession when the run starts. This is a well-established pattern used by fitness apps. A silent/near-silent audio loop keeps the app alive in background.
-3. **CMPedometer continues to deliver updates** as long as your app process is alive and the pedometer was started while in the foreground.
-4. **Spotify App Remote communication continues** because both apps are running and your app process hasn't been suspended.
+**Why first:** Every subsequent step references tokens. Building tokens first means views adopt them once — no retroactive swap needed.
 
-**Alternatively, use the `location` background mode** if your app also shows the running route or uses GPS for any purpose. Location updates keep the app alive. However, Apple may reject apps that use location background mode without a legitimate location feature.
+### Step 2 — App-level dark-mode enforcement
 
-### Background Architecture
+Add `.preferredColorScheme(.dark)` to `ContentView`. Remove the existing `.preferredColorScheme(.dark)` from `RunView` (line 38). Verify `LoginView`, `PlaylistListView`, and `SettingsView` render correctly in dark context.
 
-```
-┌─────────────────────────────────────┐
-│         BeatStep App Process         │
-│                                      │
-│  AVAudioSession (silent audio)       │ <-- Keeps process alive
-│  CMPedometer (cadence updates)       │ <-- Continues delivering
-│  SPTAppRemote (connected to Spotify) │ <-- Sends play/queue cmds
-│                                      │
-└────────────────┬────────────────────┘
-                 │ IPC
-                 v
-┌─────────────────────────────────────┐
-│         Spotify App Process          │
-│                                      │
-│  Audio playback (user hears music)   │
-│  Networking, caching, etc.           │
-│                                      │
-└─────────────────────────────────────┘
-```
+**Why second:** Establishes the baseline before any new UI. Surfaces any light-mode assumptions in existing views while the surface area is still manageable.
 
-## Anti-Patterns
+### Step 3 — TabView shell (MainTabView)
 
-### Anti-Pattern 1: Raw Accelerometer for Cadence
+Create `MainTabView.swift`. Extract `authenticatedView` logic into it. Wire three tabs (Library, Run, Settings). Move `MiniPlayerView` from `ContentView` ZStack overlay to `TabView.safeAreaInset`. Remove MiniPlayerView from `RunView`. Move gear toolbar item out of `PlaylistListView`, SettingsView becomes its own tab root. Move the `.task` library scan to `MainTabView`.
 
-**What people do:** Use CMMotionManager.startAccelerometerUpdates() and try to detect footstrikes with peak detection algorithms on raw accelerometer data.
-**Why it's wrong:** CMPedometer already does this with Apple's finely-tuned motion coprocessor algorithms. Raw accelerometer requires complex signal processing (noise filtering, axis fusion, peak detection) and will always be less accurate than Apple's built-in solution. It also drains more battery.
-**Do this instead:** Use CMPedometer with `currentCadence`. Only fall back to raw accelerometer if CMPedometer cadence is unavailable on a specific device (check `isCadenceAvailable()`).
+**Why third:** Tab navigation is the structural container. All view updates in later steps happen inside this shell. Building the shell first prevents double-touching views.
 
-### Anti-Pattern 2: Frequent Song Switching
+### Step 4 — Token adoption in existing views
 
-**What people do:** Switch the playing song every time cadence changes by even 1-2 BPM.
-**Why it's wrong:** Runners' cadence fluctuates constantly. Switching songs every few seconds is a terrible user experience. Also, Spotify's queue/play API has rate limits.
-**Do this instead:** Use a smoothing window (10-15 second rolling average) and a significant-change threshold (e.g., 5+ BPM shift sustained for 10+ seconds). Only switch when the runner has genuinely changed pace.
+Update `PlaylistListView`, `PlaylistDetailView`, `RunView`, `CadenceDisplayView`, `MiniPlayerView`, `SettingsView`, `LoginView`. Replace hardcoded `Color.black`, `.green`, `.orange`, `.white`, `.white.opacity(n)` with semantic tokens.
 
-### Anti-Pattern 3: Relying Solely on Spotify Audio Features API
+**Why fourth:** Token adoption is mechanical once tokens exist. Doing this after shell work ensures no view is touched twice.
 
-**What people do:** Assume they can call `GET /audio-features/{id}` to get BPM for any track.
-**Why it's wrong:** This endpoint was deprecated November 2024 for new applications. New apps get 403 Forbidden.
-**Do this instead:** Build a hybrid BPM data pipeline: community databases (GetSongBPM, MusicBrainz) + user-assisted tap-to-BPM + local caching. Accept that BPM data acquisition is a first-class architectural concern, not an API call.
+### Step 5 — RunHomeView
 
-### Anti-Pattern 4: Tight Coupling to Spotify SDK
+Create `RunHomeView.swift` as the Run tab landing. Observe `RunEngineService.shared` for active run state. Show idle prompt or active run summary.
 
-**What people do:** Call SPTAppRemote methods directly from view models or UI code.
-**Why it's wrong:** SPTAppRemote has complex lifecycle management (connect/disconnect on app state transitions, auth renewal). Spreading this across the codebase creates bugs. Also makes testing impossible without the Spotify app installed.
-**Do this instead:** Wrap all Spotify interaction behind a `SpotifyAdapter` protocol. One class manages the SPTAppRemote lifecycle. Everything else talks to the protocol.
+**Why fifth:** Requires both the TabView shell (Step 3) and tokens (Step 4) to be in place. Logically independent from the track count bug fix.
+
+### Step 6 — Track count bug fix
+
+Investigate `playlist.trackCount` displaying zero in `PlaylistListView`. Likely a `SpotifyPlaylist` model parsing issue (tracks.total vs top-level total field). Isolated to model + API response.
+
+**Why sixth:** Bug fix is independent of design work. Placing it after token adoption avoids conflating cosmetic and logic diffs.
+
+### Step 7 — App icon and wordmark
+
+Add final icon assets to `AppIcon.appiconset`. Add wordmark to `Wordmark.imageset`. Verify icon appears correctly in Simulator and on-device.
+
+**Why last:** Icon production doesn't affect any code. It's the final design artifact and can be completed in parallel with Step 6 by a separate effort.
+
+---
 
 ## Integration Points
 
-### External Services
+### Existing services — no changes required
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Spotify App (iOS SDK) | SPTAppRemote for playback control, delegates for state changes | Requires Spotify app installed. Must disconnect on background, reconnect on foreground. Requires Spotify Premium. |
-| Spotify Web API | REST via URLSession, OAuth2 bearer token | For search, user library, queue management. Separate auth token from App Remote. Rate limited. |
-| Community BPM Database | REST API lookups, batch where possible | GetSongBPM.com or similar. Cache aggressively. May need API key. Verify accuracy. |
-| Apple CoreMotion | CMPedometer for cadence, permission-gated | Requires "Motion & Fitness" permission. Check `isCadenceAvailable()`. Updates every ~2-3 seconds. |
+| Service | v1.1 Impact | Notes |
+|---------|-------------|-------|
+| `RunEngineService` | Read-only | `RunHomeView` observes `isRunActive`; no write changes |
+| `SpotifyPlayerService` | Unchanged | `MiniPlayerView` still observes `currentTrack` |
+| `BPMCacheService` | Unchanged | Token adoption doesn't touch data layer |
+| `SpotifyAuthService` | Unchanged | `ContentView` auth gate unchanged |
+| `LibraryScanService` | Unchanged | `.task` call moves to `MainTabView`, same call site behavior |
 
-### Internal Boundaries
+### Internal boundaries introduced by v1.1
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| UI <-> Services | ViewModel pattern, @Observable classes | Views never touch adapters directly |
-| Services <-> Adapters | Swift protocols, async/await | All adapter access through protocols |
-| CadenceEngine <-> SongMatcher | AsyncStream of BPM values | Decoupled, SongMatcher subscribes to cadence stream |
-| SongMatcher <-> BPMStore | Direct function calls (sync) | BPM lookups must be fast, all data local |
-| PlaybackController <-> SpotifyAdapter | Async method calls | Queue track, play, pause, observe state |
+| `MainTabView` → `MiniPlayerView` | Direct: `safeAreaInset` | Single instance; views no longer manage MiniPlayer lifecycle |
+| `DesignSystem/` → all views | Static: `Color.accent`, `Font.displayLarge` | No runtime dependency, no re-render surface |
+| `RunHomeView` → `RunEngineService` | `@Observable` observation | Reads `isRunActive`, `rampPhase`; no writes |
 
-## Build Order (Dependencies)
+---
 
-The following order respects component dependencies and delivers testable increments:
+## Anti-Patterns to Avoid
 
-1. **Adapters first** -- CoreMotion adapter (cadence input) and Spotify adapter (playback output) are the two external interfaces. Build and test these in isolation. Everything else depends on them.
+### Anti-Pattern 1: Per-view preferredColorScheme
 
-2. **BPM Store + data model** -- The cache layer that makes song matching possible. Must be populated before matching can work. Includes community BPM database integration.
+**What people do:** Keep `.preferredColorScheme(.dark)` on `RunView` and add it to every new view.
+**Why it's wrong:** Any view missing the modifier shows light-mode during OS theme transitions or in previews.
+**Do this instead:** One `.preferredColorScheme(.dark)` at `ContentView`, remove all per-view instances. RunView's current modifier is the only one to remove.
 
-3. **Cadence Engine** -- Wraps the CoreMotion adapter with smoothing logic. Depends on adapter protocol existing.
+### Anti-Pattern 2: Hardcoded color literals alongside tokens
 
-4. **Song Matcher** -- Pure logic that queries the BPM store. Depends on BPM store schema. Easily unit-testable.
+**What people do:** Add design system but leave `Color.black`, `.green`, `.white.opacity(0.5)` in existing views.
+**Why it's wrong:** Design system has no authority — accent color changes require grep-and-replace instead of a token edit.
+**Do this instead:** Token adoption pass (Step 4) replaces all hardcoded colors atomically in one commit.
 
-5. **Playback Controller** -- Orchestrates the run session. Depends on Song Matcher (for what to play) and Spotify Adapter (for how to play). This is where the cadence-to-music loop lives.
+### Anti-Pattern 3: Shared NavigationStack wrapping TabView
 
-6. **UI layer** -- Views and ViewModels. Depends on all services being defined (even if stubbed). Can be built in parallel with services using mock adapters.
+**What people do:** Wrap the entire `TabView` in a single `NavigationStack`.
+**Why it's wrong:** Navigation path bleeds across tabs; deep-link destinations can push on wrong tab.
+**Do this instead:** One `NavigationStack` per navigable tab (Library, Settings), none for Run tab.
 
-7. **Background execution** -- The silent audio / audio session strategy. Built last because it's an enhancement to an already-working foreground experience. Requires integration testing on a real device.
+### Anti-Pattern 4: MiniPlayerView duplicated per-view
 
-**Key dependency chain:**
-```
-CoreMotion Adapter ─┐
-                    ├─> Cadence Engine ─┐
-BPM Store ──────────┤                   ├─> Playback Controller ─> UI
-                    ├─> Song Matcher ───┘
-Spotify Adapter ────┘
-```
+**What people do:** Keep `MiniPlayerView()` inside `RunView` and add it to new tab roots.
+**Why it's wrong:** Multiple instances cause state divergence and layout conflicts with the tab bar.
+**Do this instead:** Single instance at `TabView.safeAreaInset(edge: .bottom)`. Remove the existing instance from `RunView`.
+
+### Anti-Pattern 5: @Environment for static design tokens
+
+**What people do:** `@Environment(\.colorTokens) var tokens` to propagate theme through the view tree.
+**Why it's wrong:** Every subscriber re-renders on any token change; adds boilerplate for zero benefit on a fixed dark theme.
+**Do this instead:** Static `Color` and `Font` extensions. No environment propagation needed.
+
+---
+
+## Scaling Considerations
+
+This is a single-user iOS app. Scaling here means maintenance scale as the view count grows.
+
+| Concern | Approach |
+|---------|----------|
+| New views need consistent styling | DesignSystem group is source of truth; new views import tokens |
+| Accent color change | Edit one `AccentGreen.colorset` + `Color.accent` definition |
+| Adding a 4th tab | Add tab item to `MainTabView`; MiniPlayer placement unaffected |
+| Multiple themes (future) | Promote `Color.accent` etc. to `@Environment` at that point; current static approach is correct first step |
+
+---
 
 ## Sources
 
-- [Core Motion | Apple Developer Documentation](https://developer.apple.com/documentation/coremotion/)
-- [CMPedometer | Apple Developer Documentation](https://developer.apple.com/documentation/coremotion/cmpedometer)
-- [currentCadence | Apple Developer Documentation](https://developer.apple.com/documentation/coremotion/cmpedometerdata/currentcadence)
-- [Spotify iOS SDK | Spotify for Developers](https://developer.spotify.com/documentation/ios)
-- [SPTAppRemote Class Reference](https://spotify.github.io/ios-sdk/html/Classes/SPTAppRemote.html)
-- [Spotify iOS SDK GitHub](https://github.com/spotify/ios-sdk)
-- [Changes to Web API | Spotify for Developers](https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api)
-- [Spotify Audio Features 403 Error (Community)](https://community.spotify.com/t5/Spotify-for-Developers/Web-API-Get-Track-s-Audio-Features-403-error/td-p/6654507)
-- [Superpowered BPM Detection](https://superpowered.com/bpm-detection-key-detection-bar-detection-beat-detection-android-ios)
-- [Perfect Cadence (reference app)](https://github.com/leafthelegend/Perfect-Cadence)
-- [iOS Background Motion Updates (proof of concept)](https://github.com/robinmacharg/iOS-Background-Motion-updates)
-- [Spotify Web API - Add to Queue](https://developer.spotify.com/documentation/web-api/reference/add-to-queue)
+- Direct codebase reading: `ContentView.swift`, `BeatStepApp.swift`, `RunView.swift`, `MiniPlayerView.swift`, `PlaylistListView.swift`, `SettingsView.swift` — verified 2026-03-23 (HIGH confidence)
+- SwiftUI `TabView` + per-tab `NavigationStack` pattern — Apple WWDC 2022 "The SwiftUI cookbook for navigation" (HIGH confidence)
+- `safeAreaInset` for persistent overlays — SwiftUI documentation, iOS 15+ (HIGH confidence)
+- Asset Catalog single-swatch dark-only color configuration — Xcode documentation (HIGH confidence)
+- `preferredColorScheme` placement best practice — SwiftUI documentation (HIGH confidence)
+- Static Color extensions for design tokens — established SwiftUI community pattern, no Environment indirection needed for static themes (MEDIUM confidence — widely used pattern, not formally documented as "recommended" by Apple)
 
 ---
-*Architecture research for: BeatStep -- iOS cadence-to-music sync running app*
-*Researched: 2026-03-19*
+
+*Architecture research for: BeatStep v1.1 Dark by Design — design system, tab navigation, brand assets*
+*Researched: 2026-03-23*
