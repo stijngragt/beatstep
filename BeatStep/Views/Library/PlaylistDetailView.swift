@@ -64,7 +64,7 @@ struct PlaylistDetailView: View {
             // Header
             playlistHeader
                 .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 16, leading: 0, bottom: 16, trailing: 0))
+                .listRowInsets(EdgeInsets(top: Spacing.md, leading: 0, bottom: Spacing.md, trailing: 0))
 
             // Tracks
             ForEach(Array(tracks.enumerated()), id: \.element.id) { index, track in
@@ -98,7 +98,7 @@ struct PlaylistDetailView: View {
     }
 
     private var playlistHeader: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             // Cover art
             if let imageURL = playlist.images?.first?.url,
                let url = URL(string: imageURL) {
@@ -107,50 +107,50 @@ struct PlaylistDetailView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(Color.surfaceOverlay)
                 }
-                .frame(width: 200, height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: ComponentSize.coverArtLarge, height: ComponentSize.coverArtLarge)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 200, height: 200)
+                RoundedRectangle(cornerRadius: Radius.sm)
+                    .fill(Color.surfaceOverlay)
+                    .frame(width: ComponentSize.coverArtLarge, height: ComponentSize.coverArtLarge)
                     .overlay {
                         Image(systemName: "music.note.list")
                             .font(.system(size: 50))
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(Color.textTertiary)
                     }
             }
 
             Text(playlist.name)
-                .font(.title2)
+                .font(.heading)
                 .fontWeight(.bold)
 
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 if let owner = playlist.owner?.displayName {
                     Text(owner)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
                 }
 
                 Text("\(playlist.trackCount) tracks")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
     }
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.textSecondary)
 
             Text(message)
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(.bodyText)
+                .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button("Try Again") {
@@ -218,31 +218,31 @@ private struct TrackRow: View {
     let bpm: Int?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             // Track number or playing indicator
             Group {
                 if isPlaying {
                     Image(systemName: "waveform")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.stateSuccess)
                 } else {
                     Text("\(index)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.textSecondary)
                 }
             }
-            .font(.subheadline)
+            .font(.captionText)
             .frame(width: 28, alignment: .center)
 
             // Track info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(track.name)
-                    .font(.body)
+                    .font(.bodyText)
                     .fontWeight(isPlaying ? .bold : .regular)
-                    .foregroundStyle(isPlaying ? .green : .primary)
+                    .foregroundStyle(isPlaying ? Color.stateSuccess : Color.textPrimary)
                     .lineLimit(1)
 
                 Text(track.artistName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(1)
             }
 
@@ -251,22 +251,22 @@ private struct TrackRow: View {
             // BPM badge
             if let bpm {
                 Text("\(bpm) BPM")
-                    .font(.caption2)
+                    .font(.labelText)
                     .fontWeight(.bold)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.stateWarning)
                     .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(.orange.opacity(0.15)))
+                    .padding(.vertical, Spacing.xxs)
+                    .background(Capsule().fill(Color.stateWarning.opacity(0.15)))
             } else {
                 Text("--")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(.labelText)
+                    .foregroundStyle(Color.textSecondary)
             }
 
             // Duration
             Text(formatDuration(ms: track.durationMs))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
                 .monospacedDigit()
         }
     }

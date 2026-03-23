@@ -18,7 +18,7 @@ struct RunView: View {
     var body: some View {
         ZStack {
             // Dark background
-            Color.black.ignoresSafeArea()
+            Color.surfaceBase.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Main content
@@ -28,7 +28,7 @@ struct RunView: View {
 
                 // Controls
                 controlsSection
-                    .padding(.bottom, 16)
+                    .padding(.bottom, Spacing.md)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -62,37 +62,37 @@ struct RunView: View {
     // MARK: - State Views
 
     private var idleView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: Spacing.lg) {
             Text(playlist.name)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
 
             ModePicker(mode: $runMode)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, Spacing.xl)
 
             if runMode == .guided {
                 PacePresetPicker(selectedPreset: $selectedPreset, customBPM: $customBPM)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Spacing.md)
             }
 
             Text("Ready to Run")
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(.white)
+                .font(.heading)
+                .foregroundStyle(Color.textPrimary)
 
             TolerancePicker(tolerance: $tolerance)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, Spacing.xl)
         }
     }
 
     private var detectingView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Text(playlist.name)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
 
             Text("Detecting...")
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(.white)
+                .font(.heading)
+                .foregroundStyle(Color.textPrimary)
                 .opacity(0.8)
                 .phaseAnimator([false, true]) { content, phase in
                     content.opacity(phase ? 1.0 : 0.4)
@@ -102,22 +102,22 @@ struct RunView: View {
 
             ProgressView()
                 .progressViewStyle(.circular)
-                .tint(.white)
+                .tint(Color.textPrimary)
                 .scaleEffect(1.2)
         }
     }
 
     private var activeView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Text(playlist.name)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
 
             // Phase label for guided mode
             if let phase = runEngine.rampPhase {
                 Text(phase.displayLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
             }
 
             CadenceDisplayView(
@@ -128,40 +128,40 @@ struct RunView: View {
     }
 
     private var pausedView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             Text("Paused")
-                .font(.system(size: 32, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.4))
+                .font(.heading)
+                .foregroundStyle(Color.textTertiary)
 
             Text("Resume running to continue")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.3))
+                .font(.captionText)
+                .foregroundStyle(Color.textTertiary)
 
             // Show last known SPM dimmed
             if cadenceService.currentSPM > 0 {
                 Text("\(cadenceService.currentSPM)")
-                    .font(.system(size: 48, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.2))
-                    .padding(.top, 8)
+                    .font(.displayHero)
+                    .foregroundStyle(Color.textTertiary)
+                    .padding(.top, Spacing.sm)
             }
         }
     }
 
     private var permissionDeniedView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Spacing.lg) {
             Image(systemName: "figure.run.circle")
                 .font(.system(size: 48))
-                .foregroundStyle(.white.opacity(0.5))
+                .foregroundStyle(Color.textSecondary)
 
             Text("Motion Access Required")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.white)
+                .font(.subheading)
+                .foregroundStyle(Color.textPrimary)
 
             Text("BeatStep needs motion access to detect your running cadence")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.6))
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, Spacing.xl)
 
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -169,11 +169,11 @@ struct RunView: View {
                 }
             } label: {
                 Label("Open Settings", systemImage: "gear")
-                    .font(.headline)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Capsule().fill(.white.opacity(0.2)))
-                    .foregroundStyle(.white)
+                    .font(.bodyBold)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.md)
+                    .background(Capsule().fill(Color.surfaceOverlay))
+                    .foregroundStyle(Color.textPrimary)
             }
         }
     }
@@ -199,12 +199,13 @@ struct RunView: View {
                 Task { await runEngine.startRun(playlist: playlist, tracks: tracks) }
             } label: {
                 Label("Start Run", systemImage: "figure.run")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.black)
+                    .font(.subheading)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.surfaceBase)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Capsule().fill(.green))
-                    .padding(.horizontal, 40)
+                    .padding(.vertical, Spacing.md)
+                    .background(Capsule().fill(Color.stateSuccess))
+                    .padding(.horizontal, Spacing.xl)
             }
         } else if cadenceService.state != .idle {
             guidedRunControls
@@ -215,17 +216,17 @@ struct RunView: View {
     private var guidedRunControls: some View {
         if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
             // Guided run: show both Cool Down and Stop
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.md) {
                 Button {
                     runEngine.startCoolDown()
                 } label: {
                     Label("Cool Down", systemImage: "arrow.down.heart")
-                        .font(.headline)
-                        .foregroundStyle(.white)
+                        .font(.bodyBold)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Capsule().fill(.orange.opacity(0.8)))
-                        .padding(.horizontal, 40)
+                        .padding(.vertical, Spacing.md)
+                        .background(Capsule().fill(Color.stateWarning.opacity(0.8)))
+                        .padding(.horizontal, Spacing.xl)
                 }
 
                 stopRunButton
@@ -243,12 +244,12 @@ struct RunView: View {
             UIApplication.shared.isIdleTimerDisabled = false
         } label: {
             Label("Stop Run", systemImage: "stop.fill")
-                .font(.headline)
-                .foregroundStyle(.white)
+                .font(.bodyBold)
+                .foregroundStyle(Color.textPrimary)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Capsule().fill(.red.opacity(0.8)))
-                .padding(.horizontal, 40)
+                .padding(.vertical, Spacing.md)
+                .background(Capsule().fill(Color.stateError.opacity(0.8)))
+                .padding(.horizontal, Spacing.xl)
         }
     }
 }

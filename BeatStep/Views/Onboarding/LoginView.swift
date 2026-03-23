@@ -3,25 +3,24 @@ import SwiftUI
 struct LoginView: View {
     @Environment(SpotifyAuthService.self) private var authService
 
-    private let spotifyGreen = Color(red: 0.114, green: 0.725, blue: 0.329)
     private let spotifyAppStoreURL = URL(string: "https://apps.apple.com/app/spotify-music-and-podcasts/id324684580")!
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: Spacing.xl) {
             Spacer()
 
             // Branding
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.md) {
                 Image(systemName: "waveform.path.ecg")
                     .font(.system(size: 60))
-                    .foregroundStyle(spotifyGreen)
+                    .foregroundStyle(Color.spotifyBrand)
 
                 Text("BeatStep")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .font(.displayHero)
 
                 Text("Your music, your stride")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .font(.subheading)
+                    .foregroundStyle(Color.textSecondary)
             }
 
             Spacer()
@@ -42,35 +41,35 @@ struct LoginView: View {
             Spacer()
                 .frame(height: 40)
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Spacing.xl)
     }
 
     // MARK: - Subviews
 
     private var connectButton: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Button {
                 authService.initiateAuth()
             } label: {
-                HStack(spacing: 10) {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "music.note")
                     Text("Connect with Spotify")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(spotifyGreen)
+                .padding(.vertical, Spacing.md)
+                .background(Color.spotifyBrand)
                 .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 28))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.pill))
             }
         }
     }
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Text(message)
-                .font(.callout)
-                .foregroundStyle(.red)
+                .font(.bodyText)
+                .foregroundStyle(Color.stateError)
                 .multilineTextAlignment(.center)
 
             if message.contains("install Spotify") || message.contains("Install Spotify") {
@@ -90,8 +89,8 @@ struct LoginView: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.red.opacity(0.08))
+            RoundedRectangle(cornerRadius: Radius.md)
+                .fill(Color.stateError.opacity(0.08))
         )
     }
 }

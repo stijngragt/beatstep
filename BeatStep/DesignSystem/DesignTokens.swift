@@ -33,6 +33,7 @@ extension Color {
 extension Font {
     static let displayHero = Font.system(size: 52, weight: .bold, design: .rounded)
     static let displaySecondary = Font.system(size: 18, weight: .bold, design: .rounded)
+    static let displaySPM = Font.system(size: 76, weight: .bold, design: .monospaced)
     static let heading = Font.system(size: 22, weight: .bold)
     static let subheading = Font.system(size: 18, weight: .semibold)
     static let bodyText = Font.system(size: 16, weight: .regular)
