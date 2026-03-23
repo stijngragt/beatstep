@@ -194,6 +194,9 @@ struct RunView: View {
                 if runMode == .guided {
                     RunMode.savedTargetBPM = targetBPM
                 }
+                LastRunPlaylist.name = playlist.name
+                LastRunPlaylist.id = playlist.id
+                LastRunPlaylist.imageURL = playlist.images?.first?.url
                 cadenceService.requestPermissionAndStart()
                 UIApplication.shared.isIdleTimerDisabled = true
                 Task { await runEngine.startRun(playlist: playlist, tracks: tracks) }
