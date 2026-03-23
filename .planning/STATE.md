@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dark by Design
 status: in-progress
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-23T21:59:19Z"
-last_activity: 2026-03-23 -- Phase 8 plan 1 complete, all views migrated to design tokens
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-23T22:09:37.554Z"
+last_activity: 2026-03-23 -- Phase 8 complete, Run tab has playlist context, all views use design tokens
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 5
-  completed_plans: 4
-  percent: 75
+  completed_plans: 5
+  percent: 80
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 8 in progress -- design token adoption across all views
+**Current focus:** Phase 8 complete -- Phase 9 (final polish) next
 
 ## Current Position
 
-Phase: 8 of 9 (Token Adoption RunHomeView) -- IN PROGRESS
-Plan: 1 of 2 in current phase (1 complete)
+Phase: 8 of 9 (Token Adoption RunHomeView) -- COMPLETE
+Plan: 2 of 2 in current phase (2 complete)
 Status: in-progress
-Last activity: 2026-03-23 -- Phase 8 plan 1 complete, all views migrated to design tokens
+Last activity: 2026-03-23 -- Phase 8 complete, Run tab has playlist context, all views use design tokens
 
-Progress: [████████████████....] 80% (Phase 8 plan 1 complete, plan 2 next)
+Progress: [████████████████████] 100% (Phase 8 complete, Phase 9 next)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15 (11 v1.0, 4 v1.1)
+- Total plans completed: 16 (11 v1.0, 5 v1.1)
 - Average duration: carried from v1.0
 - Total execution time: carried from v1.0
 
@@ -48,11 +48,13 @@ Progress: [████████████████....] 80% (Phase 8 pl
 | 6 (06-02) | 1 | 4min | 4min |
 | 7 (07-01) | 1 | 18min | 18min |
 | 8 (08-01) | 1 | 3min | 3min |
+| 8 (08-02) | 1 | 4min | 4min |
 
 **Recent Trend:**
 - v1.0 completed in 5 days across 11 plans
 - Phase 6 completed in 10min across 2 plans
 - Phase 7 completed in 18min across 1 plan
+- Phase 8 completed in 7min across 2 plans
 
 *Updated after each plan completion*
 
@@ -74,6 +76,7 @@ Recent decisions affecting current work:
 - [Phase 07]: RunTabView shows idle CTA only -- active RunView stays in Library tab's NavigationStack
 - [Phase 08]: Used displayHero for ghost SPM in paused view -- rounded vs monospaced acceptable for dimmed text
 - [Phase 08]: Icon sizing (.font(.system(size: N))) kept as-is, not tokenized -- SF Symbol sizing is layout, not typography
+- [Phase 08]: Used enum with static properties for LastRunPlaylist -- lightweight UserDefaults persistence
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T21:59:19Z
-Stopped at: Completed 08-01-PLAN.md
-Resume file: .planning/phases/08-token-adoption-runhomeview/08-01-SUMMARY.md
+Last session: 2026-03-23T22:09:37.552Z
+Stopped at: Completed 08-02-PLAN.md
+Resume file: None
