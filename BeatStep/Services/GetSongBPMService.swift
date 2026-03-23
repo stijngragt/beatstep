@@ -92,6 +92,49 @@ final class GetSongBPMService {
         return tempo
     }
 
+    // MARK: - BPM + Danceability Lookup
+
+    /// Performs two-step lookup returning both BPM and danceability.
+    /// Keeps existing fetchBPM for backward compatibility.
+    func fetchBPMAndDanceability(title: String, artist: String) async throws -> (bpm: Int?, danceability: Int?) {
+        let cleanTitle = sanitizeTitle(title)
+        guard let encodedQuery = cleanTitle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let searchURL = URL(string: "\(proxyBaseURL)/search/?type=song&lookup=\(encodedQuery)") else {
+            return (nil, nil)
+        }
+
+        // Step 1: Search
+        let (searchData, _) = try await session.data(from: searchURL)
+        let searchResponse = try JSONDecoder().decode(GetSongBPMSearchResponse.self, from: searchData)
+
+        let lowercaseArtist = artist.lowercased()
+        let firstResult = searchResponse.search.first(where: {
+            $0.artist?.name?.lowercased() == lowercaseArtist
+        }) ?? searchResponse.search.first
+
+        guard let firstResult else { return (nil, nil) }
+
+        // Rate limit delay
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        // Step 2: Get song details
+        guard let songURL = URL(string: "\(proxyBaseURL)/song/?id=\(firstResult.id)") else {
+            return (nil, nil)
+        }
+
+        let (songData, _) = try await session.data(from: songURL)
+        let songResponse = try JSONDecoder().decode(GetSongBPMSongResponse.self, from: songData)
+
+        let bpm: Int?
+        if let tempoString = songResponse.song.tempo, !tempoString.isEmpty {
+            bpm = Int(tempoString)
+        } else {
+            bpm = nil
+        }
+
+        return (bpm: bpm, danceability: songResponse.song.danceability)
+    }
+
     // MARK: - Songs by BPM (Discovery)
 
     /// Fetches songs at a specific BPM from GetSongBPM tempo endpoint (via proxy)

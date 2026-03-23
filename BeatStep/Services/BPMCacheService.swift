@@ -59,6 +59,24 @@ final class BPMCacheService {
         return count > 0
     }
 
+    func getDanceability(forTrackID trackID: String) -> Int? {
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == trackID }
+        )
+        return try? context.fetch(descriptor).first?.danceability
+    }
+
+    func cacheDanceability(trackID: String, danceability: Int) {
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == trackID }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            existing.danceability = danceability
+            existing.lastUpdated = Date()
+            try? context.save()
+        }
+    }
+
     func coverageStats(forTrackIDs trackIDs: [String]) -> (withBPM: Int, total: Int) {
         let descriptor = FetchDescriptor<CachedBPM>(
             predicate: #Predicate<CachedBPM> { cached in

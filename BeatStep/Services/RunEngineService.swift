@@ -9,6 +9,8 @@ final class RunEngineService {
     var isRunActive = false
     var tolerance: BPMTolerance = .saved
     var currentMatchedTrack: SpotifyTrack?
+    var runMode: RunMode = .free
+    var rampPhase: RampPhase? = nil
 
     // MARK: - Private
 
@@ -32,32 +34,81 @@ final class RunEngineService {
     private var isQueueingNext = false
     @ObservationIgnored
     private var lastPlayTime: Date?
+    @ObservationIgnored
+    private var targetBPM: Int = 160
+    @ObservationIgnored
+    private var rampSongsPlayed: Int = 0
+    @ObservationIgnored
+    private var danceabilityMap: [String: Int] = [:]
+    @ObservationIgnored
+    private var isDiscovering: Bool = false
+    @ObservationIgnored
+    private(set) var needsDiscovery: Bool = false
 
     private init() {}
+
+    // MARK: - Effective BPM
+
+    /// Effective BPM for song selection. Free mode uses cadence, guided uses ramp target.
+    var effectiveBPM: Int {
+        switch runMode {
+        case .free:
+            return sustainedSPM
+        case .guided:
+            guard let phase = rampPhase else { return targetBPM }
+            let warmUpStart = 140
+            switch phase {
+            case .warmUp:
+                return min(warmUpStart + rampSongsPlayed * 8, targetBPM)
+            case .atPace:
+                return targetBPM
+            case .coolDown:
+                return max(targetBPM - rampSongsPlayed * 8, warmUpStart)
+            }
+        }
+    }
 
     // MARK: - Run Lifecycle
 
     @MainActor
     func startRun(playlist: SpotifyPlaylist, tracks: [SpotifyTrack]) async {
-        // Load BPMs into memory (avoids repeated @MainActor BPMCacheService queries)
+        // Load BPMs and danceability into memory
         var map: [String: Int] = [:]
+        var danceMap: [String: Int] = [:]
         for track in tracks {
             if let bpm = BPMCacheService.shared.getBPM(forTrackID: track.id) {
                 map[track.id] = bpm
+            }
+            if let dance = BPMCacheService.shared.getDanceability(forTrackID: track.id) {
+                danceMap[track.id] = dance
             }
         }
 
         playlistTracks = tracks
         bpmMap = map
+        danceabilityMap = danceMap
         playedTrackIDs = []
         pendingRematch = false
         isRunActive = true
+        needsDiscovery = false
+        isDiscovering = false
+
+        // Set up guided mode if active
+        if runMode == .guided {
+            targetBPM = RunMode.savedTargetBPM
+            rampPhase = .warmUp
+            rampSongsPlayed = 0
+        } else {
+            rampPhase = nil
+            rampSongsPlayed = 0
+        }
 
         // Read current cadence as starting point
         sustainedSPM = CadenceService.shared.currentSPM
 
         // Play first matched song immediately
-        if let first = selectNextMatch(forSPM: sustainedSPM) {
+        let firstBPM = effectiveBPM
+        if let first = selectNextMatch(forSPM: firstBPM) {
             await playTrack(first)
         }
 
@@ -71,11 +122,16 @@ final class RunEngineService {
         currentMatchedTrack = nil
         playlistTracks = []
         bpmMap = [:]
+        danceabilityMap = [:]
         playedTrackIDs = []
         sustainedSPM = 0
         pendingRematch = false
         isQueueingNext = false
         lastPlayTime = nil
+        rampPhase = nil
+        rampSongsPlayed = 0
+        needsDiscovery = false
+        isDiscovering = false
 
         sustainedChangeTask?.cancel()
         sustainedChangeTask = nil
@@ -88,6 +144,13 @@ final class RunEngineService {
     func skipToNextMatch() async {
         guard isRunActive, !isQueueingNext else { return }
         await queueNextMatch()
+    }
+
+    /// Manually start cool-down phase (guided mode only)
+    func startCoolDown() {
+        guard runMode == .guided else { return }
+        rampPhase = .coolDown
+        rampSongsPlayed = 0
     }
 
     // MARK: - BPM Matching (internal for testing)
@@ -115,7 +178,25 @@ final class RunEngineService {
             .0
     }
 
-    // MARK: - No-Repeat Pool Selection
+    // MARK: - Smart Selection
+
+    /// Determines whether to prefer high-energy (high danceability) tracks
+    private var preferHighEnergy: Bool {
+        switch runMode {
+        case .free:
+            return true
+        case .guided:
+            guard let phase = rampPhase else { return true }
+            switch phase {
+            case .warmUp, .coolDown:
+                return false
+            case .atPace:
+                return true
+            }
+        }
+    }
+
+    // MARK: - No-Repeat Pool Selection with Smart Ranking
 
     func selectNextMatch(forSPM spm: Int) -> SpotifyTrack? {
         var matches = findMatchingTracks(forSPM: spm)
@@ -131,15 +212,107 @@ final class RunEngineService {
         if matches.isEmpty {
             if let closest = findClosestTrack(forSPM: spm) {
                 playedTrackIDs.insert(closest.id)
+                checkDiscoveryNeeded(matchCount: 0, forBPM: spm)
                 return closest
             }
+            checkDiscoveryNeeded(matchCount: 0, forBPM: spm)
             return nil
         }
 
-        // Random selection
-        let selected = matches.randomElement()!
+        // Check if discovery needed before selection
+        checkDiscoveryNeeded(matchCount: matches.count, forBPM: spm)
+
+        // Smart selection: rank by danceability
+        let sorted = matches.sorted { trackA, trackB in
+            let danceA = danceabilityMap[trackA.id] ?? 50
+            let danceB = danceabilityMap[trackB.id] ?? 50
+
+            if preferHighEnergy {
+                return danceA > danceB
+            } else {
+                return danceA < danceB
+            }
+        }
+
+        // Pick from top candidates with weighted bias toward best match
+        // With 4+ matches: random from top 3 for variety
+        // With 1-3 matches: pick first (best ranked) to maintain danceability preference
+        let selected: SpotifyTrack
+        if sorted.count > 3 {
+            let topSlice = Array(sorted.prefix(3))
+            selected = topSlice.randomElement()!
+        } else {
+            selected = sorted[0]
+        }
+
         playedTrackIDs.insert(selected.id)
         return selected
+    }
+
+    // MARK: - Discovery Integration
+
+    private func checkDiscoveryNeeded(matchCount: Int, forBPM bpm: Int) {
+        if matchCount < 3 && !isDiscovering {
+            needsDiscovery = true
+            fireBackgroundDiscovery(atBPM: bpm)
+        }
+    }
+
+    private func fireBackgroundDiscovery(atBPM bpm: Int) {
+        guard !isDiscovering else { return }
+        isDiscovering = true
+
+        Task { @MainActor [weak self] in
+            defer { self?.isDiscovering = false }
+            do {
+                let discovered = try await BPMDiscoveryService.shared.discoverTracks(atBPM: bpm)
+                guard let self, !discovered.isEmpty else { return }
+
+                // Add discovered tracks to pool
+                for track in discovered {
+                    if !self.playlistTracks.contains(where: { $0.id == track.id }) {
+                        self.playlistTracks.append(track)
+                    }
+                }
+
+                // Look up BPMs for discovered tracks
+                for track in discovered {
+                    if let cachedBPM = BPMCacheService.shared.getBPM(forTrackID: track.id) {
+                        self.bpmMap[track.id] = cachedBPM
+                    }
+                    if let cachedDance = BPMCacheService.shared.getDanceability(forTrackID: track.id) {
+                        self.danceabilityMap[track.id] = cachedDance
+                    }
+                }
+
+                // Save to discovery playlist
+                try? await BPMDiscoveryService.shared.saveToDiscoveryPlaylist(tracks: discovered)
+            } catch {
+                // Discovery is best-effort, don't fail the run
+            }
+        }
+    }
+
+    // MARK: - Ramp Transitions
+
+    private func handleRampTransition() {
+        guard runMode == .guided, let phase = rampPhase else { return }
+
+        rampSongsPlayed += 1
+
+        switch phase {
+        case .warmUp:
+            if effectiveBPM >= targetBPM {
+                rampPhase = .atPace
+                rampSongsPlayed = 0
+            }
+        case .atPace:
+            break
+        case .coolDown:
+            if effectiveBPM <= 140 {
+                stopRun()
+            }
+        }
     }
 
     // MARK: - Sustained Change Detection
@@ -220,9 +393,14 @@ final class RunEngineService {
             return
         }
 
-        // If pending rematch from sustained change, use new SPM
+        // Handle ramp transition (increment songs played, check phase change)
+        handleRampTransition()
+
+        // Determine BPM for selection
         let spm: Int
-        if pendingRematch {
+        if runMode == .guided {
+            spm = effectiveBPM
+        } else if pendingRematch {
             spm = sustainedSPM
             pendingRematch = false
         } else {
@@ -239,27 +417,6 @@ final class RunEngineService {
         lastPlayTime = Date()
         // Use play(uri:) WITHOUT contextURI so Spotify does not auto-advance
         SpotifyPlayerService.shared.play(uri: track.uri)
-    }
-
-    // MARK: - Guided Mode (stubs for TDD RED)
-
-    @ObservationIgnored
-    var runMode: RunMode = .free
-    @ObservationIgnored
-    var rampPhase: RampPhase? = nil
-    @ObservationIgnored
-    private var targetBPM: Int = 160
-    @ObservationIgnored
-    private var rampSongsPlayed: Int = 0
-    @ObservationIgnored
-    private var danceabilityMap: [String: Int] = [:]
-    @ObservationIgnored
-    private(set) var needsDiscovery: Bool = false
-
-    /// Effective BPM for song selection. Free mode uses cadence, guided uses ramp target.
-    var effectiveBPM: Int {
-        // Stub: always returns sustainedSPM (guided behavior not yet implemented)
-        return sustainedSPM
     }
 
     // MARK: - Testing Helpers
