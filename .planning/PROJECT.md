@@ -32,7 +32,15 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(No active requirements — next milestone not yet planned)
+<!-- v1.2 The Right Flow -->
+- [ ] Onboarding flow with value-framed Spotify + Apple Health permission screens
+- [ ] Re-triggerable onboarding from Settings for missed permissions
+- [ ] Library playlists show analyzed/unanalyzed state
+- [ ] Analyze button inline with playlist (not buried in detail screen top-right)
+- [ ] Zone-based running: Zone 1–5 + Free replacing effort labels
+- [ ] Zone BPM defaults with user-configurable overrides in Settings
+- [ ] Full-width Run CTA at bottom of Run tab
+- [ ] BPM tolerance as segmented control showing ±BPM deltas (±3, ±7, ±12)
 
 ### Out of Scope
 
@@ -93,5 +101,15 @@ Known tech debt from v1.1: 5 unused ComponentSize tokens, LastRunPlaylist.id wri
 | Test-as-generator for app icon | Core Graphics in unit test produces reproducible PNG | ✓ Good — no external tool dependency |
 | SF Pro Bold (not .rounded) for wordmark | One-off brand treatment, .displayHero uses .rounded design | ✓ Good — clear brand distinction |
 
+## Current Milestone: v1.2 The Right Flow
+
+**Goal:** Overhaul onboarding, playlist UX, and run setup — making the app feel intentional from first launch through starting a run.
+
+**Target features:**
+- Value-framed onboarding flow for Spotify + Apple Health permissions (re-triggerable)
+- Library playlists show analyzed state with inline analyze action
+- Zone-based running (Z1–5 + Free) with configurable BPM defaults
+- Prominent Run CTA and improved BPM tolerance picker
+
 ---
-*Last updated: 2026-03-24 after v1.1 milestone*
+*Last updated: 2026-03-24 after v1.2 milestone started*

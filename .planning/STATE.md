@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between_milestones
-stopped_at: "v1.1 milestone completed"
+milestone: v1.2
+milestone_name: The Right Flow
+status: defining_requirements
+stopped_at: null
 last_updated: "2026-03-24"
-last_activity: "2026-03-24 -- v1.1 Dark by Design milestone archived"
+last_activity: "2026-03-24 -- Milestone v1.2 started"
 progress:
   total_phases: 0
   completed_phases: 0
@@ -21,13 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Planning next milestone
+**Current focus:** Defining requirements for v1.2 The Right Flow
 
 ## Current Position
 
-Between milestones. v1.1 "Dark by Design" shipped 2026-03-24.
-
-Progress: No active milestone
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-24 — Milestone v1.2 started
 
 ## Performance Metrics
 
@@ -53,5 +54,5 @@ None active.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: v1.1 milestone completed
+Stopped at: Starting v1.2 milestone
 Resume file: None
