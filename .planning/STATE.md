@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: The Right Flow
-status: defining_requirements
-stopped_at: null
+status: ready_to_plan
+stopped_at: "Roadmap created for v1.2"
 last_updated: "2026-03-24"
-last_activity: "2026-03-24 -- Milestone v1.2 started"
+last_activity: "2026-03-24 -- Roadmap created"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Defining requirements for v1.2 The Right Flow
+**Current focus:** Phase 10 - Models, Settings & Library UX
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-24 — Milestone v1.2 started
+Phase: 10 of 12 (Models, Settings & Library UX)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-03-24 -- Roadmap created for v1.2
+
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -42,6 +44,10 @@ Last activity: 2026-03-24 — Milestone v1.2 started
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- [v1.2 roadmap]: 3 phases -- foundation models first, run experience second, onboarding last (gate built after features behind it work)
+- [v1.2 research]: RunEngineService untouched -- zones are a thin UI wrapper mapping to existing runMode + targetBPM parameters
 
 ### Pending Todos
 
@@ -49,10 +55,11 @@ None.
 
 ### Blockers/Concerns
 
-None active.
+- Zone BPM default values diverge between research files (two candidate sets). Pick one during Phase 10 implementation.
+- Spotify Premium detection timing during onboarding is an unresolved product decision. Address before Phase 12.
 
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Starting v1.2 milestone
+Stopped at: Roadmap created for v1.2 milestone
 Resume file: None

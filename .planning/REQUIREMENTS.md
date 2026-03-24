@@ -55,22 +55,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ONBD-01 | — | Pending |
-| ONBD-02 | — | Pending |
-| ONBD-03 | — | Pending |
-| ONBD-04 | — | Pending |
-| LIB-01 | — | Pending |
-| LIB-02 | — | Pending |
-| RUN-01 | — | Pending |
-| RUN-02 | — | Pending |
-| RUN-03 | — | Pending |
-| RUN-04 | — | Pending |
+| ONBD-01 | Phase 12 | Pending |
+| ONBD-02 | Phase 12 | Pending |
+| ONBD-03 | Phase 12 | Pending |
+| ONBD-04 | Phase 12 | Pending |
+| LIB-01 | Phase 10 | Pending |
+| LIB-02 | Phase 10 | Pending |
+| RUN-01 | Phase 11 | Pending |
+| RUN-02 | Phase 11 | Pending |
+| RUN-03 | Phase 10 | Pending |
+| RUN-04 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10 ⚠️
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Last updated: 2026-03-24 after roadmap creation*
