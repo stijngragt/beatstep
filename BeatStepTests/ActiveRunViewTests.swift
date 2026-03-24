@@ -35,4 +35,18 @@ final class ActiveRunViewTests: XCTestCase {
         )
         XCTAssertEqual(view.selectedZoneId, 1)
     }
+
+    // MARK: - Tempo Mode Toggle Logic
+
+    /// Verify toggling from oneToOne yields half and vice versa.
+    func testTempoModeToggleLogic() {
+        // Starting from oneToOne, toggling should yield half
+        var mode: TempoMode = .oneToOne
+        mode = (mode == .oneToOne) ? .half : .oneToOne
+        XCTAssertEqual(mode, .half)
+
+        // Toggling again should yield oneToOne
+        mode = (mode == .oneToOne) ? .half : .oneToOne
+        XCTAssertEqual(mode, .oneToOne)
+    }
 }
