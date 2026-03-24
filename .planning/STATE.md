@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: The Right Flow
-status: in-progress
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-24T13:10:47.000Z"
-last_activity: 2026-03-24 -- Completed 12-01 onboarding flow with AppState gate and 3 screens
+status: completed
+stopped_at: Completed 12-02-PLAN.md -- v1.2 milestone complete
+last_updated: "2026-03-24T13:21:30.000Z"
+last_activity: 2026-03-24 -- Completed 12-02 Settings permission recovery; v1.2 milestone complete
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 83
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 12 - Onboarding
+**Current focus:** v1.2 milestone complete
 
 ## Current Position
 
-Phase: 12 of 12 (Onboarding)
-Plan: 1 of 2 in current phase
-Status: Plan 12-01 complete
-Last activity: 2026-03-24 -- Completed 12-01 onboarding flow with AppState gate and 3 screens
+Phase: 12 of 12 (Onboarding) -- COMPLETE
+Plan: 2 of 2 in current phase -- COMPLETE
+Status: v1.2 milestone complete
+Last activity: 2026-03-24 -- Completed 12-02 Settings permission recovery; v1.2 milestone complete
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [████████░░] 83%
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - Phase 12-01: 6 min, 2 tasks, 8 files
+- Phase 12-02: 8 min, 2 tasks, 2 files
 
 ## Accumulated Context
 
@@ -56,6 +57,7 @@ Recent decisions affecting current work:
 - [Phase 11]: TolerancePicker only shown when zone selected (guided mode) -- free runs have no target BPM
 - [Phase 12]: ScrollViewReader used instead of ScrollPosition for iOS 17 compatibility in OnboardingFlow
 - [Phase 12]: AppState enum with static resolve() method enables testable routing logic outside SwiftUI
+- [Phase 12]: Health permission row shows Requested/Not Yet (not Granted/Denied) because HKAuthorizationStatus always returns .notDetermined for read types
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T13:10:47.000Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-03-24T13:21:30.000Z
+Stopped at: Completed 12-02-PLAN.md -- v1.2 milestone complete
 Resume file: None
