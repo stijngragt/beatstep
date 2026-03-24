@@ -33,8 +33,8 @@ Requirements for milestone v1.1 "Dark by Design". Each maps to roadmap phases.
 
 ### Brand
 
-- [ ] **BRAND-01**: App icon designed with dark background and electric green accent mark
-- [ ] **BRAND-02**: Wordmark established for in-app identity
+- [x] **BRAND-01**: App icon designed with dark background and electric green accent mark
+- [x] **BRAND-02**: Wordmark established for in-app identity
 
 ## Future Requirements
 
@@ -84,8 +84,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-03 | Phase 7 | Complete |
 | NAV-04 | Phase 8 | Complete |
 | BUG-01 | Phase 9 | Complete |
-| BRAND-01 | Phase 9 | Pending |
-| BRAND-02 | Phase 9 | Pending |
+| BRAND-01 | Phase 9 | Complete |
+| BRAND-02 | Phase 9 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 14 total

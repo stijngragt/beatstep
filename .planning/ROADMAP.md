@@ -25,7 +25,7 @@
 - [x] **Phase 6: Design System Foundation** - Dark-mode commitment, color/type/spacing tokens, user approval gate (completed 2026-03-23)
 - [x] **Phase 7: Tab Navigation Shell** - Bottom tab bar with Library/Run/Settings, MiniPlayer persistence, nav state (completed 2026-03-23)
 - [x] **Phase 8: Token Adoption + RunHomeView** - Migrate all views to design tokens, build Run tab landing screen (completed 2026-03-23)
-- [ ] **Phase 9: Bug Fix + Brand Assets** - Fix track count display, app icon, wordmark
+- [x] **Phase 9: Bug Fix + Brand Assets** - Fix track count display, app icon, wordmark (completed 2026-03-24)
 
 ## Phase Details
 
@@ -102,4 +102,4 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 6. Design System Foundation | 2/2 | Complete   | 2026-03-23 | - |
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | 2/2 | Complete   | 2026-03-23 | - |
-| 9. Bug Fix + Brand Assets | v1.1 | 0/2 | Not started | - |
+| 9. Bug Fix + Brand Assets | 2/2 | Complete   | 2026-03-24 | - |
