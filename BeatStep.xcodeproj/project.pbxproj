@@ -22,6 +22,7 @@
 		2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53564AD8A26370E1D5CC4EB /* ContentView.swift */; };
 		2D92B9B9B8CDCDCA222FD14A /* CadenceDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */; };
 		2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */; };
+		3414E11A00864E259B571BA0 /* RampPhaseIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B463417D83CA9C68F306968 /* RampPhaseIndicator.swift */; };
 		348E71A2346F9E2EDB076023 /* SyncQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEC19B8CE1F5084D56A0DC7 /* SyncQuality.swift */; };
 		3633B91530BA99E13E412EB5 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD9FA2CFE9DA4FBDF7AF11 /* MiniPlayerView.swift */; };
 		36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */; };
@@ -61,6 +62,7 @@
 		A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */; };
 		AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F53B43A668691E6914501E3 /* TolerancePicker.swift */; };
 		AB560042A7F124F1EAEA6BCD /* RunMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6A7E5FF989282D490A4C66 /* RunMode.swift */; };
+		B0F8CD7F194C49276D8311DB /* ZoneBandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C612EE6690EA5303C11C2A3B /* ZoneBandView.swift */; };
 		B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5818164758316FF4BD59C44C /* RunSession.swift */; };
 		B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891C60D8560980C95D3F6E61 /* BeatStepApp.swift */; };
 		BA8874F7D3FDA0EBB4354668 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = F71ECCFE50CC9E0DBDAD3512 /* KeychainAccess */; };
@@ -107,6 +109,7 @@
 		15B6030B08CCF44B01BD0A2D /* GetSongBPMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMService.swift; sourceTree = "<group>"; };
 		19109252715D2142AD8C1454 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDisplayTests.swift; sourceTree = "<group>"; };
+		1B463417D83CA9C68F306968 /* RampPhaseIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RampPhaseIndicator.swift; sourceTree = "<group>"; };
 		1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheServiceTests.swift; sourceTree = "<group>"; };
 		1EC3F32F251BB6DCD836C9C8 /* BPMDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMDiscoveryService.swift; sourceTree = "<group>"; };
 		1EE4DF865E617B08EB3B0741 /* SpotifyUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyUser.swift; sourceTree = "<group>"; };
@@ -159,6 +162,7 @@
 		BE8FAB65795D9B7248FDDCC3 /* RunEngineServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunEngineServiceTests.swift; sourceTree = "<group>"; };
 		C175DDFE0853F22B85082A2F /* GetSongBPMServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMServiceTests.swift; sourceTree = "<group>"; };
 		C35322426C60E3601F3E3793 /* PaginatedResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaginatedResponse.swift; sourceTree = "<group>"; };
+		C612EE6690EA5303C11C2A3B /* ZoneBandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneBandView.swift; sourceTree = "<group>"; };
 		C8DCEC81D9DB1A230835221A /* ZonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonePickerView.swift; sourceTree = "<group>"; };
 		CA1DA1AE4223F5E864B4ED0E /* AudioSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionService.swift; sourceTree = "<group>"; };
 		CC6A7E5FF989282D490A4C66 /* RunMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMode.swift; sourceTree = "<group>"; };
@@ -367,11 +371,13 @@
 			isa = PBXGroup;
 			children = (
 				8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */,
+				1B463417D83CA9C68F306968 /* RampPhaseIndicator.swift */,
 				4F954E8A3B5FBA64DE0D89F3 /* RunStatusBar.swift */,
 				E37B727349C715B8A72C4C82 /* RunTabView.swift */,
 				51071A444A70CF8FE4921C0E /* RunView.swift */,
 				ECC7DFDB6E911FE4107BCB40 /* SyncBackgroundModifier.swift */,
 				9F53B43A668691E6914501E3 /* TolerancePicker.swift */,
+				C612EE6690EA5303C11C2A3B /* ZoneBandView.swift */,
 				C8DCEC81D9DB1A230835221A /* ZonePickerView.swift */,
 			);
 			path = Run;
@@ -574,6 +580,7 @@
 				280FE96EC7CE420EBABD5DB8 /* PlaylistDetailView.swift in Sources */,
 				A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */,
 				737D7EABE7F317271B047DAF /* RampPhase.swift in Sources */,
+				3414E11A00864E259B571BA0 /* RampPhaseIndicator.swift in Sources */,
 				9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */,
 				AB560042A7F124F1EAEA6BCD /* RunMode.swift in Sources */,
 				B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */,
@@ -596,6 +603,7 @@
 				348E71A2346F9E2EDB076023 /* SyncQuality.swift in Sources */,
 				692A1F62DC6DFBC0D5166566 /* TempoMode.swift in Sources */,
 				AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */,
+				B0F8CD7F194C49276D8311DB /* ZoneBandView.swift in Sources */,
 				EBFFFEEED0CFB5EC1BABEC48 /* ZonePickerView.swift in Sources */,
 				9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */,
 			);

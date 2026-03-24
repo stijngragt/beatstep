@@ -17,9 +17,9 @@ Requirements for v1.3 "In The Zone" milestone. Each maps to roadmap phases.
 
 - [x] **CAD-01**: User sees a color-coded sync state indicator showing whether cadence is in-sync, drifting, or mismatched with the current song BPM
 - [x] **CAD-02**: User sees a signed delta indicator ("+4 SPM" / "-6 SPM") near the cadence number in guided mode, and sync quality text in free mode
-- [ ] **CAD-03**: User sees a zone band visualization showing where current cadence sits within the target zone range (guided mode only)
+- [x] **CAD-03**: User sees a zone band visualization showing where current cadence sits within the target zone range (guided mode only)
 - [x] **CAD-04**: User perceives a subtle background color shift based on sync state (in-sync vs drifting) as subconscious feedback
-- [ ] **CAD-05**: User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
+- [x] **CAD-05**: User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
 
 ### Music Player
 
@@ -69,9 +69,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RUN-03 | Phase 14 | Complete |
 | CAD-01 | Phase 13 | Complete |
 | CAD-02 | Phase 13 | Complete |
-| CAD-03 | Phase 14 | Pending |
+| CAD-03 | Phase 14 | Complete |
 | CAD-04 | Phase 14 | Complete |
-| CAD-05 | Phase 14 | Pending |
+| CAD-05 | Phase 14 | Complete |
 | PLR-01 | Phase 15 | Pending |
 | PLR-02 | Phase 15 | Pending |
 | PLR-03 | Phase 15 | Pending |
