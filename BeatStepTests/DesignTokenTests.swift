@@ -62,6 +62,18 @@ final class DesignTokenTests: XCTestCase {
         let _ = Color.stateError
     }
 
+    func testSyncStateColorsExist() {
+        let _ = Color.syncInSync
+        let _ = Color.syncDrifting
+        let _ = Color.syncMismatched
+    }
+
+    func testSyncStateColorsMatchBaseTokens() {
+        XCTAssertEqual(UIColor(Color.syncInSync), UIColor(Color.stateSuccess))
+        XCTAssertEqual(UIColor(Color.syncDrifting), UIColor(Color.stateWarning))
+        XCTAssertEqual(UIColor(Color.syncMismatched), UIColor(Color.stateError))
+    }
+
     func testTextOnAccentExists() {
         let _ = Color.textOnAccent
     }
