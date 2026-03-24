@@ -9,9 +9,9 @@ Requirements for v1.2 "The Right Flow". Each maps to roadmap phases.
 
 ### Onboarding
 
-- [ ] **ONBD-01**: User sees a value-framed Spotify permission screen before the system OAuth dialog on first launch
-- [ ] **ONBD-02**: User sees a value-framed Apple Health permission screen before the system HealthKit dialog on first launch
-- [ ] **ONBD-03**: User sees a brief skippable "how zones work" screen during onboarding
+- [x] **ONBD-01**: User sees a value-framed Spotify permission screen before the system OAuth dialog on first launch
+- [x] **ONBD-02**: User sees a value-framed Apple Health permission screen before the system HealthKit dialog on first launch
+- [x] **ONBD-03**: User sees a brief skippable "how zones work" screen during onboarding
 - [ ] **ONBD-04**: User can re-trigger permission setup from Settings when permissions were denied or revoked
 
 ### Library
@@ -55,9 +55,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ONBD-01 | Phase 12 | Pending |
-| ONBD-02 | Phase 12 | Pending |
-| ONBD-03 | Phase 12 | Pending |
+| ONBD-01 | Phase 12 | Complete |
+| ONBD-02 | Phase 12 | Complete |
+| ONBD-03 | Phase 12 | Complete |
 | ONBD-04 | Phase 12 | Pending |
 | LIB-01 | Phase 10 | Complete |
 | LIB-02 | Phase 10 | Complete |
