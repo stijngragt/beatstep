@@ -1,338 +1,280 @@
 # Pitfalls Research
 
-**Domain:** Dark-mode design system, tab navigation, and brand assets — adding to existing SwiftUI iOS app
-**Researched:** 2026-03-23
+**Domain:** Onboarding flow, playlist analysis state UX, zone-based running — adding to existing SwiftUI iOS running music app
+**Researched:** 2026-03-24
 **Confidence:** HIGH
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: preferredColorScheme Does Not Control System-Presented UI
+### Pitfall 1: Onboarding Gate at Wrong View Hierarchy Level
 
 **What goes wrong:**
-Setting `.preferredColorScheme(.dark)` on your root view forces dark appearance on SwiftUI views, but system-vended presentations ignore it. `confirmationDialog`, `DatePicker` (sheet presentation style), and UIKit-backed alerts (UIAlertController) continue rendering in whatever the device system setting dictates. On a user's phone set to light mode, these components flash white while the rest of the app is dark.
+The onboarding gate is added inside a tab or NavigationStack instead of at the `ContentView` root. Result: the tab bar flashes momentarily on first launch before the onboarding sheet covers it, or the onboarding dismisses to a half-initialised Run tab instead of a clean authenticated shell.
 
 **Why it happens:**
-`preferredColorScheme` operates at the SwiftUI rendering layer. When UIKit presents a new window (alerts, action sheets) or SwiftUI passes control to a system sheet host, the override does not propagate. Apple never documented this scope boundary clearly, so developers assume the modifier is global.
+ContentView already branches on `authService.isAuthenticated`. The natural instinct is to add a `hasCompletedOnboarding` check inside the authenticated branch's first tab, but that means the TabView and all its environment setup have already fired before onboarding appears.
 
 **How to avoid:**
-Use `UIWindow.overrideUserInterfaceStyle = .dark` at the window level in addition to the SwiftUI modifier. Set this in `BeatStepApp.init()` or in the `WindowGroup` `onAppear` by reaching into `UIApplication.shared.connectedScenes`. The window-level override propagates through UIKit's view controller hierarchy including system alerts.
+Add the onboarding gate at the same level as the `isAuthenticated` check in `ContentView.body`. The decision tree becomes:
+1. Not authenticated → `LoginView`
+2. Authenticated AND not onboarded → `OnboardingFlow` (fullScreenCover or direct view swap)
+3. Authenticated AND onboarded → `TabView`
 
-```swift
-// In BeatStepApp body, after WindowGroup
-.onAppear {
-    UIApplication.shared
-        .connectedScenes
-        .compactMap { $0 as? UIWindowScene }
-        .flatMap { $0.windows }
-        .forEach { $0.overrideUserInterfaceStyle = .dark }
-}
-```
-
-This must be combined with `UIUserInterfaceStyle = Dark` in Info.plist to prevent any flash of light mode at launch before SwiftUI renders.
+This prevents the TabView from ever rendering before onboarding completes. Store the completion flag in `@AppStorage` so it survives app termination.
 
 **Warning signs:**
-- Light-colored alert dialogs appearing in the app during testing on a light-mode device
-- Safari web view (Spotify OAuth login) appearing in light mode
+- Tab bar briefly visible before onboarding appears
+- `LibraryScanService.scanEnabledPlaylists()` fires (via `.task` in `ContentView.authenticatedView`) before onboarding permissions are granted
+- MiniPlayer safeAreaInset rendered during onboarding
 
 **Phase to address:**
-Design System Foundation phase — set both the Info.plist key and window override before any other visual work begins. Treating this as a "cleanup later" item means every screenshot and review video will show broken system UI.
+Onboarding flow phase — establish gate position before building any onboarding screens.
 
 ---
 
-### Pitfall 2: MiniPlayer Overlay Breaks When TabView Introduces Its Own Tab Bar
+### Pitfall 2: PacePreset Enum Raw Values Become Invalid UserDefaults Keys After Replacement
 
 **What goes wrong:**
-The existing app uses `ZStack` + `safeAreaInset` to float `MiniPlayerView` above a `NavigationStack`. When `TabView` is introduced, the tab bar occupies the bottom safe area. The MiniPlayer's `safeAreaInset` reservation now stacks on top of the tab bar safe area, creating a double-height gap below the last list item. Alternatively, if the MiniPlayer is placed incorrectly in the hierarchy, it renders behind the tab bar and becomes invisible.
+`PacePreset` uses `RawRepresentable` string raw values (`"easyJog"`, `"steady"`, `"tempo"`, etc.) persisted to UserDefaults. When zone-based running replaces the effort-label system with a new enum (e.g. `RunZone`), any user who had a saved `PacePreset` preference will decode a stale raw value string. The `init?(rawValue:)` initializer returns `nil`, silently defaulting to `.free` mode, discarding the user's previous guided-mode preference.
 
 **Why it happens:**
-`TabView` inserts its own safe area inset for the tab bar. A custom bottom overlay that was already accounting for the bottom safe area ends up doubled. The exact behavior depends on whether the MiniPlayer is inside or outside the `TabView`, and whether `.ignoresSafeArea` is applied.
+Both `RunMode` and `BPMTolerance` use `UserDefaults.standard` with raw string keys. If `PacePreset` is removed and replaced by a `RunZone` type with different case names, the key `"selectedPacePreset"` — or wherever it is written — holds a value the new enum cannot decode. The code gracefully falls back, but the user's setting is silently lost.
 
 **How to avoid:**
-Restructure so `TabView` is the outermost navigation container. The MiniPlayer should live in a `ZStack` that wraps the `TabView`, not inside any individual tab. Use `.toolbar(.hidden, for: .tabBar)` on the inner `NavigationStack` if needed to gain manual control, then render both the custom tab bar and MiniPlayer from the outer `ZStack`. On iOS 18+, evaluate `.tabViewBottomAccessory()` which is designed exactly for a "Now Playing" mini-player row above the tab bar.
-
-The content scroll inset reservation (`safeAreaInset`) must account for both the tab bar height and the MiniPlayer height combined, not each individually.
+Before removing `PacePreset`, audit every `UserDefaults.standard.set` and `UserDefaults.standard.string(forKey:)` call in `PacePresetPicker.swift` and `RunEngineService`. Map old preset cases to their closest zone equivalent and write a migration that reads the stale key and writes the new key before the old key is removed. Keep the old enum as a `fileprivate` migration-only type until the migration runs.
 
 **Warning signs:**
-- Empty white space at the bottom of list content after adding TabView
-- MiniPlayer invisible or clipped on devices with home indicator
+- Guided mode defaults to wrong BPM on first launch after update
+- `RunMode.savedTargetBPM` returns the fallback `160` for users who had set a different target
 
 **Phase to address:**
-Tab Navigation phase — the MiniPlayer integration must be designed as part of the TabView structure, not retrofitted afterward.
+Zone-based running phase — migration must run before `PacePreset` is deleted.
 
 ---
 
-### Pitfall 3: NavigationStack Inside TabView — State Lost on Tab Switch
+### Pitfall 3: SwiftData Schema Change Without VersionedSchema Crashes on Existing Install
 
 **What goes wrong:**
-Each tab needs its own `NavigationStack`. When the user navigates from Library into a PlaylistDetailView, then switches to Run, then switches back to Library — the navigation stack resets to the root (PlaylistListView). The user loses their place.
+If playlist analysis state tracking requires adding a new field to `ScannedPlaylist` (e.g. `analysisStatus: AnalysisStatus`, `lastAnalyzed: Date?`, or a new relationship), deploying without a `VersionedSchema` and `SchemaMigrationPlan` causes a crash on launch for users upgrading from v1.1. SwiftData's unversioned lightweight migration is unreliable for field additions with non-optional types.
 
 **Why it happens:**
-SwiftUI's `TabView` recreates tab content when switching tabs unless the state is preserved explicitly. View structs are value types that get discarded on tab switch. This is a known SwiftUI limitation.
+`BeatStepApp.init()` constructs the `ModelContainer` with a force-try (`try!`). Any schema mismatch that SwiftData cannot silently reconcile throws at that point, killing the app before the window renders. The existing schema was never wrapped in a `VersionedSchema`, making migration paths harder to express.
 
 **How to avoid:**
-Bind each tab's `NavigationStack` to a `@State` (or `@SceneStorage` for persistence across launches) path variable. The path binding keeps SwiftUI from discarding the navigation state:
-
-```swift
-@State private var libraryPath = NavigationPath()
-
-TabView {
-    NavigationStack(path: $libraryPath) {
-        PlaylistListView()
-    }
-    .tabItem { Label("Library", systemImage: "music.note.list") }
-}
-```
-
-Keep the `NavigationStack` inside `TabView` (not outside). Placing `TabView` inside a parent `NavigationStack` causes the entire TabView — all tabs — to share one navigation hierarchy, which is wrong.
+- Add only optional fields (`Date?`, `String?`) or fields with default values to `ScannedPlaylist` — SwiftData handles these without a migration plan.
+- If a non-optional field or enum type must be added, wrap the current schema in `SchemaV1`, define `SchemaV2` with the new field, and write a `MigrationStage.lightweight` plan. Release an intermediate build first if the install base is significant.
+- Change the `try!` in `BeatStepApp.init()` to a `do/catch` that deletes and recreates the store on failure as a last-resort recovery.
 
 **Warning signs:**
-- Navigating into a playlist, switching tabs, switching back: playlist detail is gone
-- Back button disappears after tab switching
+- App crash on launch in TestFlight after schema change, but works clean install
+- Xcode console shows "NSMigrationError" or SwiftData predicate mismatch errors
 
 **Phase to address:**
-Tab Navigation phase — navigation path state must be established when building the tab structure. This is not fixable without restructuring.
+Playlist analysis state phase — schema changes must be evaluated before any new `@Model` fields are committed.
 
 ---
 
-### Pitfall 4: Hardcoded Colors Missed in Migration — Incomplete Token Adoption
+### Pitfall 4: HealthKit Cannot Confirm Denied Read Permission — Onboarding Shows Wrong State
 
 **What goes wrong:**
-The codebase currently has hardcoded color references scattered across views: `.green` (BPM match indicator, start button), `.orange` (BPM display, guided mode warning), `.white.opacity(0.5)` (secondary text in RunView), `Color.gray.opacity(0.3)` (placeholder backgrounds), `Color.red.opacity(0.08)` (error state background), and the local `spotifyGreen` constant in LoginView. When a design token layer is added, developers migrate the visible screens and miss edge cases — especially states only visible during a run (low cadence, BPM mismatch indicator, end-of-ramp state).
+The re-triggerable onboarding (from Settings) shows a "Grant Permission" button for Apple Health, but the user already granted it. Or worse: the user denied it, and the app cannot detect this, so the onboarding shows "permission granted" when Health data is unavailable.
 
 **Why it happens:**
-Color migration is tedious and grep-based searches miss colors defined as computed properties, colors inside closures, or colors constructed with opacity modifiers rather than named colors. RunView has the highest density of hardcoded colors (11 white-based references) because it was built dark-first, so it "works" without migration and gets deprioritized.
+HealthKit intentionally does not expose whether read authorization was denied — `HKHealthStore.authorizationStatus(for:)` returns `.notDetermined` for denied read types, to protect user privacy. This is documented behavior, not a bug, but it is widely misunderstood. Apps cannot distinguish "user never asked" from "user denied read."
 
 **How to avoid:**
-1. Define all tokens in a single `AppColors` enum before touching any views.
-2. Use a SwiftLint custom rule to flag `Color.white`, `Color.black`, `Color.green`, `Color.orange`, `Color.red`, `Color.gray` usages outside `AppColors.swift` after migration.
-3. Migrate one file at a time. For BeatStep: LoginView (has `spotifyGreen` local var), MiniPlayerView, PlaylistDetailView, PlaylistListView, RunView (largest surface), CadenceDisplayView, SettingsView.
-4. After each migration, build and run — do not batch migrations.
-
-The `spotifyGreen` local variable in LoginView is a specific debt item: the Spotify brand green (`#1DB954`) must remain distinct from BeatStep's electric green accent. Define both in `AppColors` with explicit names (`AppColors.spotifyBrand` vs `AppColors.accent`).
+- Store the fact that the app has *requested* Health permission in `@AppStorage`, not the permission result.
+- In onboarding, show: "We'll ask for access" (pre-request) or "Permission requested" (post-request). Never show "Permission granted/denied" for Health read access.
+- In the re-triggerable onboarding, link directly to `UIApplication.openSettingsURLString` so the user can correct denied permissions themselves. Do not try to detect or display the current state.
+- Keep Apple Health as an optional enhancement — the app's core cadence detection via `CMPedometer` does not require HealthKit.
 
 **Warning signs:**
-- A color looks right in normal use but the wrong shade in high-contrast mode
-- `spotifyGreen` still defined as a local constant after design system work
-- A color that doesn't update when you change the token value
+- Settings onboarding screen shows contradictory permission state
+- Code calling `HKHealthStore.authorizationStatus(for:)` and branching on `.denied` — that branch never fires for read types
 
 **Phase to address:**
-Design System Foundation phase — establish all tokens before migrating. Do not migrate in the same commit as token definition; define first, then migrate file-by-file.
+Onboarding flow phase — permission model must be designed around this limitation from the start.
 
 ---
 
-### Pitfall 5: Electric Green Fails Accessibility Contrast in Some States
+### Pitfall 5: Inline Analyze Button in List Row Conflicts With Row Navigation Tap
 
 **What goes wrong:**
-WCAG AA requires 4.5:1 contrast ratio for normal text, 3:1 for large text and UI components. Electric green (e.g., `#39FF14` neon green) against a near-black background (`#0A0A0A`) looks high-contrast visually but can fail when the green is used at reduced opacity — such as `.green.opacity(0.5)` for "dim" states, placeholder text, or secondary indicators. The current codebase already uses `.foregroundStyle(.green)` for BPM match indicators and a green Capsule for the Start Run button — if these get swapped to a bright electric green without checking text-on-green contrast, the black text on the green button may fail.
+Adding an "Analyze" button inline with a playlist row in `PlaylistListView` causes the entire row tap to trigger the analyze action (or both actions simultaneously) instead of navigating to the playlist detail. SwiftUI's `List` extends button tap areas to fill the entire row by default.
 
 **Why it happens:**
-Designers pick a color that looks vivid and on-brand. The contrast failure isn't in the primary use case (bright accent text on dark background) — it's in secondary uses: muted versions for inactive states, black text on a green button fill, green against the `ultraThinMaterial` background which is not pure black.
+When a `Button` uses the default `.automatic` style inside a `List` row, SwiftUI treats the row as the button's tap target. If the row also has a `NavigationLink` or an `.onTapGesture`, there is a gesture priority conflict where the list row intercepts the tap before the individual button sees it — or both fire.
 
 **How to avoid:**
-Before finalizing the electric green token value, verify three scenarios:
-1. Electric green text on `#000000` (pure black) — this almost always passes
-2. Black text on the electric green fill (the Start Run button) — electric greens that are too saturated or too light fail here
-3. Electric green text on `ultraThinMaterial` dark background — material is not pure black; the effective background is approximately `#1C1C1E` in dark mode
-
-Use the WebAIM contrast checker at exact hex values. Target a green around `#4ADE80` (Tailwind green-400) or `#39FF14` (neon) rather than Apple's system green `#30D158` which is designed for light mode contexts. Also define a `dimAccent` token (e.g., 40% opacity) and verify that passes 3:1 for non-text UI components.
+- Apply `.buttonStyle(.plain)` or `.buttonStyle(.borderless)` explicitly to the Analyze button. This removes SwiftUI's row-wide tap area extension.
+- Use `.contentShape(Rectangle())` on the button's label if the tap area needs to be explicitly sized.
+- Wrap the row navigation in `NavigationLink(value:)` (programmatic) rather than `NavigationLink(destination:)` so gesture ownership is cleaner.
+- Test on device, not just Simulator — list row gesture conflicts can behave differently in the two environments.
 
 **Warning signs:**
-- Electric green chosen by looking at it on a monitor rather than measuring contrast ratio
-- Same green token used for both interactive and decorative elements at different opacities
+- Tapping anywhere on the row triggers analyze instead of navigation
+- Both navigation and analyze fire on a single tap
+- Works in Simulator but fails on device (or vice versa)
 
 **Phase to address:**
-Design System Foundation phase — measure contrast before committing token values. Changing the green later requires updating the asset catalog and all references.
+Playlist analysis state phase — button placement and gesture architecture must be resolved before building the inline UI.
 
 ---
 
-### Pitfall 6: App Icon Requires Separate Dark and Tinted Variants for iOS 18+
+### Pitfall 6: Zone BPM Defaults Baked Into the Enum Instead of User-Configurable Storage
 
 **What goes wrong:**
-On iOS 18+, users can set their device to use dark app icons. If BeatStep only provides the standard light icon, iOS applies an automatic dark conversion that looks desaturated and wrong — especially bad for an app whose brand is electric green on black (the auto-dark version may invert to a light background).
+Zone BPM defaults are hardcoded as `switch` cases in the `RunZone` (or replacement) enum. When the requirement says "user-configurable overrides in Settings," the implementation stores overrides in UserDefaults but reads them in the wrong place — the enum computes a value, the Settings screen writes a UserDefaults key, but the run engine reads the enum value directly without checking UserDefaults. Customisation silently has no effect.
 
 **Why it happens:**
-Most icon design guides focus on the single 1024x1024 PNG. The dark and tinted variants are new (iOS 18) and require explicit design work: a true dark variant needs the icon to be designed for dark context, not just darkened automatically.
+The existing `PacePreset.bpm` computed property pattern is a static lookup on the enum. Copying that pattern for zones and then bolting on UserDefaults later creates a dual source of truth. The enum default is read by one code path; the UserDefaults override is read (or not read) by another.
 
 **How to avoid:**
-Design three icon variants from the start:
-- **Standard (light):** What most users see
-- **Dark:** Designed explicitly for dark icon mode (typically dark background, lighter/glowing elements)
-- **Tinted:** Grayscale source image that iOS tints to the user's chosen wallpaper color
-
-In Xcode 16+, configure the AppIcon asset with `Appearances: Any, Dark, Tinted` in the asset catalog. For BeatStep's electric green / dark aesthetic, the dark variant may actually be the preferred design — consider making it the primary icon and ensuring the light variant still reads well.
-
-Do not use Icon Composer's layered `.icon` format unless confirmed supported by the target iOS version. For iOS 17 and below support, provide flat PNGs in the asset catalog.
+Design the zone BPM resolution as a single function from the start: `RunZone.effectiveBPM(for zone: RunZone) -> Int` that checks UserDefaults for an override, falls back to the hardcoded default. `RunEngineService.targetBPM` must call this function — never the raw enum property. Keep the default values in a static constant, not as part of the enum's `rawValue`, so they can be overridden without touching the persisted identity of the zone.
 
 **Warning signs:**
-- Only one entry in the AppIcon asset catalog
-- Dark mode device shows an auto-converted icon that looks wrong
-- Icon review screenshots not taken on a dark-mode device
+- Settings screen saves zone BPM changes but runs still use wrong BPM
+- Zone BPM override key in UserDefaults exists but `effectiveBPM` in `RunEngineService` returns the hardcoded value
 
 **Phase to address:**
-Brand Assets phase — design all three variants before submitting. App Store Connect requires the 1024x1024 be the standard variant.
+Zone-based running phase — architecture for BPM resolution must be settled before the Settings override UI is built.
 
 ---
 
-### Pitfall 7: ultraThinMaterial in MiniPlayer Looks Wrong Without Dark Commitment
+### Pitfall 7: Onboarding Re-Trigger From Settings Presents Over Active Tab State
 
 **What goes wrong:**
-The existing MiniPlayer uses `.ultraThinMaterial` for its background, which creates a frosted glass effect. In dark mode this looks intentional and elegant — the blur over dark content is dark. But if the window-level dark mode override is not set correctly (Pitfall 1), the material will use light-mode blur when presented over the Spotify OAuth web view or any UIKit-backed content. The result is a white/grey glass pill floating above dark content — completely broken visually.
+Tapping "Redo Onboarding" in Settings presents the onboarding flow via `.fullScreenCover`. When the user dismisses it, they are returned to the Settings tab — but if the onboarding requested permissions mid-flow, there is a window where the underlying LibraryScanService or RunEngineService is also running (the app was already authenticated). Partial state from the onboarding (e.g. a new permission grant changing what CMPedometer can do) is not reflected until the next app launch.
 
 **Why it happens:**
-Material appearance is determined by the environment's color scheme, not the view's modifier. If a parent UIKit window or view controller has a different interface style, the material resolves to the wrong variant.
+Full-screen covers are purely presentational — they don't pause the underlying app. Services continue running. If onboarding grants a HealthKit permission that unlocks step-counting features, the already-initialised `CadenceService` doesn't know to re-check until someone triggers it.
 
 **How to avoid:**
-This is resolved by the same fix as Pitfall 1 (window-level `overrideUserInterfaceStyle`). Verify explicitly by testing the MiniPlayer overlay while the Spotify login web view is active — this is the most likely context where the material environment is wrong.
+- After re-triggerable onboarding dismisses, post a `NotificationCenter` notification or toggle an `@AppStorage` flag that causes the appropriate services to re-check their permission states.
+- Keep the re-triggerable onboarding read-only for already-granted permissions — it should only offer the Settings deep-link for denied states, not re-request authorization. This eliminates the re-grant scenario entirely.
+- The primary value of re-triggerable onboarding is explaining what each permission does and linking to Settings — not calling `requestAuthorization` again.
 
 **Warning signs:**
-- MiniPlayer background appears light/grey during Spotify auth flow
-- Material looks correct in the app but wrong on certain screens
+- Permission granted during re-trigger flow has no effect until app restart
+- CMPedometer authorization status changes not observed by CadenceService
 
 **Phase to address:**
-Design System Foundation phase — dark mode commitment at the window level must precede any material/overlay styling.
-
----
-
-### Pitfall 8: Custom Font Registration Silently Falls Back to System Font
-
-**What goes wrong:**
-If the design system specifies a custom typeface (e.g., a geometric sans-serif for the BeatStep wordmark or UI numerics), and the font file is added to the project but not listed in `Info.plist` under `UIAppFonts`, SwiftUI silently falls back to the system font with no runtime error. The app builds and runs; the font just looks like SF Pro everywhere. This is especially insidious for monospaced numeric fonts used in the cadence/BPM display — the fallback SF Pro Mono looks similar enough that the issue is not caught until a side-by-side comparison.
-
-**Why it happens:**
-Xcode does not validate that font filenames in `UIAppFonts` match the actual PostScript font name required in `.font(.custom("PostScriptName", size:))`. Developers add the file to the bundle but use the filename instead of the PostScript name, or forget the Info.plist entry entirely.
-
-**How to avoid:**
-Use a font verification helper in debug builds that logs all registered fonts at launch:
-```swift
-#if DEBUG
-UIFont.familyNames.sorted().forEach { family in
-    UIFont.fontNames(forFamilyName: family).forEach { print("FONT:", $0) }
-}
-#endif
-```
-This confirms the PostScript names available. If a custom font is not listed, it is not registered.
-
-For the design system, define font constants using the verified PostScript name once, and reference the constant everywhere rather than string literals.
-
-**Warning signs:**
-- UI looks "almost right" but numerics feel wrong weight
-- Font renders differently on device vs. simulator
-- No font verification step in the design system setup
-
-**Phase to address:**
-Design System Foundation phase — validate font registration in the first design system commit before building any screen that uses the new typeface.
+Onboarding flow phase (re-trigger path) — design the re-trigger as a read/link flow, not a re-request flow.
 
 ---
 
 ## Technical Debt Patterns
 
+Shortcuts that seem reasonable but create long-term problems.
+
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Add `.preferredColorScheme(.dark)` without window override | Looks correct in most views | System alerts, sheets, Spotify OAuth flicker light | Never — fix window level at the same time |
-| Migrate colors file-by-file over multiple milestones | Less risky per commit | Mixed token/hardcoded state makes theme changes inconsistent | Never — do all files in one milestone |
-| Use `.green` as the electric green placeholder during design | Fast prototyping | System green is not BeatStep's brand green; builds muscle memory for wrong value | OK in design spike, must be replaced before any review |
-| Skip dark icon variant for v1.1 | Saves design time | Auto-converted dark icon looks wrong on iOS 18 dark home screen | Acceptable for TestFlight; must be done before App Store submission |
-| Define `spotifyGreen` locally in each view | Easy to read in context | Drift — values diverge across files | Never — one `AppColors.spotifyBrand` constant |
+| Keep `PacePreset` alongside new `RunZone` temporarily | Avoids migration complexity | Two parallel zone systems, both partially active; `RunEngineService` logic forks | Never — clean cut required, migration code is safer |
+| Store onboarding completion as a single Bool (`hasSeenOnboarding`) | Simple to implement | Cannot distinguish "saw onboarding but skipped Health permission" vs "fully completed"; re-trigger flow breaks | MVP only if phase count is simple |
+| Infer analysis state from `ScannedPlaylist.tracksWithBPM > 0` instead of explicit enum | No schema change needed | Cannot distinguish "never analyzed" from "analyzed, zero results" — empty playlist shows wrong UI state | Never — add the explicit status field |
+| Hard-code zone BPM defaults in the `RunZone` enum rawValue | Zero UserDefaults reads per BPM lookup | Cannot override without changing code; Settings override screen cannot be wired without refactor | Acceptable only for initial scaffolding, must be replaced before Settings UI is built |
 
 ---
 
 ## Integration Gotchas
 
+Common mistakes when connecting to external services or system APIs.
+
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| TabView + MiniPlayer | Place MiniPlayer inside a single tab | MiniPlayer must wrap TabView in outer ZStack, visible across all tabs |
-| TabView + NavigationStack | Wrap TabView in a single NavigationStack | Each tab gets its own NavigationStack; TabView is the outer container |
-| preferredColorScheme | Apply only to SwiftUI root view | Also set UIWindow.overrideUserInterfaceStyle for system UI coverage |
-| Spotify OAuth WebView | Assume it inherits app dark mode | WKWebView and ASWebAuthenticationSession use system appearance; window override needed |
-| accentColor / tintColor | Set in asset catalog only | TabView tab bar tint must also be set via UITabBar.appearance() init-time on iOS 15; iOS 16+ use toolbarBackground |
+| HealthKit read permission | Checking `authorizationStatus` to decide whether to show a permission UI | Store "did we request" in `@AppStorage`; never rely on read authorization status |
+| CMPedometer authorization | Not calling `CMPedometer.authorizationStatus()` before starting updates, assuming Motion access is always available | Check `authorizationStatus()` on startup; gate CadenceService start on `.authorized` |
+| Spotify PKCE auth | Conflating "user has Spotify" with "user has Spotify Premium" — onboarding grants Spotify auth but Premium check only happens on first playback attempt | Add a post-auth Premium check early in onboarding so the user learns about the requirement before they pick a playlist and hit a run |
+| `LibraryScanService.scanEnabledPlaylists()` (fires in `.task` on `ContentView`) | Scan fires before user has seen Library and enabled any playlists, generating no-op API calls on first launch | Gate the background scan behind the onboarding completion flag so it only starts once the user has had a chance to enable playlists |
 
 ---
 
 ## Performance Traps
 
+Patterns that work at small scale but fail as usage grows.
+
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| NavigationPath for all tabs stored as @State in root view | Tab switch causes root view re-render, all tabs rebuild | Keep each tab's path state scoped to the tab's view, not the root | Immediately on complex navigation hierarchies |
-| Heavy view construction in TabView tab label closures | Tab bar renders slowly, stutter on tab switch | Tab label closures must be lightweight (Image + Text only) | Any non-trivial view in the label |
-| Re-running full library scan on every ContentView appear | Extra API calls when returning to Library tab | Guard scan with a "last scanned" timestamp; scan once per session | Any tab-switching interaction |
+| Computing playlist analysis coverage by fetching all `CachedBPM` rows on every list render | Library tab lags when scrolling through 20+ playlists | Cache the coverage ratio in `ScannedPlaylist.tracksWithBPM` (already exists) and update it after each scan — never recalculate in a list `ForEach` | At 10+ playlists with 50+ tracks each |
+| Triggering a full BPM scan inline from the Library list row's Analyze button without debounce | Multiple rapid taps queue duplicate scan tasks; API rate limits hit | Add an `isAnalyzing: Bool` flag per playlist in `ScannedPlaylist` (or in the view model); disable the button while the scan is in-flight | Immediately — no scale threshold |
+| Storing per-zone BPM overrides as individual UserDefaults keys per zone | Fine for 6 zones | If zones are renamed or re-ordered, stale keys accumulate and the wrong defaults are read | After any zone model change |
 
 ---
 
 ## UX Pitfalls
 
+Common user experience mistakes for these specific features.
+
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Active run tab showing same content as Library tab | Confusing — is the run on the Library screen? | Run tab should show the run screen only when a run is active; a "Start Run" CTA when idle |
-| Tab switching during an active run resets BPM display | Runner glances at phone, sees wrong cadence number | Tab switch should not interrupt RunEngineService; state lives in the service, not the view |
-| Settings accessible from a gear icon AND a Settings tab | Duplicate navigation paths confuse mental model | Pick one: Settings tab in TabView OR gear icon in nav bar. Not both |
-| Brand mark too small in icon at 60px (iPhone notification) | Icon unreadable at small sizes | Test wordmark/icon at 29x29, 40x40, 60x60 — wordmarks rarely survive below 60px |
-| Electric green badge/indicator on dark background looks neon | Feels like a toy, not a premium running app | Use a slightly desaturated electric green for small indicators; reserve full saturation for primary CTAs |
+| Onboarding permission screens without value framing ("Allow Motion Access" with no context) | Users decline permissions they would grant if they understood why | Frame each permission screen around the benefit: "BeatStep detects your running cadence using your phone's motion sensor — this is what syncs your music to your stride." Show the value before the system dialog fires |
+| Zone picker shows zone names (Z1–Z5) without BPM range context | Users don't know which zone matches their pace intent | Show zone name + BPM range inline: "Z3 — 155–165 BPM" |
+| BPM tolerance segmented control shows labels ("Tight", "Normal", "Loose") without ±BPM deltas | Users cannot make an informed choice | Requirement already calls for ±BPM deltas — implement as primary label, not secondary caption |
+| "Analyze" button triggers immediately on tap without feedback | User taps, nothing appears to happen, taps again — double scan | Show immediate inline progress state (spinner or progress fraction) on first tap; disable button during scan |
+| Re-triggerable onboarding accessible only by scrolling to the bottom of Settings | Users who need to re-grant permissions cannot find it | Put "Permissions" as a named Settings section, not buried in "About" or "Advanced" |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Dark mode commitment:** Verify on a physical device set to light mode — no white flashes, no light-mode alerts, Spotify OAuth web view looks dark
-- [ ] **Tab navigation:** Test navigate-deep → switch tabs → switch back — navigation state preserved on every tab
-- [ ] **Design tokens:** grep for `Color.green`, `Color.orange`, `Color.white`, `Color.gray`, `Color.red`, `Color.black` across all Swift files — zero hits outside AppColors.swift
-- [ ] **MiniPlayer visibility:** Confirm MiniPlayer is visible and properly inset on all three tabs, not just the tab it was originally on
-- [ ] **Electric green contrast:** Run all three contrast checks (text on black, black on green, text on material) through a contrast checker with actual hex values
-- [ ] **App icon dark variant:** Switch device to dark home screen icons (iOS 18+ Settings > Wallpaper > Customise > Dark) — icon looks intentional, not auto-converted grey
-- [ ] **Custom fonts:** Run the font registration debug log on device — confirm PostScript names appear as expected
-- [ ] **Active run across tabs:** Start a run, switch to Library tab, switch to Settings tab, switch back to Run tab — run is still active, BPM display correct
+Things that appear complete but are missing critical pieces.
+
+- [ ] **Onboarding gate:** Verify `LibraryScanService.scanEnabledPlaylists()` does NOT fire on first launch before onboarding completes — check the `.task` in `ContentView.authenticatedView`
+- [ ] **Zone replacement:** Verify `RunEngineService.effectiveBPM` reads from the new zone resolution function, not from a stale `PacePreset` reference or hardcoded fallback
+- [ ] **Analysis state UI:** Verify "unanalyzed" state is distinct from "analyzed with zero BPM results" — both must have different copy and actions
+- [ ] **Re-triggerable onboarding:** Verify the Settings trigger path shows accurate current permission states — test with Motion denied, Health denied, both granted, neither granted
+- [ ] **Inline analyze button:** Verify tapping the row still navigates while tapping the Analyze button only triggers analysis — test on physical device, not Simulator
+- [ ] **BPM tolerance segmented control:** Verify the `BPMTolerance.saved` value is read on every `RunTabView` appearance, not just on first init — if the user changes tolerance in Settings and returns to Run tab, the control must reflect the change
+- [ ] **Zone BPM overrides:** Verify changing a zone's BPM in Settings immediately affects a run started after the change, without requiring an app restart
 
 ---
 
 ## Recovery Strategies
 
+When pitfalls occur despite prevention, how to recover.
+
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| System alerts appear in light mode after ship | LOW | Add window overrideUserInterfaceStyle + Info.plist key; no view changes needed |
-| MiniPlayer invisible behind tab bar | MEDIUM | Restructure ZStack hierarchy; MiniPlayer must be outside TabView; requires layout rethink |
-| NavigationStack state lost on tab switch | MEDIUM | Add NavigationPath bindings to each tab's NavigationStack; state preservation falls into place |
-| Incomplete color token migration | LOW-MEDIUM | grep + fix file-by-file; non-breaking changes |
-| Electric green fails contrast | LOW | Change token value in AppColors.swift; update asset catalog; all references update automatically |
-| Missing dark app icon variant | LOW | Design dark variant, add to asset catalog, submit update |
-| Font not registering | LOW | Add PostScript name to UIAppFonts in Info.plist; rebuild |
+| Onboarding gate at wrong level, tab bar visible on first launch | LOW | Move gate to `ContentView` root branch; no data migration needed |
+| `PacePreset` raw values broken by zone rename, users lose saved preference | LOW | Write migration in `BeatStepApp.init()` before `ModelContainer` setup; map stale string to default zone |
+| SwiftData `ScannedPlaylist` schema crash on upgrade | MEDIUM | Add try/catch around `ModelContainer` creation; on failure, delete store and recreate; users lose scan history but app launches |
+| HealthKit permission state shown incorrectly in re-trigger flow | LOW | Replace status display with link-to-settings pattern; remove permission detection code |
+| Inline Analyze button fires row navigation | LOW | Add `.buttonStyle(.plain)` to the Analyze button; 1-line fix |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
+How roadmap phases should address these pitfalls.
+
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| System UI ignores preferredColorScheme | Design System Foundation | Test alerts, confirmationDialog on light-mode device — must appear dark |
-| MiniPlayer breaks with TabView | Tab Navigation | MiniPlayer visible and correctly inset on all three tabs |
-| NavigationStack state lost on tab switch | Tab Navigation | Deep navigation preserved after round-trip tab switching |
-| Incomplete color token migration | Design System Foundation | grep for raw Color references returns zero outside AppColors.swift |
-| Electric green contrast failures | Design System Foundation | Contrast ratios documented for all three background scenarios before tokens locked |
-| Missing dark/tinted icon variants | Brand Assets | Dark icon mode on iOS 18 device shows intentional design |
-| ultraThinMaterial wrong mode | Design System Foundation | MiniPlayer tested during Spotify auth flow — material appears dark |
-| Custom font silent fallback | Design System Foundation | Font debug log confirms PostScript name registration on device |
+| Onboarding gate at wrong view level | Onboarding flow (Phase 1) | First launch on clean install: tab bar must never be visible before onboarding completes |
+| PacePreset raw value migration | Zone-based running (before enum deletion) | Upgrade install from v1.1 build preserves last-used BPM preference |
+| SwiftData schema crash on upgrade | Playlist analysis state (before adding fields) | TestFlight upgrade from v1.1 — app launches without crash; existing scan data intact |
+| HealthKit cannot detect denied read | Onboarding flow (permission screen design) | Test with Health denied in device Settings — onboarding shows correct "Open Settings" CTA, not wrong state |
+| Inline Analyze button gesture conflict | Playlist analysis state | Physical device test: row tap navigates, button tap only triggers analyze |
+| Zone BPM override ignored by run engine | Zone-based running (settings integration) | Change zone BPM in Settings, start run — effectiveBPM matches the overridden value |
+| Re-trigger onboarding causes service state drift | Onboarding flow (re-trigger path design) | Grant Motion permission via re-trigger — CadenceService reflects new state without restart |
 
 ---
 
 ## Sources
 
-- [Apple Developer Forums: preferredColorScheme not affecting DatePicker and confirmationDialog](https://www.hackingwithswift.com/forums/swiftui/preferredcolorscheme-not-affecting-datepicker-and-confirmationdialog/11796)
-- [Apple Developer Forums: Sheet dark theme issues](https://developer.apple.com/forums/thread/740489)
-- [Apple Documentation: Choosing a specific interface style](https://developer.apple.com/documentation/uikit/choosing-a-specific-interface-style-for-your-ios-app)
-- [SwiftUI TabView state — Apple Developer Forums](https://developer.apple.com/forums/thread/124749)
-- [NavigationStack in iOS 18 TabView double-push bug — Apple Developer Forums](https://developer.apple.com/forums/thread/759542)
-- [The Ideal TabView Behaviour With SwiftUI NavigationStack](https://betterprogramming.pub/swiftui-navigation-stack-and-ideal-tab-view-behaviour-e514cc41a029)
-- [Reading and Setting Color Scheme in SwiftUI — nilcoalescing.com](https://nilcoalescing.com/blog/ReadingAndSettingColorSchemeInSwiftUI/)
-- [Overriding Dark Mode — Use Your Loaf](https://useyourloaf.com/blog/overriding-dark-mode/)
-- [Preparing App Icons for iOS 18 Dark and Tinted Modes — Koombea](https://www.koombea.com/blog/preparing-your-app-icon-for-ios-18-dark-and-tinted-modes/)
-- [Apple Developer Documentation: Configuring your app icon using an asset catalog](https://developer.apple.com/documentation/xcode/configuring-your-app-icon/)
-- [tabViewBottomAccessory — Apple Developer Documentation](https://developer.apple.com/documentation/SwiftUI/TabViewBottomAccessoryPlacement)
-- [Mastering Safe Area in SwiftUI — fatbobman.com](https://fatbobman.com/en/posts/safearea/)
-- [What can go wrong when using custom fonts in SwiftUI](https://blog.eidinger.info/what-can-go-wrong-when-using-custom-fonts-in-swiftui)
-- [WCAG Contrast Requirements — WebAIM](https://webaim.org/articles/contrast/)
-- [SwiftUI Design System: Semantic Colors — magnuskahr.dk](https://www.magnuskahr.dk/posts/2025/06/swiftui-design-system-considerations-semantic-colors/)
-- [Master SwiftUI Design Systems: From Scattered Colors to Unified UI Components — DEV Community](https://dev.to/swift_pal/master-swiftui-design-systems-from-scattered-colors-to-unified-ui-components-4i9c)
+- Apple Developer Documentation: [Authorizing access to health data](https://developer.apple.com/documentation/healthkit/authorizing-access-to-health-data)
+- Apple Developer Documentation: [CMPedometer](https://developer.apple.com/documentation/coremotion/cmpedometer)
+- Apple Developer Documentation: [fullScreenCover](https://developer.apple.com/documentation/swiftui/view/fullscreencover(ispresented:ondismiss:content:))
+- Apple Developer Documentation: [Restoring your app's state with SwiftUI](https://developer.apple.com/documentation/swiftui/restoring-your-app-s-state-with-swiftui)
+- Apple HIG: [Onboarding](https://developer.apple.com/design/human-interface-guidelines/onboarding)
+- Donny Wals: [A Deep Dive into SwiftData migrations](https://www.donnywals.com/a-deep-dive-into-swiftdata-migrations/)
+- Nil Coalescing: [Multiple buttons in SwiftUI List rows](https://nilcoalescing.com/blog/MultipleButtonsInListRows/)
+- Emre Havan / Fit Records: [Building a Scalable Apple Health Authorization Management View](https://medium.com/fit-records/building-a-scalable-apple-health-authorization-management-view-for-ios-54012e34318a)
+- Cocoacasts: [Managing Permissions With HealthKit](https://cocoacasts.com/managing-permissions-with-healthkit)
+- Atomic Robot: [An Unauthorized Guide to SwiftData Migrations](https://atomicrobot.com/blog/an-unauthorized-guide-to-swiftdata-migrations/)
+- Codebase inspection: `BeatStepApp.swift`, `ContentView.swift`, `RunEngineService.swift`, `BPMCacheService.swift`, `ScannedPlaylist.swift`, `PacePreset.swift`, `RunMode.swift`, `BPMTolerance.swift`, `RunTabView.swift`, `LoginView.swift`
 
 ---
-*Pitfalls research for: Dark-mode design system, tab navigation, and brand assets (BeatStep v1.1)*
-*Researched: 2026-03-23*
+*Pitfalls research for: BeatStep v1.2 — onboarding flow, playlist analysis state UX, zone-based running*
+*Researched: 2026-03-24*

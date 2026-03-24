@@ -1,8 +1,8 @@
 # Stack Research
 
 **Domain:** Native iOS running music-sync app (accelerometer cadence to Spotify BPM matching)
-**Researched:** 2026-03-23
-**Confidence:** HIGH (all v1.1 additions use first-party Apple APIs; no third-party libraries required)
+**Researched:** 2026-03-24
+**Confidence:** HIGH (all v1.2 additions use first-party Apple APIs; no third-party libraries required)
 
 ---
 
@@ -21,252 +21,206 @@ All of the following are working in production. No changes needed:
 
 ---
 
-## v1.1 Stack Additions: Dark by Design
+## v1.1 Stack Additions: Dark by Design (Validated — Do Not Re-Research)
 
-All v1.1 capabilities use **zero new external dependencies**. Every item below is a first-party Apple pattern or asset convention.
+All v1.1 additions are first-party SwiftUI patterns working in production. See prior research file for full detail on design token architecture, dark mode Info.plist config, TabView with UITabBarAppearance, and app icon asset catalog setup.
 
-### Core Technologies (v1.1)
+---
+
+## v1.2 Stack Additions: The Right Flow
+
+All v1.2 capabilities use **zero new external dependencies**. Every item below is a first-party Apple pattern.
+
+### Core Technologies (v1.2)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| SwiftUI `Color` extension (static tokens) | iOS 17+ | Semantic color tokens | Extend `Color` with `static var` properties to create a single source of truth for palette. Callers use `Color.accent` not hardcoded hex. Survives refactor, easy to audit. |
-| SwiftUI `Font` extension (static tokens) | iOS 17+ | Typography scale tokens | Mirror pattern: `Font.beatstepTitle`, `Font.beatstepLabel`. Centralizes typeface + weight + size decisions. |
-| SwiftUI `ViewModifier` (component tokens) | iOS 17+ | Reusable styling contracts | Encapsulate multi-property styles (font + color + spacing) into named modifiers: `.beatstepCardStyle()`, `.beatstepHeadlineStyle()`. Prevents style drift across 5,000+ LOC. |
-| `UIUserInterfaceStyle = Dark` in Info.plist | iOS 13+ | Force dark-only appearance | Single key in Info.plist strips the system-level light/dark toggle for this app. No runtime logic needed. The entire UIKit + SwiftUI render pipeline honors it. |
-| SwiftUI `TabView` | iOS 17+ | Bottom tab navigation | Native Apple component. Handles safe area, tab badges, accessibility labels. Use `.tabViewStyle(.automatic)` (default) for standard iOS bottom bar. No custom tab bar needed. |
-| Asset Catalog (AppIcon.appiconset) | Xcode 14+ | App icon | Since Xcode 14, a single 1024×1024 PNG in the asset catalog is sufficient. System auto-scales to all required sizes. No icon generator tools needed. |
+| SwiftUI `.overlay` + `@AppStorage` | iOS 17+ | Onboarding flow gate and state persistence | `.overlay` presents onboarding above existing ContentView without modifying the NavigationStack or TabView. `@AppStorage("hasCompletedOnboarding")` persists state in UserDefaults with automatic SwiftUI binding — no manual UserDefaults reads needed. |
+| SwiftUI `ScrollView` (horizontal, programmatic) with `ScrollPosition` | iOS 17+ | Multi-step onboarding screen progression | `ScrollPosition` (iOS 17) allows programmatic screen-to-screen navigation while disabling free swiping. Each step fills width via `.containerRelativeFrame([.horizontal])`. Cleaner than `TabView` which allows uncontrolled swiping; cleaner than `ZStack` with manual state. |
+| `HealthKit` (`HKHealthStore`) | iOS 13+ | Apple Health permission request in onboarding | Only required for the permission-priming screen in onboarding. BeatStep does NOT need to read Health data — it reads motion from CoreMotion directly. `HKHealthStore.requestAuthorization(toShare: [], read: [HKQuantityType(.stepCount)])` triggers the iOS permission sheet, which is the value-framed moment: "BeatStep works better with Health access." |
+| `SwiftUI.Picker` with `.segmented` style | iOS 17+ | BPM tolerance picker redesign (±3, ±7, ±12) | The existing `BPMTolerance.description` computed property already returns "±3 BPM" etc. Replace the three-label segmented control labels ("Tight (±3 BPM)") with just the delta values ("±3", "±7", "±12") — no model change needed, only the `TolerancePicker` view label. |
+| `enum RunZone` (new model, no persistence API needed) | Swift / iOS 17+ | Zone-based running: Z1–Z5 + Free | Replace `PacePreset` with `RunZone`. Zone BPM defaults stored in `UserDefaults` via `@AppStorage` for user configurability. `RunZone` carries zone number, default BPM, display name, and color (maps to DesignTokens palette). No new persistence framework needed — SwiftData already used for BPM cache; `UserDefaults` is appropriate for simple scalar settings. |
+| `safeAreaInset(edge: .bottom)` | iOS 15+ | Full-width Run CTA at bottom of Run tab | Already used in `ContentView` for `MiniPlayerView`. Apply same pattern to `RunTabView`: pin a full-width accent button above the safe area bottom edge. Button gets `.frame(maxWidth: .infinity)` before `.background` so the background fills the full width. |
 
-### Supporting Libraries (v1.1)
+### Supporting Libraries (v1.2)
 
-None. All v1.1 work is first-party SwiftUI patterns.
+None. All v1.2 work is first-party SwiftUI and Apple framework patterns.
 
-If the electric green exact hex color needs to be available across multiple contexts (SwiftUI + UIKit), define it in the asset catalog as a named color resource instead of only in a `Color` extension. Xcode 15+ auto-generates `Color(.beatstepAccent)` access from asset catalog entries.
+### Development Tools (v1.2)
 
-### Development Tools (v1.1)
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| SF Symbols 6 | Icon system for tab bar glyphs | Use `Image(systemName:)`. Provides "music.library", "figure.run", "gearshape" or equivalents. No icon font licensing needed. |
-| Figma / Sketch (optional) | Wordmark + app icon design | Design the wordmark externally, export as SVG or 1024×1024 PNG, import to asset catalog. Xcode is not a design tool. |
+No new tools required. Existing Xcode project with Swift 6, SwiftData, and CoreMotion is sufficient.
 
 ---
 
-## Design System Architecture (Recommended Pattern)
+## Zone Model Design
 
-### Token Hierarchy
+### RunZone enum replaces PacePreset
 
-```
-DesignTokens (namespace enum — not instantiable)
-├── Color tokens     → extension Color { static var ... }
-├── Font tokens      → extension Font { static var ... }
-├── Spacing tokens   → enum Spacing { static let xs: CGFloat = 4; ... }
-└── Radius tokens    → enum Radius { static let card: CGFloat = 12; ... }
-```
-
-Use an `enum` (not `struct` or `class`) for namespace groups because an enum with no cases cannot be accidentally instantiated.
-
-### Color Token Pattern
-
-Define tokens in two layers: **primitive** (raw hex) and **semantic** (named by role):
+The existing `PacePreset` enum (easyJog/steady/tempo/fast/sprint/custom with hardcoded BPM) must be replaced by `RunZone` with user-configurable defaults:
 
 ```swift
-// Layer 1: Primitives (private) — never use directly in views
-private extension Color {
-    static let _electricGreen = Color(hex: "#39FF14")
-    static let _nearBlack     = Color(hex: "#0A0A0A")
-    static let _surfaceGray   = Color(hex: "#1A1A1A")
-    static let _textPrimary   = Color.white
-    static let _textSecondary = Color.white.opacity(0.55)
-}
+enum RunZone: String, CaseIterable, Identifiable {
+    case free
+    case z1, z2, z3, z4, z5
 
-// Layer 2: Semantic tokens (public) — use these in views
-extension Color {
-    static let accent          = _electricGreen     // Primary brand accent
-    static let background      = _nearBlack          // App background
-    static let surface         = _surfaceGray        // Card / elevated surfaces
-    static let textPrimary     = _textPrimary        // Primary readable text
-    static let textSecondary   = _textSecondary      // Labels, captions
-    static let textOnAccent    = Color.black         // Text on green accent buttons
-}
-```
+    var id: String { rawValue }
 
-This pattern means every call in 5,000+ LOC that says `.foregroundStyle(.white.opacity(0.5))` becomes `.foregroundStyle(.textSecondary)` — and changing the opacity project-wide is a one-line edit.
+    var displayName: String {
+        switch self {
+        case .free: return "Free"
+        case .z1: return "Z1 — Recovery"
+        case .z2: return "Z2 — Aerobic"
+        case .z3: return "Z3 — Tempo"
+        case .z4: return "Z4 — Threshold"
+        case .z5: return "Z5 — Max Effort"
+        }
+    }
 
-### Font Token Pattern
-
-```swift
-extension Font {
-    // Headline — large BPM readout, run mode display
-    static let beatstepDisplay = Font.system(size: 48, weight: .bold, design: .monospaced)
-    // Title — section headers
-    static let beatstepTitle   = Font.system(size: 22, weight: .semibold)
-    // Body — general readable text
-    static let beatstepBody    = Font.system(.body)
-    // Label — captions, metadata, secondary info
-    static let beatstepLabel   = Font.system(.subheadline)
-    // Caption — smallest; timestamps, tolerances
-    static let beatstepCaption = Font.system(.caption)
-}
-```
-
-Note: If a custom typeface (not SF Pro) is chosen, replace `Font.system(...)` with `Font.custom("TypefaceName", size: ..., relativeTo: .body)`. The `relativeTo:` parameter enables Dynamic Type scaling on custom fonts — do not omit it.
-
-### ViewModifier Token Pattern
-
-```swift
-struct BeatstepCard: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .background(Color.surface)
-            .cornerRadius(Radius.card)
-            .padding(Spacing.md)
+    var defaultBPM: Int? {
+        switch self {
+        case .free: return nil      // No target — music adapts to pace
+        case .z1: return 150
+        case .z2: return 160
+        case .z3: return 170
+        case .z4: return 180
+        case .z5: return 190
+        }
     }
 }
-
-extension View {
-    func beatstepCard() -> some View { modifier(BeatstepCard()) }
-}
 ```
 
-### Spacing Tokens
+BPM defaults are informed by the running cadence literature: recreational runners range 150–170 spm, with 180 spm as the widely-cited optimum for tempo running, and elite runners reaching up to 190–200 spm. These align with the existing `PacePreset` BPM values, so no RunEngine recalibration is needed.
 
-```swift
-enum Spacing {
-    static let xs: CGFloat  = 4
-    static let sm: CGFloat  = 8
-    static let md: CGFloat  = 16
-    static let lg: CGFloat  = 24
-    static let xl: CGFloat  = 32
-    static let xxl: CGFloat = 48
-}
+Zone color mapping: use existing DesignTokens palette. Z1 → `textTertiary`, Z2 → `textSecondary`, Z3 → `stateWarning`, Z4 → `stateError`, Z5 → `accent`, Free → `stateSuccess`.
+
+### Zone BPM UserDefaults Persistence
+
+Store per-zone overrides as individual `@AppStorage` keys rather than encoding to JSON:
+
 ```
+"zoneBPM_z1" → Int (default 150)
+"zoneBPM_z2" → Int (default 160)
+"zoneBPM_z3" → Int (default 170)
+"zoneBPM_z4" → Int (default 180)
+"zoneBPM_z5" → Int (default 190)
+```
+
+A `ZoneSettingsService` (or Settings section in `SettingsView`) reads/writes these keys. `RunZone.bpm(forUser:)` resolves override → default.
 
 ---
 
-## Dark-Mode-Only Configuration
+## Onboarding Flow Architecture
 
-### Info.plist Key
+### State gate pattern
 
-Add to `/BeatStep/Resources/Info.plist`:
+```swift
+// In ContentView
+@AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
+var body: some View {
+    Group {
+        if authService.isAuthenticated {
+            authenticatedView
+        } else {
+            LoginView()
+        }
+    }
+    .overlay {
+        if !hasCompletedOnboarding {
+            OnboardingFlow(isComplete: $hasCompletedOnboarding)
+                .transition(.opacity)
+        }
+    }
+}
+```
+
+The overlay presents before authentication — users see the value proposition before being sent to Spotify login. This is the correct UX order: prime the value, request permissions, then authenticate.
+
+### Permission priming sequence
+
+1. **Welcome screen** — value proposition, "Your music, your stride"
+2. **Motion access screen** — explain why cadence detection needs motion; trigger `CMMotionActivityManager.authorizationStatus` check; button triggers the actual permission request
+3. **Apple Health screen** — explain the benefit ("Works better with Health sync"); trigger `HKHealthStore().requestAuthorization(...)`; skip allowed
+4. **Spotify screen** — "Connect your music"; routes to existing `LoginView` / `SpotifyAuthService.initiateAuth()`
+
+### Re-triggerable from Settings
+
+Add "Permissions" section to `SettingsView` with individual "Re-authorize" buttons. Each button triggers the OS permission dialog again (for motion and Health). For Spotify, re-auth is already handled by the Disconnect/Reconnect pattern. Set `hasCompletedOnboarding = false` via `@AppStorage` to replay full flow on request.
+
+---
+
+## HealthKit Integration Scope
+
+**BeatStep does NOT read Health data.** The only reason to integrate HealthKit is to surface the Apple Health permission dialog in onboarding as a value-framing moment. If the user declines, the app functions identically — CoreMotion's `CMPedometer` does not require Health authorization.
+
+Required Info.plist additions:
 
 ```xml
-<key>UIUserInterfaceStyle</key>
-<string>Dark</string>
+<key>NSHealthShareUsageDescription</key>
+<string>BeatStep can read your step data from Apple Health to improve cadence accuracy when your phone is pocketed.</string>
 ```
 
-This forces dark appearance app-wide regardless of system setting. No SwiftUI modifier needed. No runtime logic needed.
+Do NOT add `NSHealthUpdateUsageDescription` — BeatStep never writes to Health.
 
-### What This Replaces
-
-All existing code in the codebase currently uses `Color.black` backgrounds and `.white` foreground styles — this is already written for dark mode. Once `UIUserInterfaceStyle = Dark` is set, the `.colorScheme(.dark)` modifier on individual views (if any exist) can be removed as redundant.
-
-Do NOT add `.preferredColorScheme(.dark)` on the root `WindowGroup` — the Info.plist key is the correct approach. The SwiftUI modifier only works below the view hierarchy and can be accidentally overridden; the Info.plist key applies to the entire process.
+Required framework: `HealthKit.framework` linked as Optional (not Required) so the app does not crash on devices where HealthKit is unavailable (e.g., iPad). Check `HKHealthStore.isHealthDataAvailable()` before calling `requestAuthorization`.
 
 ---
 
-## TabView Integration
+## BPM Tolerance Picker Redesign
 
-### Current Navigation (v1.0)
+No model changes. `BPMTolerance` enum and its `range` / `description` properties are correct as-is.
 
-`ContentView` uses a single `NavigationStack` with `PlaylistListView` as root, settings in a toolbar nav link, and `MiniPlayerView` as a ZStack overlay. The mini-player is manually positioned with `.safeAreaInset`.
+Change is isolated to `TolerancePicker.swift`: replace `"\(level.displayName) (\(level.description))"` labels with just `level.description` ("±3 BPM", "±7 BPM", "±12 BPM") or even shorter ("±3", "±7", "±12") for the segmented control.
 
-### Target Navigation (v1.1)
+Segmented control character count matters — the current labels ("Tight (±3 BPM)") are long enough to compress on small screens. Shorter labels fix this without any model or logic changes.
 
-Replace with a `TabView` containing three tabs: Library, Run, Settings.
+---
+
+## Full-Width Run CTA
+
+Pattern: `.safeAreaInset(edge: .bottom)` on the `NavigationStack` wrapping `RunTabView`, or within `RunTabView` itself using a `VStack` with a `Spacer` pushing the button down. The `safeAreaInset` approach is preferred because it keeps the button visible even when the MiniPlayer is shown (both stack in the safe area inset chain).
 
 ```swift
-TabView {
-    Tab("Library", systemImage: "music.note.list") {
-        NavigationStack { PlaylistListView() }
+// In RunTabView or its NavigationStack
+.safeAreaInset(edge: .bottom) {
+    Button { /* start run */ } label: {
+        Text("Start Run")
+            .font(.bodyBold)
+            .foregroundStyle(Color.textOnAccent)
+            .frame(maxWidth: .infinity)
+            .frame(height: ComponentSize.buttonHeight)
+            .background(Color.accent)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.pill))
     }
-    Tab("Run", systemImage: "figure.run") {
-        NavigationStack { RunView() }
-    }
-    Tab("Settings", systemImage: "gearshape") {
-        NavigationStack { SettingsView() }
-    }
+    .padding(.horizontal, Spacing.md)
+    .padding(.bottom, Spacing.sm)
 }
 ```
 
-The `Tab(_:systemImage:)` initializer is the iOS 18 API. For iOS 17 compatibility, use the `.tabItem { Label(...) }` modifier form instead.
-
-### Mini-Player with TabView
-
-The existing `MiniPlayerView` ZStack overlay pattern must survive the TabView refactor. Two options:
-
-1. **Wrap TabView in a ZStack** — place MiniPlayerView above TabView. Use `.safeAreaInset(edge: .bottom)` on the TabView to push tab content above the mini-player height.
-2. **TabView accessory** — iOS 26+ adds `tabViewBottomAccessory()` which places content directly above the tab bar. This is the cleanest approach but targets iOS 26 only. Since BeatStep targets iOS 17+, use option 1.
-
-Option 1 is the right choice for v1.1. The existing ZStack pattern in `ContentView` already does this — it just needs the inner `NavigationStack` replaced with a `TabView`.
-
-### Tab Bar Appearance
-
-To style the tab bar (dark background, green selection tint), use `UITabBar.appearance()` in the app initializer:
-
-```swift
-init() {
-    // ... existing SwiftData setup ...
-    let tabBarAppearance = UITabBarAppearance()
-    tabBarAppearance.configureWithOpaqueBackground()
-    tabBarAppearance.backgroundColor = UIColor(Color.background)
-    UITabBar.appearance().standardAppearance = tabBarAppearance
-    UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-    UITabBar.appearance().tintColor = UIColor(Color.accent)
-}
-```
-
-This is the correct way to customize tab bar background and selection color in SwiftUI. SwiftUI's `.tint()` modifier on `TabView` only controls the selected icon color (acceptable alternative), but for background color the UIAppearance API is required.
+Note: `ComponentSize.buttonHeight` (52) is already defined in `DesignTokens.swift`. No new token needed.
 
 ---
 
-## App Icon Requirements
+## Analyzed State UX
 
-### Asset Catalog Setup
+`ScannedPlaylist` already has `tracksWithBPM`, `totalTracks`, and `lastScanned` fields. No model changes needed.
 
-Xcode 14+ supports single-size app icons. Workflow:
+The visual change is in `PlaylistListView` (Library tab): surface the existing `coverageText` property as a pill or badge on each playlist row. An "Analyze" button inline with the row calls the existing `LibraryScanService.shared.scan(playlist:)` flow.
 
-1. Design a 1024×1024 PNG (no transparency, no rounded corners — system applies squircle mask)
-2. Open `Assets.xcassets` → `AppIcon` → Attributes Inspector → Device: "Single Size"
-3. Drag the PNG into the single 1024×1024 slot
-4. Xcode auto-generates all required sizes at build time
-
-### File Requirements
-
-| Requirement | Spec |
-|-------------|------|
-| Format | PNG (not JPG, not SVG) |
-| Size | 1024 × 1024 px |
-| Color space | sRGB |
-| Transparency | None (fully opaque) |
-| Rounded corners | Do not add — system applies squircle mask |
-| Dark mode variant | Optional (iOS 18+ allows dark/tinted variants via asset catalog) |
-
-### Dark/Tinted Variants (Optional for v1.1)
-
-iOS 18 added support for alternative app icon appearances (dark, tinted) in the asset catalog. Users can choose via Settings > Home Screen. Not required for v1.1 but worth noting the asset catalog slot is available if desired.
+No new APIs or services required.
 
 ---
 
-## Alternatives Considered
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| `UIUserInterfaceStyle = Dark` in Info.plist | `.preferredColorScheme(.dark)` on root view | Never — Info.plist is global and cannot be overridden by subsystems |
-| `Color` extension static tokens | Asset catalog named colors | If colors need to be shared across SwiftUI + UIKit extensively. For a pure SwiftUI app, extension is simpler. |
-| Native `TabView` | Custom tab bar view | If Apple's tab bar visual cannot be themed to match the design (unlikely — `UITabBarAppearance` is highly configurable) |
-| Single 1024px icon in asset catalog | Multi-size icon set | Only use multi-size if you need different artwork at different sizes (very unusual) |
-| SF Symbols for tab icons | Custom SVG tab icons | Custom icons only if SF Symbols cannot represent the concept. The three tabs (Library, Run, Settings) all have strong SF Symbol equivalents. |
-
-## What NOT to Use
+## What NOT to Add
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Third-party design system libraries (DesignKit, etc.) | No library integrates with BeatStep's specific token needs. Adds dependency overhead with zero benefit. | SwiftUI native `Color`/`Font` extensions + `ViewModifier` |
-| Hardcoded hex strings in view files | Already present in v1.0 (e.g. `.foregroundStyle(.white.opacity(0.5))`). Not wrong to ship, but creates drift. | Semantic `Color` token extensions |
-| `UITabBarController` directly | Unnecessary UIKit reach-in. SwiftUI's `TabView` wraps it cleanly. | SwiftUI `TabView` |
-| `tabViewStyle(.page)` | This creates a horizontally-pageable tab view (like onboarding flows), not a bottom nav bar. | Default `TabView` without style modifier |
-| Icon generator tools (MakeAppIcon, etc.) | Xcode 14+ does this natively via single-size asset catalog. | Asset catalog single-size slot |
-| `.colorScheme(.dark)` on individual views | Creates per-view overrides. Light-mode devices still show light chrome in unstyled areas. | Info.plist `UIUserInterfaceStyle = Dark` |
+| Third-party onboarding library (OnboardingKit, etc.) | Zero benefit over native SwiftUI; adds dependency; doesn't use BeatStep's design tokens | `ScrollView` + `ScrollPosition` + `.overlay` pattern |
+| `TabView` with `.tabViewStyle(.page)` for onboarding | Allows uncontrolled free-swiping between screens; hard to enforce forward-only flow | Horizontal `ScrollView` with `scrollTargetBehavior(.viewAligned)` and `ScrollPosition` |
+| Full HealthKit integration (workout sessions, HRV, etc.) | Out of scope per PROJECT.md — no workout tracking, no analytics | Permission request only; read nothing |
+| Core Data / additional SwiftData models for zone settings | Overkill for 5 integer values | `@AppStorage` / `UserDefaults` with per-zone keys |
+| Custom segmented control library | Native `Picker` with `.segmented` supports simple text labels cleanly; shorter label text is the fix | Shorten `BPMTolerance` display labels |
+| `NSHealthUpdateUsageDescription` | BeatStep never writes to Health | Only add `NSHealthShareUsageDescription` |
 
 ---
 
@@ -274,26 +228,45 @@ iOS 18 added support for alternative app icon appearances (dark, tinted) in the 
 
 | Feature | Min iOS | Notes |
 |---------|---------|-------|
-| `UIUserInterfaceStyle` in Info.plist | iOS 13 | Works on all supported devices |
-| `TabView` with `Tab(_:systemImage:)` initializer | iOS 18 | Use `.tabItem { Label(...) }` form for iOS 17 |
-| Asset catalog single-size icon | Xcode 14 | Project-level, not runtime |
-| `UITabBarAppearance` | iOS 15 | Required for opaque background + custom color |
-| Dark/tinted app icon variants | iOS 18 | Optional; ship without for v1.1 |
-| `Color` extension static tokens | iOS 15+ | No iOS version dependency for the pattern itself |
+| `@AppStorage` | iOS 14 | Standard UserDefaults binding |
+| `ScrollPosition` | iOS 17 | Required for programmatic horizontal scroll navigation |
+| `.containerRelativeFrame([.horizontal])` | iOS 17 | Each onboarding page fills container width |
+| `scrollTargetBehavior(.viewAligned)` | iOS 17 | Snap-to-page behavior |
+| `HKHealthStore.requestAuthorization` | iOS 13 | Standard HealthKit permission |
+| `HKHealthStore.isHealthDataAvailable()` | iOS 13 | Availability check before calling HealthKit |
+| `safeAreaInset(edge:)` | iOS 15 | Already used in ContentView for MiniPlayer |
+| `HealthKit.framework` as Optional link | Xcode 14+ | Prevents crash on iPad/non-Health devices |
+
+Project already targets iOS 17+ (based on `ScrollPosition` usage being available and existing code patterns). All v1.2 additions are within this target.
+
+---
+
+## Integration Points
+
+| v1.2 Feature | Existing Code Touched | Change Type |
+|---|---|---|
+| Onboarding flow | `ContentView.swift` | Add `.overlay` gate with `@AppStorage` |
+| Zone model | `PacePreset.swift` | Replace enum; update callers in RunEngine |
+| Zone settings | `SettingsView.swift` | Add Zone BPM section |
+| Tolerance picker | `TolerancePicker.swift` | Change label text only |
+| Analyzed state | `PlaylistListView` (Library views) | Surface existing `ScannedPlaylist` fields |
+| Full-width Run CTA | `RunTabView.swift` | Restructure button into `safeAreaInset` |
+| Info.plist | `Info.plist` | Add `NSHealthShareUsageDescription` |
+| App target | Xcode project file | Add `HealthKit.framework` as optional |
 
 ---
 
 ## Sources
 
-- [Apple Documentation: Choosing a specific interface style](https://developer.apple.com/documentation/uikit/choosing-a-specific-interface-style-for-your-ios-app) — `UIUserInterfaceStyle` Info.plist key (HIGH confidence)
-- [Apple Documentation: Configuring your app icon](https://developer.apple.com/documentation/xcode/configuring-your-app-icon/) — asset catalog single-size requirements (HIGH confidence)
-- [Apple Documentation: Enhancing your app's content with tab navigation](https://developer.apple.com/documentation/SwiftUI/Enhancing-your-app-content-with-tab-navigation) — `Tab(_:systemImage:)` API (HIGH confidence)
-- [SwiftLee: App Icon Generator no longer needed with Xcode 14](https://www.avanderlee.com/xcode/replacing-app-icon-generators/) — single-size icon confirmed (MEDIUM confidence)
-- [magnuskahr: SwiftUI Design System Considerations: Semantic Colors](https://www.magnuskahr.dk/posts/2025/06/swiftui-design-system-considerations-semantic-colors/) — semantic token patterns (MEDIUM confidence)
-- [Design Systems Collective: Building a SwiftUI Design System Part 1: Color](https://www.designsystemscollective.com/building-a-swiftui-design-system-part-1-color-2ea75035e691) — primitive/semantic layer pattern (MEDIUM confidence)
-- [Design Systems Collective: Building a SwiftUI Design System Part 2: Typography](https://www.designsystemscollective.com/building-a-swiftui-design-system-part-2-typography-4dd6b819b711) — font token patterns (MEDIUM confidence)
-- [Donny Wals: Using iOS 18's new TabView with a sidebar](https://www.donnywals.com/using-ios-18s-new-tabview-with-a-sidebar/) — TabView iOS 18 API changes (MEDIUM confidence)
+- [Apple Developer: Authorizing access to health data](https://developer.apple.com/documentation/healthkit/authorizing-access-to-health-data) — HealthKit permission flow (HIGH confidence)
+- [Apple Developer: NSHealthShareUsageDescription](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSHealthShareUsageDescription) — Info.plist key requirement (HIGH confidence)
+- [Apple Developer: Configuring HealthKit access](https://developer.apple.com/documentation/xcode/configuring-healthkit-access) — Optional framework linking (HIGH confidence)
+- [Apple Developer: SegmentedPickerStyle](https://developer.apple.com/documentation/swiftui/segmentedpickerstyle) — Native segmented control API (HIGH confidence)
+- [Rivera Labs: Building a Better Onboarding Flow in SwiftUI for iOS 18+](https://www.riveralabs.com/blog/swiftui-onboarding/) — ScrollPosition + overlay patterns (MEDIUM confidence)
+- [magnuskahr: Better placements of bottom buttons in SwiftUI](https://www.magnuskahr.dk/posts/2022/10/better-placements-of-bottom-buttons-in-swiftui/) — safeAreaInset for bottom CTA (MEDIUM confidence)
+- [Running Writings: Science of cadence](https://runningwritings.com/2026/01/science-of-cadence.html) — Cadence range 150–190 spm for zone BPM defaults (MEDIUM confidence)
+- [TrainingPeaks: Finding Your Perfect Run Cadence](https://www.trainingpeaks.com/blog/finding-your-perfect-run-cadence/) — 180 spm as widely-cited tempo optimum (MEDIUM confidence)
 
 ---
-*Stack research for: BeatStep v1.1 Dark by Design — design system, dark mode, tab navigation, app icon*
-*Researched: 2026-03-23*
+*Stack research for: BeatStep v1.2 The Right Flow — onboarding, zone model, analyzed state UX, tolerance picker, Run CTA*
+*Researched: 2026-03-24*
