@@ -57,11 +57,11 @@
   2. RunEngineService publishes a signed cadenceDelta (e.g., +4, -6) in guided mode and a sync quality label in free mode
   3. User can toggle between 1:1 and 1/2 tempo matching, and findMatchingTracks respects the mode as a ranking preference (not a BPM /2 transformation)
   4. DesignTokens includes sync-state color aliases (inSync, drifting, mismatched) usable by downstream views
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
+- [ ] 13-01-PLAN.md — Model types (TempoMode, SyncQuality), sync-state color tokens, threshold tests
+- [ ] 13-02-PLAN.md — Wire models into RunEngineService, half-tempo ranking in findMatchingTracks
 
 ### Phase 14: Cadence Display + Status Bar
 **Goal**: Runners see rich, glanceable cadence feedback and run status as standalone components that work in SwiftUI previews before the full screen is assembled
