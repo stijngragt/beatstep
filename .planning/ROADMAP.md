@@ -46,11 +46,11 @@
   2. User can tap an inline analyze button on an unanalyzed playlist row without navigating into the detail screen
   3. User sees BPM tolerance as a segmented control showing concrete deltas (+-3, +-7, +-12 BPM) instead of named labels
   4. User can open Settings and adjust BPM values for each zone (Z1 through Z5), with sensible defaults pre-filled
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
+- [ ] 10-01-PLAN.md — RunZone model, zone settings UI, tolerance picker labels
+- [ ] 10-02-PLAN.md — Playlist analyzed state indicators, inline swipe-to-analyze
 
 ### Phase 11: Run Experience
 **Goal**: Users select a running zone that speaks their language and see a prominent action to start their run
@@ -97,6 +97,6 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | v1.1 | 2/2 | Complete | 2026-03-23 |
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
-| 10. Models, Settings & Library UX | v1.2 | 0/? | Not started | - |
+| 10. Models, Settings & Library UX | v1.2 | 0/2 | Not started | - |
 | 11. Run Experience | v1.2 | 0/? | Not started | - |
 | 12. Onboarding | v1.2 | 0/? | Not started | - |
