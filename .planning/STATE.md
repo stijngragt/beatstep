@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: In The Zone
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-24T21:18:00Z"
-last_activity: 2026-03-24 -- Completed 16-01 (ActiveRunView + LongPressStopButton)
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-24T21:30:22Z"
+last_activity: 2026-03-24 -- Completed 16-02 (fullScreenCover wiring + MiniPlayer hiding)
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  completed_phases: 4
+  total_plans: 7
+  completed_plans: 7
   percent: 100
 ---
 
@@ -26,16 +26,16 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 16 of 16 (Active Run Assembly)
-Plan: 1 of 2 in current phase (COMPLETE)
+Plan: 2 of 2 in current phase (COMPLETE)
 Status: Executing
-Last activity: 2026-03-24 -- Completed 16-01 (ActiveRunView + LongPressStopButton)
+Last activity: 2026-03-24 -- Completed 16-02 (fullScreenCover wiring + MiniPlayer hiding)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29 (11 v1.0, 7 v1.1, 6 v1.2, 5 v1.3)
+- Total plans completed: 30 (11 v1.0, 7 v1.1, 6 v1.2, 6 v1.3)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
@@ -68,6 +68,8 @@ Recent decisions affecting current work:
 - [16-01]: Timer-based progress (1/60 interval) for reliable long-press cancel-on-release
 - [16-01]: Static progress(elapsed:duration:) matching ZoneBandView/RampPhaseIndicator testability pattern
 - [16-01]: ActiveRunView reads directly from service singletons -- no @State copies of sync data
+- [16-02]: onChange(of: cadenceService.state) triggers fullScreenCover on .active transition
+- [16-02]: onDisappear guarded with isRunActive to prevent run kill during fullScreenCover
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:18:00Z
-Stopped at: Completed 16-01-PLAN.md
-Resume file: .planning/phases/16-active-run-assembly/16-02-PLAN.md
+Last session: 2026-03-24T21:30:22Z
+Stopped at: Completed 16-02-PLAN.md
+Resume file: Phase 16 complete -- all plans executed
