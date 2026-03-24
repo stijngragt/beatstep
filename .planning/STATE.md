@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: The Right Flow
-status: in-progress
-stopped_at: Completed 10-02-PLAN.md
-last_updated: "2026-03-24T11:02:22.509Z"
-last_activity: 2026-03-24 -- Roadmap created for v1.2
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-24T11:03:51.666Z"
+last_activity: 2026-03-24 -- Completed 10-02 playlist coverage & swipe-to-analyze
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Recent decisions affecting current work:
 - [v1.2 roadmap]: 3 phases -- foundation models first, run experience second, onboarding last (gate built after features behind it work)
 - [v1.2 research]: RunEngineService untouched -- zones are a thin UI wrapper mapping to existing runMode + targetBPM parameters
 - [Phase 10]: Coverage text uses compact X/Y BPM format for playlist rows
+- [Phase 10]: RunZone as struct with UserDefaults [String:Int] dict -- only BPM values persisted, names compiled-in
 
 ### Pending Todos
 
@@ -56,11 +57,11 @@ None.
 
 ### Blockers/Concerns
 
-- Zone BPM default values diverge between research files (two candidate sets). Pick one during Phase 10 implementation.
+- ~~Zone BPM default values diverge between research files~~ RESOLVED: Locked to Z1=155, Z2=165, Z3=174, Z4=178, Z5=185 (per CONTEXT.md)
 - Spotify Premium detection timing during onboarding is an unresolved product decision. Address before Phase 12.
 
 ## Session Continuity
 
-Last session: 2026-03-24T11:02:22.507Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-03-24T11:03:51.665Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None

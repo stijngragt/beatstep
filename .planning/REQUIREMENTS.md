@@ -23,8 +23,8 @@ Requirements for v1.2 "The Right Flow". Each maps to roadmap phases.
 
 - [ ] **RUN-01**: User selects a running zone (Zone 1–5 or Free) instead of effort labels (Easy Jog/Steady/Fast Sprint)
 - [ ] **RUN-02**: User sees a full-width Run CTA at the bottom of the Run tab
-- [ ] **RUN-03**: User sees BPM tolerance as a segmented control displaying ±3, ±7, ±12 BPM
-- [ ] **RUN-04**: User can configure custom BPM values per zone in Settings (with sensible defaults)
+- [x] **RUN-03**: User sees BPM tolerance as a segmented control displaying ±3, ±7, ±12 BPM
+- [x] **RUN-04**: User can configure custom BPM values per zone in Settings (with sensible defaults)
 
 ## Future Requirements
 
@@ -63,8 +63,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIB-02 | Phase 10 | Complete |
 | RUN-01 | Phase 11 | Pending |
 | RUN-02 | Phase 11 | Pending |
-| RUN-03 | Phase 10 | Pending |
-| RUN-04 | Phase 10 | Pending |
+| RUN-03 | Phase 10 | Complete |
+| RUN-04 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 10 total
