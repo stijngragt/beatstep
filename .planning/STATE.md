@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: The Right Flow
 status: completed
 stopped_at: Completed 12-02-PLAN.md -- v1.2 milestone complete
-last_updated: "2026-03-24T13:21:30.000Z"
+last_updated: "2026-03-24T13:24:40.532Z"
 last_activity: 2026-03-24 -- Completed 12-02 Settings permission recovery; v1.2 milestone complete
 progress:
   total_phases: 3

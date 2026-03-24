@@ -100,4 +100,4 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 10. Models, Settings & Library UX | 2/2 | Complete    | 2026-03-24 | - |
 | 11. Run Experience | 2/2 | Complete    | 2026-03-24 | - |
-| 12. Onboarding | 2/2 | Complete   | 2026-03-24 | - |
+| 12. Onboarding | 2/2 | Complete    | 2026-03-24 | - |
