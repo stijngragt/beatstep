@@ -129,4 +129,4 @@ Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in pa
 | 13. Engine Extensions + Design Tokens | 2/2 | Complete    | 2026-03-24 | - |
 | 14. Cadence Display + Status Bar | 2/2 | Complete    | 2026-03-24 | - |
 | 15. Run Player View | 1/1 | Complete    | 2026-03-24 | - |
-| 16. Active Run Assembly | v1.3 | 0/2 | Not started | - |
+| 16. Active Run Assembly | 1/2 | In Progress|  | - |

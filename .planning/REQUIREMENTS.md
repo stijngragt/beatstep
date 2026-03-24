@@ -9,8 +9,8 @@ Requirements for v1.3 "In The Zone" milestone. Each maps to roadmap phases.
 
 ### Run Screen
 
-- [ ] **RUN-01**: User sees a full-screen active run view (three-zone layout: status bar, hero cadence, player area) presented via fullScreenCover when cadence is detected
-- [ ] **RUN-02**: User can stop a run only via long-press (2-second hold with visual progress ring), preventing accidental mid-run stops
+- [x] **RUN-01**: User sees a full-screen active run view (three-zone layout: status bar, hero cadence, player area) presented via fullScreenCover when cadence is detected
+- [x] **RUN-02**: User can stop a run only via long-press (2-second hold with visual progress ring), preventing accidental mid-run stops
 - [x] **RUN-03**: User sees current zone name and sync quality badge in the status bar during a run
 
 ### Cadence Indicators
@@ -64,8 +64,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RUN-01 | Phase 16 | Pending |
-| RUN-02 | Phase 16 | Pending |
+| RUN-01 | Phase 16 | Complete |
+| RUN-02 | Phase 16 | Complete |
 | RUN-03 | Phase 14 | Complete |
 | CAD-01 | Phase 13 | Complete |
 | CAD-02 | Phase 13 | Complete |
