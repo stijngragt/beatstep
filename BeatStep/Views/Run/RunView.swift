@@ -8,12 +8,7 @@ struct RunView: View {
     private var runEngine: RunEngineService { .shared }
 
     @State private var tolerance: BPMTolerance = .saved
-    @State private var runMode: RunMode = .saved
-    @State private var selectedPreset: PacePreset = {
-        let saved = RunMode.savedTargetBPM
-        return PacePreset.allCases.first(where: { $0.bpm == saved }) ?? .steady
-    }()
-    @State private var customBPM: Int = RunMode.savedTargetBPM
+    @State private var selectedZoneId: Int? = RunZone.selectedZoneId
 
     var body: some View {
         ZStack {
@@ -67,20 +62,28 @@ struct RunView: View {
                 .font(.captionText)
                 .foregroundStyle(Color.textSecondary)
 
-            ModePicker(mode: $runMode)
-                .padding(.horizontal, Spacing.xl)
-
-            if runMode == .guided {
-                PacePresetPicker(selectedPreset: $selectedPreset, customBPM: $customBPM)
-                    .padding(.horizontal, Spacing.md)
+            if let zoneId = selectedZoneId,
+               let zone = RunZone.saved.first(where: { $0.id == zoneId }) {
+                Text(zone.displayLabel)
+                    .font(.subheading)
+                    .foregroundStyle(Color.textPrimary)
+                Text("\(zone.bpm) BPM")
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
+            } else {
+                Text("Free Run")
+                    .font(.subheading)
+                    .foregroundStyle(Color.textPrimary)
             }
 
             Text("Ready to Run")
                 .font(.heading)
                 .foregroundStyle(Color.textPrimary)
 
-            TolerancePicker(tolerance: $tolerance)
-                .padding(.horizontal, Spacing.xl)
+            if selectedZoneId != nil {
+                TolerancePicker(tolerance: $tolerance)
+                    .padding(.horizontal, Spacing.xl)
+            }
         }
     }
 
@@ -180,19 +183,27 @@ struct RunView: View {
 
     // MARK: - Controls
 
-    /// Computed target BPM from preset picker
+    /// Computed target BPM from zone selection
     private var targetBPM: Int {
-        selectedPreset.bpm ?? customBPM
+        if let zoneId = selectedZoneId,
+           let zone = RunZone.saved.first(where: { $0.id == zoneId }) {
+            return zone.bpm
+        }
+        return RunMode.savedTargetBPM
     }
 
     @ViewBuilder
     private var controlsSection: some View {
         if cadenceService.state == .idle && !cadenceService.permissionDenied {
             Button {
-                runEngine.tolerance = tolerance
-                runEngine.runMode = runMode
-                if runMode == .guided {
-                    RunMode.savedTargetBPM = targetBPM
+                if let zoneId = selectedZoneId,
+                   let zone = RunZone.saved.first(where: { $0.id == zoneId }) {
+                    runEngine.runMode = .guided
+                    runEngine.tolerance = tolerance
+                    RunMode.savedTargetBPM = zone.bpm
+                } else {
+                    runEngine.runMode = .free
+                    runEngine.tolerance = tolerance
                 }
                 LastRunPlaylist.name = playlist.name
                 LastRunPlaylist.id = playlist.id
