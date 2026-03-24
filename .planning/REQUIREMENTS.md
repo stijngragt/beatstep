@@ -11,14 +11,14 @@ Requirements for v1.3 "In The Zone" milestone. Each maps to roadmap phases.
 
 - [ ] **RUN-01**: User sees a full-screen active run view (three-zone layout: status bar, hero cadence, player area) presented via fullScreenCover when cadence is detected
 - [ ] **RUN-02**: User can stop a run only via long-press (2-second hold with visual progress ring), preventing accidental mid-run stops
-- [ ] **RUN-03**: User sees current zone name and sync quality badge in the status bar during a run
+- [x] **RUN-03**: User sees current zone name and sync quality badge in the status bar during a run
 
 ### Cadence Indicators
 
 - [x] **CAD-01**: User sees a color-coded sync state indicator showing whether cadence is in-sync, drifting, or mismatched with the current song BPM
 - [x] **CAD-02**: User sees a signed delta indicator ("+4 SPM" / "-6 SPM") near the cadence number in guided mode, and sync quality text in free mode
 - [ ] **CAD-03**: User sees a zone band visualization showing where current cadence sits within the target zone range (guided mode only)
-- [ ] **CAD-04**: User perceives a subtle background color shift based on sync state (in-sync vs drifting) as subconscious feedback
+- [x] **CAD-04**: User perceives a subtle background color shift based on sync state (in-sync vs drifting) as subconscious feedback
 - [ ] **CAD-05**: User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
 
 ### Music Player
@@ -66,11 +66,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | RUN-01 | Phase 16 | Pending |
 | RUN-02 | Phase 16 | Pending |
-| RUN-03 | Phase 14 | Pending |
+| RUN-03 | Phase 14 | Complete |
 | CAD-01 | Phase 13 | Complete |
 | CAD-02 | Phase 13 | Complete |
 | CAD-03 | Phase 14 | Pending |
-| CAD-04 | Phase 14 | Pending |
+| CAD-04 | Phase 14 | Complete |
 | CAD-05 | Phase 14 | Pending |
 | PLR-01 | Phase 15 | Pending |
 | PLR-02 | Phase 15 | Pending |
