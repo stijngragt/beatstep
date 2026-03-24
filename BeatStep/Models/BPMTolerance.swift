@@ -14,11 +14,7 @@ enum BPMTolerance: String, CaseIterable {
     }
 
     var displayName: String {
-        switch self {
-        case .tight: return "Tight"
-        case .normal: return "Normal"
-        case .loose: return "Loose"
-        }
+        "\u{00B1}\(range) BPM"
     }
 
     var description: String {
