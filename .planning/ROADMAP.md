@@ -5,6 +5,7 @@
 - v1.0 MVP -- Phases 1-5 (shipped 2026-03-23)
 - v1.1 Dark by Design -- Phases 6-9 (shipped 2026-03-24)
 - v1.2 The Right Flow -- Phases 10-12 (shipped 2026-03-24)
+- **v1.3 In The Zone** -- Phases 13-16 (in progress)
 
 ## Phases
 
@@ -38,7 +39,78 @@
 
 </details>
 
+### v1.3 In The Zone
+
+- [ ] **Phase 13: Engine Extensions + Design Tokens** - Add syncQuality, cadenceDelta, tempoMode to RunEngineService and sync color tokens to DesignTokens
+- [ ] **Phase 14: Cadence Display + Status Bar** - Build enhanced CadenceDisplayView and RunStatusBar as standalone previewable components
+- [ ] **Phase 15: Run Player View** - Build integrated music player with album art, track info, BPM, and playback controls
+- [ ] **Phase 16: Active Run Assembly** - Compose full-screen ActiveRunView via fullScreenCover with long-press stop and MiniPlayer hiding
+
+## Phase Details
+
+### Phase 13: Engine Extensions + Design Tokens
+**Goal**: RunEngineService exposes the computed state that all run screen views depend on -- sync quality, cadence delta, and tempo mode -- plus design tokens for sync-state colors
+**Depends on**: Phase 12
+**Requirements**: PLR-04, CAD-01, CAD-02
+**Success Criteria** (what must be TRUE):
+  1. RunEngineService publishes a syncQuality value (inSync, drifting, mismatched) that updates as cadence changes relative to current song BPM
+  2. RunEngineService publishes a signed cadenceDelta (e.g., +4, -6) in guided mode and a sync quality label in free mode
+  3. User can toggle between 1:1 and 1/2 tempo matching, and findMatchingTracks respects the mode as a ranking preference (not a BPM /2 transformation)
+  4. DesignTokens includes sync-state color aliases (inSync, drifting, mismatched) usable by downstream views
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: TBD
+- [ ] 13-02: TBD
+
+### Phase 14: Cadence Display + Status Bar
+**Goal**: Runners see rich, glanceable cadence feedback and run status as standalone components that work in SwiftUI previews before the full screen is assembled
+**Depends on**: Phase 13
+**Requirements**: RUN-03, CAD-03, CAD-04, CAD-05
+**Success Criteria** (what must be TRUE):
+  1. User sees current zone name and a color-coded sync quality badge in a RunStatusBar component
+  2. User sees a zone band visualization showing where current cadence sits within the target zone BPM range (guided mode only)
+  3. User perceives a subtle background color shift reflecting sync state (in-sync to drifting to mismatched)
+  4. User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: TBD
+- [ ] 14-02: TBD
+
+### Phase 15: Run Player View
+**Goal**: Runners see what song is playing with full context and can control playback with large touch targets, all in a standalone previewable component
+**Depends on**: Phase 13
+**Requirements**: PLR-01, PLR-02, PLR-03
+**Success Criteria** (what must be TRUE):
+  1. User sees 80pt album art for the currently playing track, loaded from Spotify CDN with caching
+  2. User sees song name, artist name, and current track BPM displayed in the player area
+  3. User can play/pause and skip tracks using large touch targets (56pt+) that are easy to hit while running
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: TBD
+
+### Phase 16: Active Run Assembly
+**Goal**: The complete run experience works end-to-end -- a focused full-screen view composes all components, prevents accidental dismissal, and hides the MiniPlayer
+**Depends on**: Phase 14, Phase 15
+**Requirements**: RUN-01, RUN-02
+**Success Criteria** (what must be TRUE):
+  1. User sees a full-screen active run view (status bar, hero cadence, player) presented via fullScreenCover when a run starts, with no swipe-to-dismiss possible
+  2. User can stop a run only via long-press (2-second hold with visual progress ring) -- no other dismiss path exists
+  3. MiniPlayer hides automatically when ActiveRunView is showing and reappears when the run ends
+  4. Tab bar is not visible during the active run screen
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: TBD
+- [ ] 16-02: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 13 -> 14 -> 15 -> 16
+Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in parallel.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -54,3 +126,7 @@
 | 10. Models, Settings & Library UX | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 11. Run Experience | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 12. Onboarding | v1.2 | 2/2 | Complete | 2026-03-24 |
+| 13. Engine Extensions + Design Tokens | v1.3 | 0/2 | Not started | - |
+| 14. Cadence Display + Status Bar | v1.3 | 0/2 | Not started | - |
+| 15. Run Player View | v1.3 | 0/1 | Not started | - |
+| 16. Active Run Assembly | v1.3 | 0/2 | Not started | - |

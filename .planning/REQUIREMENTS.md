@@ -1,7 +1,7 @@
 # Requirements: BeatStep
 
 **Defined:** 2026-03-24
-**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
+**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
 
 ## v1.3 Requirements
 
@@ -49,14 +49,14 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Elapsed run timer | No workout-tracking feel — BeatStep is about music sync, not fitness metrics |
+| Elapsed run timer | No workout-tracking feel -- BeatStep is about music sync, not fitness metrics |
 | Auto-pause music on cadence drop | Music continues during stops; pausing feels broken at traffic lights |
-| Distance / pace / calories | Users have Strava, Apple Fitness — BeatStep is the music-sync layer |
+| Distance / pace / calories | Users have Strava, Apple Fitness -- BeatStep is the music-sync layer |
 | Heart rate display | Requires HealthKit continuous reading, competes for screen real estate |
-| Metronome / audio click | The music beat IS the pacing guide — that's the whole product |
+| Metronome / audio click | The music beat IS the pacing guide -- that's the whole product |
 | Song queue preview | Adaptive model doesn't know next track until current ends |
-| Real-time tempo stretching | Queue matching preserves audio quality — deliberate design choice |
-| Complex gesture controls | Sweaty fingers, bouncing phone, gloves — large tap targets only |
+| Real-time tempo stretching | Queue matching preserves audio quality -- deliberate design choice |
+| Complex gesture controls | Sweaty fingers, bouncing phone, gloves -- large tap targets only |
 
 ## Traceability
 
@@ -64,24 +64,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RUN-01 | — | Pending |
-| RUN-02 | — | Pending |
-| RUN-03 | — | Pending |
-| CAD-01 | — | Pending |
-| CAD-02 | — | Pending |
-| CAD-03 | — | Pending |
-| CAD-04 | — | Pending |
-| CAD-05 | — | Pending |
-| PLR-01 | — | Pending |
-| PLR-02 | — | Pending |
-| PLR-03 | — | Pending |
-| PLR-04 | — | Pending |
+| RUN-01 | Phase 16 | Pending |
+| RUN-02 | Phase 16 | Pending |
+| RUN-03 | Phase 14 | Pending |
+| CAD-01 | Phase 13 | Pending |
+| CAD-02 | Phase 13 | Pending |
+| CAD-03 | Phase 14 | Pending |
+| CAD-04 | Phase 14 | Pending |
+| CAD-05 | Phase 14 | Pending |
+| PLR-01 | Phase 15 | Pending |
+| PLR-02 | Phase 15 | Pending |
+| PLR-03 | Phase 15 | Pending |
+| PLR-04 | Phase 13 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Last updated: 2026-03-24 after roadmap creation*
