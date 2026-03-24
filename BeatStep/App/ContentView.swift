@@ -2,6 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(SpotifyAuthService.self) private var authService
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
+    private var appState: AppState {
+        AppState.resolve(hasCompletedOnboarding: hasCompletedOnboarding, isAuthenticated: authService.isAuthenticated)
+    }
 
     init() {
         let appearance = UITabBarAppearance()
@@ -15,15 +20,20 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if authService.isAuthenticated {
-                authenticatedView
-            } else {
+            switch appState {
+            case .onboarding:
+                OnboardingFlow()
+            case .login:
                 LoginView()
+            case .authenticated:
+                authenticatedView
             }
         }
         .onAppear {
             AudioSessionService.shared.setupAudioSession()
-            SpotifyAuthService.shared.checkExistingAuth()
+            if hasCompletedOnboarding {
+                SpotifyAuthService.shared.checkExistingAuth()
+            }
         }
     }
 

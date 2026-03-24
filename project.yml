@@ -38,6 +38,7 @@ targets:
         UIBackgroundModes:
           - audio
         NSMotionUsageDescription: "BeatStep needs motion access to detect your running cadence and match music to your pace."
+        NSHealthShareUsageDescription: "BeatStep can sync with Apple Health to improve your running experience."
         UILaunchScreen: {}
         UIUserInterfaceStyle: Dark
     entitlements:
@@ -51,6 +52,8 @@ targets:
       - sdk: AVFoundation.framework
       - sdk: MediaPlayer.framework
       - sdk: CoreMotion.framework
+      - sdk: HealthKit.framework
+        weak: true
 
   BeatStepTests:
     type: bundle.unit-test
