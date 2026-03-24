@@ -43,6 +43,7 @@ final class RunEngineServiceTests: XCTestCase {
         engine = RunEngineService.shared
         engine.stopRun()
         engine.tolerance = .normal // reset to default
+        engine.setTempoModeForTesting(.oneToOne) // reset to default
     }
 
     override func tearDown() async throws {
@@ -378,6 +379,98 @@ final class RunEngineServiceTests: XCTestCase {
         // Both should be selectable -- missing danceability defaults to 50 (same as tWith)
         let selected = engine.selectNextMatch(forSPM: 170)
         XCTAssertNotNil(selected, "Should still select a track even when danceability data is missing")
+    }
+
+    // MARK: - Cadence Delta
+
+    func testCadenceDeltaReturnsZeroWithNoMatchedTrack() {
+        engine.loadForTesting(tracks: [], bpmMap: [:])
+        engine.setLatestCadenceForTesting(170)
+        XCTAssertEqual(engine.cadenceDelta, 0, "cadenceDelta should be 0 when no track is matched")
+    }
+
+    func testCadenceDeltaOneToOneMode() {
+        // Set up engine with a matched track at 165 BPM
+        let bpmMap: [String: Int] = ["t170": 165]
+        engine.loadForTesting(tracks: [track170], bpmMap: bpmMap)
+        engine.currentMatchedTrack = track170
+        engine.setLatestCadenceForTesting(170)
+        engine.setTempoModeForTesting(.oneToOne)
+
+        XCTAssertEqual(engine.cadenceDelta, 5, "cadenceDelta should be 170 - 165 = +5 in oneToOne mode")
+    }
+
+    func testCadenceDeltaHalfMode() {
+        // Set up engine with a matched track at 80 BPM
+        let bpmMap: [String: Int] = ["t85": 80]
+        engine.loadForTesting(tracks: [track85], bpmMap: bpmMap)
+        engine.currentMatchedTrack = track85
+        engine.setLatestCadenceForTesting(170)
+        engine.setTempoModeForTesting(.half)
+
+        // In half mode: adjustedCadence = 170/2 = 85, delta = 85 - 80 = +5
+        XCTAssertEqual(engine.cadenceDelta, 5, "cadenceDelta should be 170/2 - 80 = +5 in half mode")
+    }
+
+    // MARK: - Sync Quality
+
+    func testSyncQualityInSync() {
+        // Normal tolerance range = 7, delta 3 <= 7 -> inSync
+        let bpmMap: [String: Int] = ["t170": 167]
+        engine.loadForTesting(tracks: [track170], bpmMap: bpmMap)
+        engine.currentMatchedTrack = track170
+        engine.setLatestCadenceForTesting(170)
+        engine.setTempoModeForTesting(.oneToOne)
+        engine.tolerance = .normal
+
+        XCTAssertEqual(engine.cadenceDelta, 3)
+        XCTAssertEqual(engine.syncQuality, .inSync, "Delta of 3 with normal tolerance (7) should be inSync")
+    }
+
+    func testSyncQualityDrifting() {
+        // Normal tolerance range = 7, delta 10 -> drifting (8-14 range)
+        let bpmMap: [String: Int] = ["t170": 170]
+        engine.loadForTesting(tracks: [track170], bpmMap: bpmMap)
+        engine.currentMatchedTrack = track170
+        engine.setTempoModeForTesting(.oneToOne)
+        engine.tolerance = .normal
+        engine.setLatestCadenceForTesting(180)
+
+        XCTAssertEqual(engine.cadenceDelta, 10)
+        XCTAssertEqual(engine.syncQuality, .drifting, "Delta of 10 with normal tolerance (7) should be drifting")
+    }
+
+    func testSyncQualityMismatched() {
+        // Normal tolerance range = 7, delta 20 > 14 -> mismatched
+        let bpmMap: [String: Int] = ["t170": 170]
+        engine.loadForTesting(tracks: [track170], bpmMap: bpmMap)
+        engine.currentMatchedTrack = track170
+        engine.setTempoModeForTesting(.oneToOne)
+        engine.tolerance = .normal
+        engine.setLatestCadenceForTesting(190)
+
+        XCTAssertEqual(engine.cadenceDelta, 20)
+        XCTAssertEqual(engine.syncQuality, .mismatched, "Delta of 20 with normal tolerance (7) should be mismatched")
+    }
+
+    func testSyncQualityInSyncWithNoMatchedTrack() {
+        engine.loadForTesting(tracks: [], bpmMap: [:])
+        engine.setLatestCadenceForTesting(170)
+        XCTAssertEqual(engine.syncQuality, .inSync, "syncQuality should be inSync when no track matched (delta is 0)")
+    }
+
+    // MARK: - Tempo Mode Persistence
+
+    func testTempoModeNotResetByStopRun() {
+        engine.setTempoModeForTesting(.half)
+        engine.stopRun()
+        XCTAssertEqual(engine.tempoMode, .half, "tempoMode should NOT be reset by stopRun")
+    }
+
+    func testLatestCadenceResetByStopRun() {
+        engine.setLatestCadenceForTesting(170)
+        engine.stopRun()
+        XCTAssertEqual(engine.latestCadence, 0, "latestCadence should be reset to 0 by stopRun")
     }
 
     // MARK: - Discovery Flag

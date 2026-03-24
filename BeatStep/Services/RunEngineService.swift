@@ -11,6 +11,8 @@ final class RunEngineService {
     var currentMatchedTrack: SpotifyTrack?
     var runMode: RunMode = .free
     var rampPhase: RampPhase? = nil
+    var tempoMode: TempoMode = .saved
+    var latestCadence: Int = 0
 
     // MARK: - Private
 
@@ -66,6 +68,33 @@ final class RunEngineService {
                 return max(targetBPM - rampSongsPlayed * 8, warmUpStart)
             }
         }
+    }
+
+    // MARK: - Tempo-Aware Computed Properties
+
+    /// Cadence adjusted for tempo mode (cadence/2 in half mode)
+    var adjustedCadence: Int {
+        switch tempoMode {
+        case .oneToOne: return latestCadence
+        case .half: return latestCadence / 2
+        }
+    }
+
+    /// Current matched track's BPM from the bpmMap
+    var currentTrackBPM: Int? {
+        guard let track = currentMatchedTrack else { return nil }
+        return bpmMap[track.id]
+    }
+
+    /// Signed delta between adjusted cadence and current song BPM. 0 when no track matched.
+    var cadenceDelta: Int {
+        guard let trackBPM = currentTrackBPM else { return 0 }
+        return adjustedCadence - trackBPM
+    }
+
+    /// Sync quality derived from cadenceDelta and tolerance
+    var syncQuality: SyncQuality {
+        SyncQuality.from(delta: cadenceDelta, tolerance: tolerance)
     }
 
     // MARK: - Run Lifecycle
@@ -125,6 +154,7 @@ final class RunEngineService {
         danceabilityMap = [:]
         playedTrackIDs = []
         sustainedSPM = 0
+        latestCadence = 0
         pendingRematch = false
         isQueueingNext = false
         lastPlayTime = nil
@@ -332,6 +362,8 @@ final class RunEngineService {
                 guard let self else { return }
                 let currentSPM = await MainActor.run { CadenceService.shared.currentSPM }
 
+                self.latestCadence = currentSPM
+
                 if currentSPM != lastObservedSPM && currentSPM > 0 {
                     lastObservedSPM = currentSPM
                     self.onCadenceChanged(currentSPM)
@@ -443,5 +475,13 @@ final class RunEngineService {
     func setRampPhaseForTesting(_ phase: RampPhase, songsPlayed: Int) {
         rampPhase = phase
         rampSongsPlayed = songsPlayed
+    }
+
+    func setTempoModeForTesting(_ mode: TempoMode) {
+        tempoMode = mode
+    }
+
+    func setLatestCadenceForTesting(_ spm: Int) {
+        latestCadence = spm
     }
 }
