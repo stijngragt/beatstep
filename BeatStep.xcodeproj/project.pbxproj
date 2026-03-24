@@ -69,6 +69,8 @@
 		FB232EA2C7B5463D38AA5AEE /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */; };
 		FB67AACA35A67A85464C73B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */; };
 		FEE823626ED10647B7FC4C20 /* PacePresetPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42E6E0CCDFEFD9E667209984 /* PacePresetPicker.swift */; };
+		AAAAAA01BRAND01ICON0002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAA01BRAND01ICON0001 /* Assets.xcassets */; };
+		AAAAAA01BRAND01ICON0005 /* AppIconGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAA01BRAND01ICON0004 /* AppIconGeneratorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -146,6 +148,8 @@
 		E9CFFC1FF6EE943CB3B48020 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuthService.swift; sourceTree = "<group>"; };
 		FEB07E38F6B451A11322F482 /* BPMCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheService.swift; sourceTree = "<group>"; };
+		AAAAAA01BRAND01ICON0001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AAAAAA01BRAND01ICON0004 /* AppIconGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconGeneratorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,6 +179,7 @@
 		0F928FC8E653656DDE1C2560 /* BeatStepTests */ = {
 			isa = PBXGroup;
 			children = (
+				AAAAAA01BRAND01ICON0004 /* AppIconGeneratorTests.swift */,
 				6274DEE660A35399701FA544 /* BeatStepTests.swift */,
 				1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */,
 				D413FF5901AC08B98D7F067E /* BPMToleranceTests.swift */,
@@ -296,6 +301,7 @@
 		CD8FCDD88A0E9A75CE63C487 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AAAAAA01BRAND01ICON0001 /* Assets.xcassets */,
 				E89C786A70B843741C71082D /* BeatStep.entitlements */,
 				E0F7B31F8718FAA1C5A45EE9 /* Info.plist */,
 			);
@@ -396,6 +402,7 @@
 			buildConfigurationList = 568996B867DDD37FD6499B87 /* Build configuration list for PBXNativeTarget "BeatStep" */;
 			buildPhases = (
 				C63351C99B0168F16CAF48B4 /* Sources */,
+				AAAAAA01BRAND01ICON0003 /* Resources */,
 				B31BEB8F666E848839231AB2 /* Frameworks */,
 			);
 			buildRules = (
@@ -444,11 +451,23 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		AAAAAA01BRAND01ICON0003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAA01BRAND01ICON0002 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		79333F8EAEDE324BB5EC58AA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAAAAA01BRAND01ICON0005 /* AppIconGeneratorTests.swift in Sources */,
 				6D82D0B3807BF022AD71CDFE /* BPMCacheServiceTests.swift in Sources */,
 				2B2DC5471E50AB176E0E0492 /* BPMToleranceTests.swift in Sources */,
 				D1F229F05486EB35F79B3627 /* BPMViewWiringTests.swift in Sources */,
