@@ -86,10 +86,10 @@ Plans:
   1. User sees 80pt album art for the currently playing track, loaded from Spotify CDN with caching
   2. User sees song name, artist name, and current track BPM displayed in the player area
   3. User can play/pause and skip tracks using large touch targets (56pt+) that are easy to hit while running
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 15-01: TBD
+- [ ] 15-01-PLAN.md — RunPlayerView with album art, track info, BPM, and 56pt+ playback controls
 
 ### Phase 16: Active Run Assembly
 **Goal**: The complete run experience works end-to-end -- a focused full-screen view composes all components, prevents accidental dismissal, and hides the MiniPlayer
