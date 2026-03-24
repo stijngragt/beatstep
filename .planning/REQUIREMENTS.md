@@ -29,7 +29,7 @@ Requirements for milestone v1.1 "Dark by Design". Each maps to roadmap phases.
 
 ### Bug Fix
 
-- [ ] **BUG-01**: Playlist view displays correct track count (handles zero/null from Spotify API gracefully)
+- [x] **BUG-01**: Playlist view displays correct track count (handles zero/null from Spotify API gracefully)
 
 ### Brand
 
@@ -83,7 +83,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-02 | Phase 7 | Complete |
 | NAV-03 | Phase 7 | Complete |
 | NAV-04 | Phase 8 | Complete |
-| BUG-01 | Phase 9 | Pending |
+| BUG-01 | Phase 9 | Complete |
 | BRAND-01 | Phase 9 | Pending |
 | BRAND-02 | Phase 9 | Pending |
 

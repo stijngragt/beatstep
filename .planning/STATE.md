@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dark by Design
 status: in-progress
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-24T08:15:17.241Z"
-last_activity: 2026-03-23 -- Phase 8 complete, Run tab has playlist context, all views use design tokens
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-24T08:45:40.482Z"
+last_activity: "2026-03-24 -- Plan 09-01 complete: trackCount bug fix (Int? optional, conditional display)"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 7
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 8 complete -- Phase 9 (final polish) next
+**Current focus:** Phase 9 in progress -- bug fix + brand assets
 
 ## Current Position
 
-Phase: 8 of 9 (Token Adoption RunHomeView) -- COMPLETE
-Plan: 2 of 2 in current phase (2 complete)
+Phase: 9 of 9 (Bug Fix + Brand Assets)
+Plan: 1 of 2 in current phase (1 complete)
 Status: in-progress
-Last activity: 2026-03-23 -- Phase 8 complete, Run tab has playlist context, all views use design tokens
+Last activity: 2026-03-24 -- Plan 09-01 complete: trackCount bug fix (Int? optional, conditional display)
 
-Progress: [████████████████████] 100% (Phase 8 complete, Phase 9 next)
+Progress: [█████████░] 86% (Phase 9 plan 1 of 2 complete)
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [████████████████████] 100% (P
 | 7 (07-01) | 1 | 18min | 18min |
 | 8 (08-01) | 1 | 3min | 3min |
 | 8 (08-02) | 1 | 4min | 4min |
+| 9 (09-01) | 1 | 1min | 1min |
 
 **Recent Trend:**
 - v1.0 completed in 5 days across 11 plans
@@ -77,6 +78,7 @@ Recent decisions affecting current work:
 - [Phase 08]: Used displayHero for ghost SPM in paused view -- rounded vs monospaced acceptable for dimmed text
 - [Phase 08]: Icon sizing (.font(.system(size: N))) kept as-is, not tokenized -- SF Symbol sizing is layout, not typography
 - [Phase 08]: Used enum with static properties for LastRunPlaylist -- lightweight UserDefaults persistence
+- [Phase 09]: nil means unknown (hide count), 0 means genuinely empty (show '0 tracks')
 
 ### Pending Todos
 
@@ -88,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T08:15:17.235Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-bug-fix-brand-assets/09-CONTEXT.md
+Last session: 2026-03-24T08:45:40.480Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None
