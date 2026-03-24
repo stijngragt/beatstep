@@ -82,6 +82,21 @@ struct ActiveRunView: View {
                         .padding(.horizontal, Spacing.md)
                     }
 
+                    // Tempo mode toggle
+                    Button {
+                        let newMode: TempoMode = runEngine.tempoMode == .oneToOne ? .half : .oneToOne
+                        runEngine.tempoMode = newMode
+                        newMode.save()
+                    } label: {
+                        Label("Tempo \(runEngine.tempoMode.displayName)", systemImage: "metronome")
+                            .font(.bodyBold)
+                            .foregroundStyle(Color.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.md)
+                            .background(Capsule().fill(Color.surfaceOverlay))
+                            .padding(.horizontal, Spacing.xl)
+                    }
+
                     // Cool Down button (guided mode only, not during cool down)
                     if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
                         Button {
