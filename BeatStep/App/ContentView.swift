@@ -64,7 +64,7 @@ struct ContentView: View {
         }
         .tint(Color.accent)
         .safeAreaInset(edge: .bottom) {
-            if SpotifyPlayerService.shared.currentTrack != nil {
+            if SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive {
                 MiniPlayerView()
             }
         }

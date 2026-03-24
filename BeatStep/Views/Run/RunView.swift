@@ -9,6 +9,7 @@ struct RunView: View {
 
     @State private var tolerance: BPMTolerance = .saved
     @State private var selectedZoneId: Int? = RunZone.selectedZoneId
+    @State private var showActiveRun = false
 
     var body: some View {
         ZStack {
@@ -27,10 +28,21 @@ struct RunView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $showActiveRun) {
+            ActiveRunView(playlist: playlist, tracks: tracks, selectedZoneId: selectedZoneId)
+                .interactiveDismissDisabled(true)
+        }
+        .onChange(of: cadenceService.state) { oldValue, newValue in
+            if newValue == .active && oldValue != .active {
+                showActiveRun = true
+            }
+        }
         .onDisappear {
-            runEngine.stopRun()
-            UIApplication.shared.isIdleTimerDisabled = false
-            cadenceService.stopDetecting()
+            if !runEngine.isRunActive {
+                runEngine.stopRun()
+                UIApplication.shared.isIdleTimerDisabled = false
+                cadenceService.stopDetecting()
+            }
         }
     }
 
