@@ -5,7 +5,7 @@
 - v1.0 MVP -- Phases 1-5 (shipped 2026-03-23)
 - v1.1 Dark by Design -- Phases 6-9 (shipped 2026-03-24)
 - v1.2 The Right Flow -- Phases 10-12 (shipped 2026-03-24)
-- **v1.3 In The Zone** -- Phases 13-16 (in progress)
+- **v1.3 In The Zone** -- Phases 13-17 (in progress)
 
 ## Phases
 
@@ -45,6 +45,7 @@
 - [x] **Phase 14: Cadence Display + Status Bar** - Build enhanced CadenceDisplayView and RunStatusBar as standalone previewable components (completed 2026-03-24)
 - [x] **Phase 15: Run Player View** - Build integrated music player with album art, track info, BPM, and playback controls (completed 2026-03-24)
 - [x] **Phase 16: Active Run Assembly** - Compose full-screen ActiveRunView via fullScreenCover with long-press stop and MiniPlayer hiding (completed 2026-03-24)
+- [ ] **Phase 17: Tempo Mode Toggle** - Add UI toggle for 1:1/1:2 tempo matching in the active run screen (gap closure)
 
 ## Phase Details
 
@@ -106,6 +107,17 @@ Plans:
 - [ ] 16-01-PLAN.md — ActiveRunView + LongPressStopButton with TDD progress tests
 - [ ] 16-02-PLAN.md — Wire fullScreenCover into RunView, hide MiniPlayer, end-to-end verification
 
+### Phase 17: Tempo Mode Toggle
+**Goal**: User can toggle between 1:1 and 1/2 tempo matching mid-run via a visible control in the active run screen
+**Depends on**: Phase 16
+**Requirements**: PLR-04
+**Gap Closure**: Closes PLR-04 gap from v1.3 audit — engine backend exists, UI toggle missing
+**Success Criteria** (what must be TRUE):
+  1. A visible toggle button exists in RunPlayerView or ActiveRunView that switches tempoMode between .oneToOne and .half
+  2. The toggle reads current tempoMode from RunEngineService and displays the active mode (1:1 or 1:2)
+  3. Tapping the toggle mutates runEngine.tempoMode, which immediately affects cadenceDelta and sync display
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -130,3 +142,4 @@ Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in pa
 | 14. Cadence Display + Status Bar | 2/2 | Complete    | 2026-03-24 | - |
 | 15. Run Player View | 1/1 | Complete    | 2026-03-24 | - |
 | 16. Active Run Assembly | 2/2 | Complete    | 2026-03-24 | - |
+| 17. Tempo Mode Toggle | v1.3 | 0/0 | Planned | - |
