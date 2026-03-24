@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     private var authService: SpotifyAuthService { .shared }
+    @State private var zones: [RunZone] = RunZone.saved
 
     var body: some View {
         List {
@@ -26,6 +27,19 @@ struct SettingsView: View {
                 }
             }
 
+            // Running Zones section
+            Section("Running Zones") {
+                ForEach($zones) { $zone in
+                    ZoneSettingsRow(zone: $zone)
+                }
+
+                Button("Reset to Defaults") {
+                    zones = RunZone.defaults
+                    RunZone.resetToDefaults()
+                }
+                .foregroundStyle(Color.accent)
+            }
+
             // Disconnect section
             Section {
                 Button(role: .destructive) {
@@ -42,5 +56,8 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: zones) { _, newValue in
+            RunZone.saveAll(newValue)
+        }
     }
 }
