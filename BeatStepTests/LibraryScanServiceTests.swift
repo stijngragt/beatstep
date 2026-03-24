@@ -100,6 +100,19 @@ final class LibraryScanServiceTests: XCTestCase {
         XCTAssertNil(scanService.scanProgress, "All cached should skip scan entirely")
     }
 
+    // MARK: - Scanning Playlist ID Tracking
+
+    func testScanPlaylistByIDSetsScanningPlaylistID() async {
+        // scanningPlaylistID should be nil before and after scan
+        XCTAssertNil(scanService.scanningPlaylistID, "scanningPlaylistID should be nil before scan")
+
+        // We can't easily test the "during scan" state without mocking the API,
+        // but we can verify it resets to nil after completion
+        await scanService.scanPlaylistByID("pl_test", name: "Test Playlist")
+
+        XCTAssertNil(scanService.scanningPlaylistID, "scanningPlaylistID should be nil after scan completes")
+    }
+
     // MARK: - Helpers
 
     private func makeSpotifyTrack(id: String, name: String, artist: String) -> SpotifyTrack {

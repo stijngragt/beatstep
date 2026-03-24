@@ -16,6 +16,7 @@ struct ScanProgress {
 final class LibraryScanService {
     static let shared = LibraryScanService()
 
+    var scanningPlaylistID: String?
     var scanProgress: ScanProgress?
 
     private init() {}
@@ -75,6 +76,46 @@ final class LibraryScanService {
         scanProgress = nil
     }
 
+    // MARK: - Scan Playlist by ID
+
+    func scanPlaylistByID(_ playlistID: String, name: String) async {
+        // Prevent duplicate concurrent scans of the same playlist
+        guard scanningPlaylistID != playlistID else { return }
+
+        scanningPlaylistID = playlistID
+        do {
+            // Load all tracks for this playlist
+            var allTracks: [SpotifyTrack] = []
+            var offset = 0
+            var hasMore = true
+
+            while hasMore {
+                let response = try await SpotifyAPIService.shared.fetchPlaylistTracks(
+                    playlistID: playlistID,
+                    offset: offset,
+                    limit: 100
+                )
+                let tracks = response.items.compactMap(\.track)
+                allTracks.append(contentsOf: tracks)
+                hasMore = response.hasMore
+                offset = response.nextOffset
+            }
+
+            let playlist = SpotifyPlaylist(
+                id: playlistID,
+                name: name,
+                description: nil,
+                images: nil,
+                tracks: TracksRef(total: allTracks.count),
+                owner: nil
+            )
+            await scanPlaylist(playlist, tracks: allTracks)
+        } catch {
+            debugPrint("SCAN: Failed to scan playlist \(playlistID): \(error)")
+        }
+        scanningPlaylistID = nil
+    }
+
     // MARK: - Scan All Enabled Playlists
 
     func scanEnabledPlaylists() async {
@@ -88,37 +129,7 @@ final class LibraryScanService {
         }
 
         for scannedPlaylist in enabledPlaylists {
-            do {
-                // Load all tracks for this playlist
-                var allTracks: [SpotifyTrack] = []
-                var offset = 0
-                var hasMore = true
-
-                while hasMore {
-                    let response = try await SpotifyAPIService.shared.fetchPlaylistTracks(
-                        playlistID: scannedPlaylist.spotifyPlaylistID,
-                        offset: offset,
-                        limit: 100
-                    )
-                    let tracks = response.items.compactMap(\.track)
-                    allTracks.append(contentsOf: tracks)
-                    hasMore = response.hasMore
-                    offset = response.nextOffset
-                }
-
-                let playlist = SpotifyPlaylist(
-                    id: scannedPlaylist.spotifyPlaylistID,
-                    name: scannedPlaylist.name,
-                    description: nil,
-                    images: nil,
-                    tracks: TracksRef(total: allTracks.count),
-                    owner: nil
-                )
-                await scanPlaylist(playlist, tracks: allTracks)
-            } catch {
-                // Skip failed playlists, continue scanning others
-                continue
-            }
+            await scanPlaylistByID(scannedPlaylist.spotifyPlaylistID, name: scannedPlaylist.name)
         }
     }
 
