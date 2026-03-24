@@ -60,10 +60,11 @@ Plans:
   1. User sees Zone 1 through Zone 5 and Free as run mode options, replacing the old effort labels (Easy Jog, Steady, Fast Sprint)
   2. Selecting a zone uses the user-configured BPM (or default) as the target BPM for the run
   3. User sees a full-width Start Run button at the bottom of the Run tab that is visually prominent and always accessible
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
+- [ ] 11-01-PLAN.md — ZonePickerView, selectedZoneId persistence, RunTabView restructure with pinned CTA
+- [ ] 11-02-PLAN.md — RunView zone migration, dead code removal (PacePreset, ModePicker, PacePresetPicker)
 
 ### Phase 12: Onboarding
 **Goal**: First-launch users understand why BeatStep needs permissions and grant them confidently; users who denied can recover
@@ -97,6 +98,6 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | v1.1 | 2/2 | Complete | 2026-03-23 |
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
-| 10. Models, Settings & Library UX | 2/2 | Complete   | 2026-03-24 | - |
-| 11. Run Experience | v1.2 | 0/? | Not started | - |
+| 10. Models, Settings & Library UX | 2/2 | Complete    | 2026-03-24 | - |
+| 11. Run Experience | v1.2 | 0/2 | Not started | - |
 | 12. Onboarding | v1.2 | 0/? | Not started | - |
