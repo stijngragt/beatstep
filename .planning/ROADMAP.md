@@ -116,12 +116,15 @@ Plans:
   1. A visible toggle button exists in RunPlayerView or ActiveRunView that switches tempoMode between .oneToOne and .half
   2. The toggle reads current tempoMode from RunEngineService and displays the active mode (1:1 or 1:2)
   3. Tapping the toggle mutates runEngine.tempoMode, which immediately affects cadenceDelta and sync display
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 17-01-PLAN.md — Tempo mode toggle button in ActiveRunView + test + human verification
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 13 -> 14 -> 15 -> 16
+Phases execute in numeric order: 13 -> 14 -> 15 -> 16 -> 17
 Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in parallel.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -138,8 +141,8 @@ Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in pa
 | 10. Models, Settings & Library UX | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 11. Run Experience | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 12. Onboarding | v1.2 | 2/2 | Complete | 2026-03-24 |
-| 13. Engine Extensions + Design Tokens | 2/2 | Complete    | 2026-03-24 | - |
-| 14. Cadence Display + Status Bar | 2/2 | Complete    | 2026-03-24 | - |
-| 15. Run Player View | 1/1 | Complete    | 2026-03-24 | - |
-| 16. Active Run Assembly | 2/2 | Complete    | 2026-03-24 | - |
-| 17. Tempo Mode Toggle | v1.3 | 0/0 | Planned | - |
+| 13. Engine Extensions + Design Tokens | v1.3 | 2/2 | Complete | 2026-03-24 |
+| 14. Cadence Display + Status Bar | v1.3 | 2/2 | Complete | 2026-03-24 |
+| 15. Run Player View | v1.3 | 1/1 | Complete | 2026-03-24 |
+| 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
+| 17. Tempo Mode Toggle | v1.3 | 0/1 | Planned | - |
