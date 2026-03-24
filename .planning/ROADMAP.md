@@ -100,11 +100,11 @@ Plans:
   2. User can stop a run only via long-press (2-second hold with visual progress ring) -- no other dismiss path exists
   3. MiniPlayer hides automatically when ActiveRunView is showing and reappears when the run ends
   4. Tab bar is not visible during the active run screen
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
+- [ ] 16-01-PLAN.md — ActiveRunView + LongPressStopButton with TDD progress tests
+- [ ] 16-02-PLAN.md — Wire fullScreenCover into RunView, hide MiniPlayer, end-to-end verification
 
 ## Progress
 
