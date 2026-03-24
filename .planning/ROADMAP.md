@@ -80,11 +80,11 @@ Plans:
   1. Playlist view shows accurate track count for all playlist types; algorithmic playlists (Discover Weekly, Daily Mixes) display a dash or contextual label instead of "0 tracks"
   2. App icon appears on home screen with dark background and electric green accent mark
   3. Wordmark asset exists in the asset catalog and renders correctly at in-app display sizes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md -- Fix track count bug: trackCount becomes Int?, conditional display in views (BUG-01)
+- [ ] 09-02-PLAN.md -- App icon (ECG pulse mark) and wordmark on login screen (BRAND-01, BRAND-02)
 
 ## Progress
 
@@ -102,4 +102,4 @@ Phases execute in numeric order: 6 > 7 > 8 > 9
 | 6. Design System Foundation | 2/2 | Complete   | 2026-03-23 | - |
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | 2/2 | Complete   | 2026-03-23 | - |
-| 9. Bug Fix + Brand Assets | v1.1 | 0/TBD | Not started | - |
+| 9. Bug Fix + Brand Assets | v1.1 | 0/2 | Not started | - |
