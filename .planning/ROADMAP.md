@@ -72,11 +72,11 @@ Plans:
   2. User sees a zone band visualization showing where current cadence sits within the target zone BPM range (guided mode only)
   3. User perceives a subtle background color shift reflecting sync state (in-sync to drifting to mismatched)
   4. User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 14-01: TBD
-- [ ] 14-02: TBD
+- [ ] 14-01-PLAN.md — RunStatusBar + SyncBadge, SyncBackgroundModifier, SyncQuality.color extension
+- [ ] 14-02-PLAN.md — ZoneBandView, RampPhaseIndicator, enhanced CadenceDisplayView with sync color + delta
 
 ### Phase 15: Run Player View
 **Goal**: Runners see what song is playing with full context and can control playback with large touch targets, all in a standalone previewable component
