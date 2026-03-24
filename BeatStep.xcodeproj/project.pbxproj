@@ -22,6 +22,7 @@
 		2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53564AD8A26370E1D5CC4EB /* ContentView.swift */; };
 		2D92B9B9B8CDCDCA222FD14A /* CadenceDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */; };
 		2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */; };
+		348E71A2346F9E2EDB076023 /* SyncQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEC19B8CE1F5084D56A0DC7 /* SyncQuality.swift */; };
 		3633B91530BA99E13E412EB5 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD9FA2CFE9DA4FBDF7AF11 /* MiniPlayerView.swift */; };
 		36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */; };
 		370194D18DCDA5A737CD968E /* TrackCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C0C2D8AB5CCAD300237AD7 /* TrackCountTests.swift */; };
@@ -34,17 +35,21 @@
 		5611DC72ADDF5069C97F3B38 /* RunZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39CB3E5849922042AF3236E5 /* RunZone.swift */; };
 		5AF731B4891A953BB440EA69 /* GetSongBPMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15B6030B08CCF44B01BD0A2D /* GetSongBPMService.swift */; };
 		5CEA394D403E9B19AF0C5594 /* AudioSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1DA1AE4223F5E864B4ED0E /* AudioSessionService.swift */; };
+		5DE6C3EE397A29346CAFD3C4 /* SyncQualityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AD5391E7BD4E7DC62371C7 /* SyncQualityTests.swift */; };
 		5FAB3093469F63F0D98A5929 /* MockGetSongBPMResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A96BFA023D6CF3AADD5020 /* MockGetSongBPMResponses.swift */; };
 		61E7C5C608B7FD481C5C440D /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D8620533815733444854460 /* OnboardingTests.swift */; };
 		6645D0DAE549131D63942C74 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DDBAC5E41BB0D7ABEB7EE7 /* AppState.swift */; };
+		692A1F62DC6DFBC0D5166566 /* TempoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30F9B6F3CAB252555C44A46 /* TempoMode.swift */; };
 		6BEDB7282D5E48187B944D80 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DDB6111BB895CA6D9755DE /* Secrets.swift */; };
 		6D82D0B3807BF022AD71CDFE /* BPMCacheServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */; };
 		6F3185D1A8E96A18DD79269F /* RunZoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F380312A6E3F3F1CBA484FC7 /* RunZoneTests.swift */; };
+		7113B1A5EBC2FEF7084A3C4B /* SyncQuality+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E4FA724FA05CFDAEC22CFC /* SyncQuality+Color.swift */; };
 		737D7EABE7F317271B047DAF /* RampPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327FDEBEC96D40F7E4B829D3 /* RampPhase.swift */; };
 		75F028DE1CD6EA1E54BF7CDF /* SpotifyPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */; };
 		7DB8106A70167775807F7587 /* SpotifyAPIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */; };
 		7F4BF1B63B24CFBFB608DB82 /* BPMDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC3F32F251BB6DCD836C9C8 /* BPMDiscoveryService.swift */; };
 		8759BAC4EDE9798BF8F2A1A3 /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */; };
+		8866DBCB44FCC7BFDAA6861C /* CadenceDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */; };
 		9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */; };
 		96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51071A444A70CF8FE4921C0E /* RunView.swift */; };
 		9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */; };
@@ -80,9 +85,6 @@
 		F405D9CAAF8AF5E13EF8DF9E /* DesignTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82BA911E66F47778D3963B1D /* DesignTokenTests.swift */; };
 		FB232EA2C7B5463D38AA5AEE /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C51D6626191C4B83B3ADA4 /* KeychainManager.swift */; };
 		FB67AACA35A67A85464C73B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* SyncQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* SyncQuality.swift */; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* TempoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3C4D5E6F7A8B9C0D1E2F3A /* TempoMode.swift */; };
-		C3D4E5F6A7B8C9D0E1F2A3B4 /* SyncQualityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4D5E6F7A8B9C0D1E2F3A4B /* SyncQualityTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -96,12 +98,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		02B44183152AC4CB07E0DA73 /* BeatStep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeatStep.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		02B44183152AC4CB07E0DA73 /* BeatStep.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BeatStep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyPlayerService.swift; sourceTree = "<group>"; };
 		0D8620533815733444854460 /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSettingsRow.swift; sourceTree = "<group>"; };
 		15B6030B08CCF44B01BD0A2D /* GetSongBPMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMService.swift; sourceTree = "<group>"; };
 		19109252715D2142AD8C1454 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDisplayTests.swift; sourceTree = "<group>"; };
 		1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheServiceTests.swift; sourceTree = "<group>"; };
 		1EC3F32F251BB6DCD836C9C8 /* BPMDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMDiscoveryService.swift; sourceTree = "<group>"; };
 		1EE4DF865E617B08EB3B0741 /* SpotifyUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyUser.swift; sourceTree = "<group>"; };
@@ -109,6 +112,7 @@
 		2EB39C3B2920F997B27D9396 /* SpotifyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyError.swift; sourceTree = "<group>"; };
 		327FDEBEC96D40F7E4B829D3 /* RampPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RampPhase.swift; sourceTree = "<group>"; };
 		35908E9591D37AF34E26E975 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
+		37AD5391E7BD4E7DC62371C7 /* SyncQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQualityTests.swift; sourceTree = "<group>"; };
 		39CB3E5849922042AF3236E5 /* RunZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZone.swift; sourceTree = "<group>"; };
 		3AFD9FA2CFE9DA4FBDF7AF11 /* MiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayerView.swift; sourceTree = "<group>"; };
 		3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyTrack.swift; sourceTree = "<group>"; };
@@ -158,6 +162,7 @@
 		D166178F00CF25146611C6FB /* GetSongBPMResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMResponse.swift; sourceTree = "<group>"; };
 		D27CDD1D5622D605F315F7CA /* BPMViewWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMViewWiringTests.swift; sourceTree = "<group>"; };
 		D413FF5901AC08B98D7F067E /* BPMToleranceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMToleranceTests.swift; sourceTree = "<group>"; };
+		D5E4FA724FA05CFDAEC22CFC /* SyncQuality+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SyncQuality+Color.swift"; sourceTree = "<group>"; };
 		D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunEngineService.swift; sourceTree = "<group>"; };
 		DDE56539C5B7C96F590519D1 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		E0F7B31F8718FAA1C5A45EE9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -168,12 +173,11 @@
 		E9CFFC1FF6EE943CB3B48020 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSelectionTests.swift; sourceTree = "<group>"; };
 		EE0D147DC55109AB2F68D3FA /* LastRunPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastRunPlaylist.swift; sourceTree = "<group>"; };
+		F30F9B6F3CAB252555C44A46 /* TempoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempoMode.swift; sourceTree = "<group>"; };
 		F380312A6E3F3F1CBA484FC7 /* RunZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZoneTests.swift; sourceTree = "<group>"; };
 		F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuthService.swift; sourceTree = "<group>"; };
 		FEB07E38F6B451A11322F482 /* BPMCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheService.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F7A8B9C0D1E2F /* SyncQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQuality.swift; sourceTree = "<group>"; };
-		2B3C4D5E6F7A8B9C0D1E2F3A /* TempoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempoMode.swift; sourceTree = "<group>"; };
-		3C4D5E6F7A8B9C0D1E2F3A4B /* SyncQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQualityTests.swift; sourceTree = "<group>"; };
+		FEEC19B8CE1F5084D56A0DC7 /* SyncQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQuality.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +213,7 @@
 				1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */,
 				D413FF5901AC08B98D7F067E /* BPMToleranceTests.swift */,
 				D27CDD1D5622D605F315F7CA /* BPMViewWiringTests.swift */,
+				1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */,
 				40D44E12D78D4C936AFB8784 /* CadenceServiceTests.swift */,
 				82BA911E66F47778D3963B1D /* DesignTokenTests.swift */,
 				C175DDFE0853F22B85082A2F /* GetSongBPMServiceTests.swift */,
@@ -220,7 +225,7 @@
 				F380312A6E3F3F1CBA484FC7 /* RunZoneTests.swift */,
 				AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */,
 				B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */,
-				3C4D5E6F7A8B9C0D1E2F3A4B /* SyncQualityTests.swift */,
+				37AD5391E7BD4E7DC62371C7 /* SyncQualityTests.swift */,
 				E3C0C2D8AB5CCAD300237AD7 /* TrackCountTests.swift */,
 				EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */,
 				F927185F0FC2EA44EC85146D /* Mocks */,
@@ -266,12 +271,13 @@
 				5818164758316FF4BD59C44C /* RunSession.swift */,
 				39CB3E5849922042AF3236E5 /* RunZone.swift */,
 				AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */,
-				1A2B3C4D5E6F7A8B9C0D1E2F /* SyncQuality.swift */,
-				2B3C4D5E6F7A8B9C0D1E2F3A /* TempoMode.swift */,
 				2EB39C3B2920F997B27D9396 /* SpotifyError.swift */,
 				B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */,
 				3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */,
 				1EE4DF865E617B08EB3B0741 /* SpotifyUser.swift */,
+				FEEC19B8CE1F5084D56A0DC7 /* SyncQuality.swift */,
+				D5E4FA724FA05CFDAEC22CFC /* SyncQuality+Color.swift */,
+				F30F9B6F3CAB252555C44A46 /* TempoMode.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -463,6 +469,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 9438CAB6241D9C87F8D5BF04 /* Build configuration list for PBXProject "BeatStep" */;
 			developmentRegion = en;
@@ -509,6 +517,7 @@
 				2B2DC5471E50AB176E0E0492 /* BPMToleranceTests.swift in Sources */,
 				D1F229F05486EB35F79B3627 /* BPMViewWiringTests.swift in Sources */,
 				126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */,
+				8866DBCB44FCC7BFDAA6861C /* CadenceDisplayTests.swift in Sources */,
 				C0C23B120EDACFFA70E812CF /* CadenceServiceTests.swift in Sources */,
 				F405D9CAAF8AF5E13EF8DF9E /* DesignTokenTests.swift in Sources */,
 				25024A5C45AB2EE524CE7FEF /* GetSongBPMServiceTests.swift in Sources */,
@@ -523,7 +532,7 @@
 				6F3185D1A8E96A18DD79269F /* RunZoneTests.swift in Sources */,
 				7DB8106A70167775807F7587 /* SpotifyAPIServiceTests.swift in Sources */,
 				EA446206E85B736A1D25D982 /* SpotifyAuthServiceTests.swift in Sources */,
-				C3D4E5F6A7B8C9D0E1F2A3B4 /* SyncQualityTests.swift in Sources */,
+				5DE6C3EE397A29346CAFD3C4 /* SyncQualityTests.swift in Sources */,
 				370194D18DCDA5A737CD968E /* TrackCountTests.swift in Sources */,
 				2D30C68B62C2DE1EC7FB9202 /* ZoneSelectionTests.swift in Sources */,
 			);
@@ -562,8 +571,6 @@
 				9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */,
 				AB560042A7F124F1EAEA6BCD /* RunMode.swift in Sources */,
 				B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* SyncQuality.swift in Sources */,
-				B2C3D4E5F6A7B8C9D0E1F2A3 /* TempoMode.swift in Sources */,
 				9E8F37C2F5E7B7BEE6189208 /* RunTabView.swift in Sources */,
 				96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */,
 				5611DC72ADDF5069C97F3B38 /* RunZone.swift in Sources */,
@@ -577,6 +584,9 @@
 				2F0B91C5A2E93128612EF29B /* SpotifyPlaylist.swift in Sources */,
 				36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */,
 				004D1293FB22774C11392D96 /* SpotifyUser.swift in Sources */,
+				7113B1A5EBC2FEF7084A3C4B /* SyncQuality+Color.swift in Sources */,
+				348E71A2346F9E2EDB076023 /* SyncQuality.swift in Sources */,
+				692A1F62DC6DFBC0D5166566 /* TempoMode.swift in Sources */,
 				AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */,
 				EBFFFEEED0CFB5EC1BABEC48 /* ZonePickerView.swift in Sources */,
 				9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */,
@@ -736,7 +746,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BeatStep/Resources/BeatStep.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = U396ADBX6D;
 				INFOPLIST_FILE = BeatStep/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -754,7 +763,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BeatStep/Resources/BeatStep.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = U396ADBX6D;
 				INFOPLIST_FILE = BeatStep/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
