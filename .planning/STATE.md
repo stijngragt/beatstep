@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: The Right Flow
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-24T12:08:30.804Z"
-last_activity: 2026-03-24 -- Completed 10-02 playlist coverage & swipe-to-analyze
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-03-24T12:31:32Z"
+last_activity: 2026-03-24 -- Completed 11-01 zone picker & RunTabView restructure
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 50
+  total_plans: 4
+  completed_plans: 3
+  percent: 67
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 10 - Models, Settings & Library UX
+**Current focus:** Phase 11 - Run Experience
 
 ## Current Position
 
-Phase: 10 of 12 (Models, Settings & Library UX)
-Plan: 2 of 2 in current phase
+Phase: 11 of 12 (Run Experience)
+Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-24 -- Completed 10-02 playlist coverage & swipe-to-analyze
+Last activity: 2026-03-24 -- Completed 11-01 zone picker & RunTabView restructure
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18 (11 v1.0, 7 v1.1)
+- Total plans completed: 19 (11 v1.0, 8 v1.1+v1.2)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 
@@ -50,6 +50,8 @@ Recent decisions affecting current work:
 - [v1.2 research]: RunEngineService untouched -- zones are a thin UI wrapper mapping to existing runMode + targetBPM parameters
 - [Phase 10]: Coverage text uses compact X/Y BPM format for playlist rows
 - [Phase 10]: RunZone as struct with UserDefaults [String:Int] dict -- only BPM values persisted, names compiled-in
+- [Phase 11]: Unified zone picker replaces ModePicker + PacePresetPicker -- single ZonePickerView with Z1-Z5 + Free
+- [Phase 11]: noRunContent has no CTA button -- text-only prompt when no playlist exists
 
 ### Pending Todos
 
@@ -62,6 +64,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T12:08:30.802Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-run-experience/11-CONTEXT.md
+Last session: 2026-03-24T12:31:32Z
+Stopped at: Completed 11-01-PLAN.md
+Resume file: .planning/phases/11-run-experience/11-01-SUMMARY.md
