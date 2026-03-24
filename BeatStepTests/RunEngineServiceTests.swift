@@ -473,6 +473,61 @@ final class RunEngineServiceTests: XCTestCase {
         XCTAssertEqual(engine.latestCadence, 0, "latestCadence should be reset to 0 by stopRun")
     }
 
+    // MARK: - Half-Tempo Ranking
+
+    func testFindMatchingTracksOneToOneModeUnchanged() {
+        // In oneToOne mode, findMatchingTracks returns same order as before (no ranking change)
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85]
+        engine.loadForTesting(tracks: [track170, track85], bpmMap: bpmMap)
+        engine.setTempoModeForTesting(.oneToOne)
+        engine.tolerance = .normal
+
+        let matches = engine.findMatchingTracks(forSPM: 170)
+        XCTAssertEqual(matches.count, 2, "Both tracks should match at 170 SPM")
+        // In oneToOne mode, original order preserved (no sort applied)
+        XCTAssertEqual(matches[0].id, "t170")
+        XCTAssertEqual(matches[1].id, "t85")
+    }
+
+    func testFindMatchingTracksHalfModeRanksHalfBPMFirst() {
+        // In half mode, tracks near spm/2 (85) should rank before tracks near spm (170)
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85]
+        engine.loadForTesting(tracks: [track170, track85], bpmMap: bpmMap)
+        engine.setTempoModeForTesting(.half)
+        engine.tolerance = .normal
+
+        let matches = engine.findMatchingTracks(forSPM: 170)
+        XCTAssertEqual(matches.count, 2, "Both tracks should still match (filter unchanged)")
+        XCTAssertEqual(matches[0].id, "t85", "In half mode, 85 BPM track should rank first (closer to 170/2=85)")
+        XCTAssertEqual(matches[1].id, "t170", "170 BPM track should rank second")
+    }
+
+    func testFindMatchingTracksHalfModeFilterUnchanged() {
+        // Filter targets remain [spm, spm/2, spm*2] -- no double-halving
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t340": 340]
+        engine.loadForTesting(tracks: [track170, track85, track340], bpmMap: bpmMap)
+        engine.setTempoModeForTesting(.half)
+        engine.tolerance = .normal
+
+        let matches = engine.findMatchingTracks(forSPM: 170)
+        let matchIDs = Set(matches.map(\.id))
+        XCTAssertEqual(matches.count, 3, "All three targets should still match in half mode")
+        XCTAssertTrue(matchIDs.contains("t170"), "Direct match still included")
+        XCTAssertTrue(matchIDs.contains("t85"), "Half match still included")
+        XCTAssertTrue(matchIDs.contains("t340"), "Double match still included")
+    }
+
+    func testSelectNextMatchHalfModePrefsHalfBPM() {
+        // With only 2 tracks (no randomization in selection), half mode should prefer 85 BPM
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85]
+        engine.loadForTesting(tracks: [track170, track85], bpmMap: bpmMap)
+        engine.setTempoModeForTesting(.half)
+        engine.tolerance = .normal
+
+        let selected = engine.selectNextMatch(forSPM: 170)
+        XCTAssertEqual(selected?.id, "t85", "selectNextMatch in half mode should prefer track near spm/2")
+    }
+
     // MARK: - Discovery Flag
 
     func testDiscoveryFlagSetWhenPoolLow() {

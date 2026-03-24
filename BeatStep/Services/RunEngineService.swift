@@ -189,10 +189,22 @@ final class RunEngineService {
         let targets = [spm, spm / 2, spm * 2]
         let range = tolerance.range
 
-        return playlistTracks.filter { track in
+        var matches = playlistTracks.filter { track in
             guard let bpm = bpmMap[track.id] else { return false }
             return targets.contains { target in abs(bpm - target) <= range }
         }
+
+        // Half-tempo ranking: prefer tracks near spm/2
+        if tempoMode == .half {
+            let preferredTarget = spm / 2
+            matches.sort { trackA, trackB in
+                let bpmA = bpmMap[trackA.id] ?? 0
+                let bpmB = bpmMap[trackB.id] ?? 0
+                return abs(bpmA - preferredTarget) < abs(bpmB - preferredTarget)
+            }
+        }
+
+        return matches
     }
 
     func findClosestTrack(forSPM spm: Int) -> SpotifyTrack? {
