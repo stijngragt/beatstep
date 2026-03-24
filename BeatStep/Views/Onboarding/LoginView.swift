@@ -11,12 +11,10 @@ struct LoginView: View {
 
             // Branding
             VStack(spacing: Spacing.md) {
-                Image(systemName: "waveform.path.ecg")
-                    .font(.system(size: 60))
-                    .foregroundStyle(Color.spotifyBrand)
-
-                Text("BeatStep")
-                    .font(.displayHero)
+                Text("BEATSTEP")
+                    .font(.system(size: 52, weight: .bold))
+                    .tracking(8)
+                    .foregroundStyle(Color.textPrimary)
 
                 Text("Your music, your stride")
                     .font(.subheading)
