@@ -125,7 +125,10 @@ struct RunView: View {
 
             CadenceDisplayView(
                 spm: cadenceService.currentSPM,
-                trend: cadenceService.trend
+                trend: cadenceService.trend,
+                syncQuality: .inSync,
+                cadenceDelta: 0,
+                isGuidedMode: false
             )
         }
     }
