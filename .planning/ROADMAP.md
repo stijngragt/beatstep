@@ -76,11 +76,11 @@ Plans:
   3. On first launch, user sees a brief skippable screen explaining how running zones work
   4. User who denied permissions on first launch can navigate to Settings and find a "Revisit Permissions" action that guides them to restore access
   5. The Library tab does not fire a background playlist scan until onboarding is complete
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md — AppState gate, OnboardingFlow with 3 screens (Spotify, Health/Motion, Zones), HealthKit framework setup
+- [ ] 12-02-PLAN.md — Settings Permissions section with status display and Open Settings link
 
 ## Progress
 
@@ -100,4 +100,4 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 10. Models, Settings & Library UX | 2/2 | Complete    | 2026-03-24 | - |
 | 11. Run Experience | 2/2 | Complete    | 2026-03-24 | - |
-| 12. Onboarding | v1.2 | 0/? | Not started | - |
+| 12. Onboarding | v1.2 | 0/2 | Not started | - |
