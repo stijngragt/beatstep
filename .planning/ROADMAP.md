@@ -32,7 +32,7 @@
 ### v1.2 The Right Flow
 
 - [x] **Phase 10: Models, Settings & Library UX** - Zone model, BPM tolerance picker, zone settings, and playlist analyzed state with inline analyze (completed 2026-03-24)
-- [ ] **Phase 11: Run Experience** - Zone picker replaces effort labels, full-width Run CTA
+- [x] **Phase 11: Run Experience** - Zone picker replaces effort labels, full-width Run CTA (completed 2026-03-24)
 - [ ] **Phase 12: Onboarding** - Value-framed first-launch permission flow with re-trigger from Settings
 
 ## Phase Details
@@ -99,5 +99,5 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 8. Token Adoption + RunHomeView | v1.1 | 2/2 | Complete | 2026-03-23 |
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 10. Models, Settings & Library UX | 2/2 | Complete    | 2026-03-24 | - |
-| 11. Run Experience | 1/2 | In Progress|  | - |
+| 11. Run Experience | 2/2 | Complete   | 2026-03-24 | - |
 | 12. Onboarding | v1.2 | 0/? | Not started | - |
