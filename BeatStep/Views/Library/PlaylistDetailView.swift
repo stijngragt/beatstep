@@ -134,9 +134,11 @@ struct PlaylistDetailView: View {
                         .foregroundStyle(Color.textSecondary)
                 }
 
-                Text("\(playlist.trackCount) tracks")
-                    .font(.captionText)
-                    .foregroundStyle(Color.textSecondary)
+                if let count = playlist.trackCount {
+                    Text("\(count) tracks")
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
+                }
             }
         }
         .frame(maxWidth: .infinity)

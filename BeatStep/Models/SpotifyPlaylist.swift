@@ -20,7 +20,7 @@ struct SpotifyPlaylist: Codable, Identifiable, Hashable {
     let tracks: TracksRef?
     let owner: PlaylistOwner?
 
-    var trackCount: Int {
-        tracks?.total ?? 0
+    var trackCount: Int? {
+        tracks?.total
     }
 }

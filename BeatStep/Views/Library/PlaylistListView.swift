@@ -172,9 +172,11 @@ private struct PlaylistRow: View {
                     .lineLimit(1)
 
                 HStack(spacing: Spacing.xs) {
-                    Text("\(playlist.trackCount) tracks")
-                        .font(.captionText)
-                        .foregroundStyle(Color.textSecondary)
+                    if let count = playlist.trackCount {
+                        Text("\(count) tracks")
+                            .font(.captionText)
+                            .foregroundStyle(Color.textSecondary)
+                    }
 
                     if let coverageText {
                         Text("\u{00B7}")
