@@ -1,5 +1,26 @@
 # Milestones
 
+## v1.2 The Right Flow (Shipped: 2026-03-24)
+
+**Phases completed:** 3 phases, 6 plans
+**Timeline:** 2026-03-24 (1 day)
+**Swift LOC:** 6,376
+**Commits:** 10 feature commits
+
+**Delivered:** Overhauled onboarding, playlist UX, and run setup — making the app feel intentional from first launch through starting a run.
+
+**Key accomplishments:**
+- Zone-based running (Z1-Z5 + Free) replacing effort labels, with configurable BPM per zone in Settings
+- Library playlists show analyzed/unanalyzed state with inline swipe-to-analyze
+- Value-framed 3-screen onboarding flow (Spotify, Health/Motion, Zones) gated at app root via AppState enum
+- Settings permission recovery section for users who denied during onboarding
+- Full-width pinned Run CTA and ±BPM tolerance segmented picker
+- HealthKit framework integration (optional link) for future fitness features
+
+**Git range:** 919c123 → 02f93a1
+
+---
+
 ## v1.1 Dark by Design (Shipped: 2026-03-24)
 
 **Phases completed:** 4 phases, 7 plans

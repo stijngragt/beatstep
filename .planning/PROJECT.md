@@ -29,18 +29,18 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Run tab shows last-used playlist context — v1.1
 - ✓ Fix track count displaying zero for algorithmic playlists — v1.1
 - ✓ App icon (ECG pulse mark) and BEATSTEP wordmark — v1.1
+- ✓ Onboarding flow with value-framed Spotify + Apple Health permission screens — v1.2
+- ✓ Re-triggerable onboarding from Settings for missed permissions — v1.2
+- ✓ Library playlists show analyzed/unanalyzed state — v1.2
+- ✓ Analyze button inline with playlist (swipe-to-analyze) — v1.2
+- ✓ Zone-based running: Zone 1–5 + Free replacing effort labels — v1.2
+- ✓ Zone BPM defaults with user-configurable overrides in Settings — v1.2
+- ✓ Full-width Run CTA at bottom of Run tab — v1.2
+- ✓ BPM tolerance as segmented control showing ±BPM deltas (±3, ±7, ±12) — v1.2
 
 ### Active
 
-<!-- v1.2 The Right Flow -->
-- [ ] Onboarding flow with value-framed Spotify + Apple Health permission screens
-- [ ] Re-triggerable onboarding from Settings for missed permissions
-- [ ] Library playlists show analyzed/unanalyzed state
-- [ ] Analyze button inline with playlist (not buried in detail screen top-right)
-- [ ] Zone-based running: Zone 1–5 + Free replacing effort labels
-- [ ] Zone BPM defaults with user-configurable overrides in Settings
-- [ ] Full-width Run CTA at bottom of Run tab
-- [ ] BPM tolerance as segmented control showing ±BPM deltas (±3, ±7, ±12)
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -54,21 +54,26 @@ When you run, your music should move with you — every footstrike landing on th
 
 ## Context
 
-Shipped v1.1 with 5,677 LOC Swift across 9 phases (5 MVP + 4 design).
-Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache.
+Shipped v1.2 with 6,376 LOC Swift across 12 phases (5 MVP + 4 design + 3 flow).
+Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache.
 
 Key architecture:
+- `AppState` — enum with `resolve()` gating onboarding → login → authenticated
+- `OnboardingFlow` — 3-screen forward-only ScrollView (Spotify, Health/Motion, Zones)
 - `RunEngineService` — orchestrator: cadence monitor, song-end monitor, BPM matching, ramp state machine
+- `RunZone` — struct with UserDefaults persistence, Z1-Z5 defaults + user-configurable BPM
+- `ZonePickerView` — horizontal capsule picker replacing PacePresetPicker + ModePicker
 - `BPMCacheService` — SwiftData-backed local BPM + danceability cache
 - `GetSongBPMService` → Cloudflare Worker → GetSongBPM API (bypasses bot protection)
 - `BPMDiscoveryService` — on-demand Spotify catalog search when pool runs low
 - `CadenceService` — CMPedometer wrapper with rolling average smoothing
+- `LibraryScanService` — playlist BPM scanning with per-playlist progress tracking
 - `DesignTokens.swift` — centralized Color, Font, Spacing, Radius, ComponentSize tokens
-- `ContentView` — TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset
+- `ContentView` — AppState-gated TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
 
-Known tech debt from v1.1: 5 unused ComponentSize tokens, LastRunPlaylist.id written but unread, REQUIREMENTS.md had stale "electric green" wording (implementation uses #FF4545 per user decision).
+Known tech debt from v1.1 (carried): 5 unused ComponentSize tokens, LastRunPlaylist.id written but unread.
 
 ## Constraints
 
@@ -100,16 +105,16 @@ Known tech debt from v1.1: 5 unused ComponentSize tokens, LastRunPlaylist.id wri
 | SF Symbol sizing not tokenized | Icon sizing is layout, not typography — .font(.system(size:)) is idiomatic | ✓ Good — avoids over-abstraction |
 | Test-as-generator for app icon | Core Graphics in unit test produces reproducible PNG | ✓ Good — no external tool dependency |
 | SF Pro Bold (not .rounded) for wordmark | One-off brand treatment, .displayHero uses .rounded design | ✓ Good — clear brand distinction |
+| Zones as thin UI wrapper over existing RunEngine | RunEngineService already supports runMode + targetBPM — zones just map to these | ✓ Good — zero RunEngine changes needed |
+| RunZone struct with UserDefaults dict | Only BPM values persisted, names compiled-in — simple, no migration needed | ✓ Good — straightforward persistence |
+| AppState enum with static resolve() | Testable routing logic outside SwiftUI, onboarding gate before auth | ✓ Good — prevents tab bar flash and premature scan |
+| ScrollViewReader over ScrollPosition | iOS 17 compat — ScrollPosition requires iOS 18+ | ✓ Good — forward-only pattern still works |
+| HealthKit read-only permission check via AppStorage flag | HKAuthorizationStatus always returns .notDetermined for read types | ✓ Good — avoids misleading "Denied" display |
+| Onboarding last (after features built) | Gate built after features behind it work — safer sequencing | ✓ Good — all gated features verified before gate added |
 
-## Current Milestone: v1.2 The Right Flow
+## Current State
 
-**Goal:** Overhaul onboarding, playlist UX, and run setup — making the app feel intentional from first launch through starting a run.
-
-**Target features:**
-- Value-framed onboarding flow for Spotify + Apple Health permissions (re-triggerable)
-- Library playlists show analyzed state with inline analyze action
-- Zone-based running (Z1–5 + Free) with configurable BPM defaults
-- Prominent Run CTA and improved BPM tolerance picker
+v1.2 shipped. 12 phases complete across 3 milestones. Planning next milestone.
 
 ---
-*Last updated: 2026-03-24 after v1.2 milestone started*
+*Last updated: 2026-03-24 after v1.2 milestone*

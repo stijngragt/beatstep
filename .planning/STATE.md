@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: The Right Flow
 status: completed
 stopped_at: Completed 12-02-PLAN.md -- v1.2 milestone complete
-last_updated: "2026-03-24T13:24:40.532Z"
+last_updated: "2026-03-24T13:35:23.312Z"
 last_activity: 2026-03-24 -- Completed 12-02 Settings permission recovery; v1.2 milestone complete
 progress:
   total_phases: 3
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** v1.2 milestone complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 

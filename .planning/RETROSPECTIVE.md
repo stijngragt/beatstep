@@ -92,6 +92,49 @@
 
 ---
 
+## Milestone: v1.2 — The Right Flow
+
+**Shipped:** 2026-03-24
+**Phases:** 3 | **Plans:** 6 | **Sessions:** ~2
+
+### What Was Built
+- Zone-based running (Z1-Z5 + Free) with configurable BPM per zone in Settings, replacing effort labels
+- Library playlists show analyzed/unanalyzed state with inline swipe-to-analyze action
+- Value-framed 3-screen onboarding flow (Spotify, Health/Motion, Zones) gated at app root via AppState enum
+- Settings permission recovery section for users who denied during onboarding
+- Full-width pinned Run CTA on Run tab and ±BPM tolerance segmented picker
+- HealthKit framework optional link for Apple Health read permissions
+
+### What Worked
+- **Features-before-gate sequencing** — Building zones (Phase 10-11) before onboarding (Phase 12) meant the onboarding gate was added after all gated features were verified working. Zero rework needed.
+- **Thin UI wrapper approach** — Zones didn't touch RunEngineService at all. Mapping zone → runMode + targetBPM kept the change surface minimal.
+- **AppState enum with static resolve()** — Testable routing logic outside SwiftUI, caught onboarding precedence issues in unit tests before they hit the UI.
+- **Human checkpoint for onboarding** — Plan 12-02 checkpoint caught the right moment to verify the full 3-screen flow on device before marking complete.
+
+### What Was Inefficient
+- **SUMMARY one-liner fields still not populated** — Third milestone in a row; automated accomplishment extraction returns nulls. Should fix the executor template or stop expecting these.
+- **Nyquist VALIDATION.md files remain draft** — All 3 phases created validation strategies but `nyquist_compliant` never set to true. Pattern from v1.1 repeated.
+- **ScrollPosition → ScrollViewReader deviation** — Research recommended ScrollPosition (iOS 18+) but app targets iOS 17. The executor auto-fixed this, but research should check deployment target before recommending APIs.
+
+### Patterns Established
+- `AppState` enum at ContentView root for multi-state routing (onboarding → login → authenticated)
+- `@AppStorage` flag tracking for permissions that iOS can't distinguish (HealthKit read .notDetermined)
+- Forward-only ScrollView via `scrollDisabled(true)` + ScrollViewReader for onboarding-style flows
+- Per-row scan progress tracking via `scanningPlaylistID` for inline feedback
+
+### Key Lessons
+1. **Check deployment target during research** — API recommendations should match the app's actual iOS version target, not the latest SDK
+2. **Thin wrapper over existing services beats new services** — Zones are pure UI mapping to RunEngine's existing parameters. Resist the urge to build new infrastructure.
+3. **HealthKit read permissions are asymmetric** — `.authorizationStatus()` always returns `.notDetermined` for read types. Must use custom flags for UI display.
+4. **Onboarding gate placement matters** — Gate must evaluate BEFORE auth check to prevent tab bar flash. AppState enum precedence solved this cleanly.
+
+### Cost Observations
+- Model mix: ~60% opus (execution), ~30% sonnet (verification/integration), ~10% haiku
+- Sessions: ~2 in a single day
+- Notable: Entire milestone (3 phases, 6 plans) completed in a single day — fastest milestone yet at ~3 hours wall time
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -100,6 +143,7 @@
 |-----------|----------|--------|------------|
 | v1.0 | ~8 | 5 | First milestone — established GSD workflow patterns |
 | v1.1 | ~3 | 4 | Parallel execution, faster phases, approval gates |
+| v1.2 | ~2 | 3 | Single-day milestone, features-before-gate sequencing |
 
 ### Cumulative Quality
 
@@ -107,11 +151,14 @@
 |-----------|-------|----------|-------------------|
 | v1.0 | 28+ | Services layer | 0 (all deps justified) |
 | v1.1 | 35+ | Services + design tokens | 0 (zero new deps) |
+| v1.2 | 50+ | Services + models + onboarding | 0 (HealthKit is first-party) |
 
 ### Top Lessons (Verified Across Milestones)
 
-1. Risk-first phase ordering catches blockers early (v1.0, v1.1)
+1. Risk-first phase ordering catches blockers early (v1.0, v1.1, v1.2)
 2. TDD for pure business logic pays off in engine/service layers (v1.0, v1.1)
-3. Device verification checkpoints catch real integration issues that unit tests miss (v1.0, v1.1)
-4. Tight phase scoping enables fast execution — sub-10min phases are achievable (v1.1)
-5. Update docs when decisions are locked, not at audit time (v1.1 lesson from stale "electric green")
+3. Device verification checkpoints catch real integration issues that unit tests miss (v1.0, v1.1, v1.2)
+4. Tight phase scoping enables fast execution — sub-10min phases are achievable (v1.1, v1.2)
+5. Update docs when decisions are locked, not at audit time (v1.1, v1.2)
+6. Thin UI wrappers over existing services beat new infrastructure (v1.2 — zones needed zero RunEngine changes)
+7. Check deployment target during research, not during execution (v1.2 — ScrollPosition/iOS 17 mismatch)
