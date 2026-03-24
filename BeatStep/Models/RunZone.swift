@@ -44,4 +44,18 @@ struct RunZone: Identifiable, Equatable {
     static func resetToDefaults() {
         UserDefaults.standard.removeObject(forKey: key)
     }
+
+    // MARK: - Selected Zone Persistence
+
+    private static let selectedKey = "selectedRunZoneId"
+
+    static var selectedZoneId: Int? {
+        get {
+            let value = UserDefaults.standard.integer(forKey: selectedKey)
+            return value == 0 ? nil : value
+        }
+        set {
+            UserDefaults.standard.set(newValue ?? 0, forKey: selectedKey)
+        }
+    }
 }

@@ -71,6 +71,12 @@
 		FEE823626ED10647B7FC4C20 /* PacePresetPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42E6E0CCDFEFD9E667209984 /* PacePresetPicker.swift */; };
 		AAAAAA01BRAND01ICON0002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAA01BRAND01ICON0001 /* Assets.xcassets */; };
 		AAAAAA01BRAND01ICON0005 /* AppIconGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAA01BRAND01ICON0004 /* AppIconGeneratorTests.swift */; };
+		1100AA01ZONE01MODEL0001 /* RunZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01MODEL0002 /* RunZone.swift */; };
+		1100AA01ZONE01PICK00001 /* ZonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01PICK00002 /* ZonePickerView.swift */; };
+		1100AA01ZONE01SROW0001 /* ZoneSettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01SROW0002 /* ZoneSettingsRow.swift */; };
+		1100AA01ZONE01TEST0001 /* RunZoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01TEST0002 /* RunZoneTests.swift */; };
+		1100AA01ZONE01TEST0003 /* ZoneSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01TEST0004 /* ZoneSelectionTests.swift */; };
+		1100AA01ZONE01TEST0005 /* TrackCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100AA01ZONE01TEST0006 /* TrackCountTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +154,12 @@
 		E9CFFC1FF6EE943CB3B48020 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAuthService.swift; sourceTree = "<group>"; };
 		FEB07E38F6B451A11322F482 /* BPMCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheService.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01MODEL0002 /* RunZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZone.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01PICK00002 /* ZonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonePickerView.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01SROW0002 /* ZoneSettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSettingsRow.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01TEST0002 /* RunZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZoneTests.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01TEST0004 /* ZoneSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSelectionTests.swift; sourceTree = "<group>"; };
+		1100AA01ZONE01TEST0006 /* TrackCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackCountTests.swift; sourceTree = "<group>"; };
 		AAAAAA01BRAND01ICON0001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAAAAA01BRAND01ICON0004 /* AppIconGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconGeneratorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -192,7 +204,10 @@
 				5B8DE2A72602B504DACE8177 /* ModelDecodingTests.swift */,
 				D9EBD96786E576C75587ECEF /* PacePresetTests.swift */,
 				BE8FAB65795D9B7248FDDCC3 /* RunEngineServiceTests.swift */,
+				1100AA01ZONE01TEST0002 /* RunZoneTests.swift */,
 				AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */,
+				1100AA01ZONE01TEST0006 /* TrackCountTests.swift */,
+				1100AA01ZONE01TEST0004 /* ZoneSelectionTests.swift */,
 				B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */,
 				F927185F0FC2EA44EC85146D /* Mocks */,
 			);
@@ -236,6 +251,7 @@
 				327FDEBEC96D40F7E4B829D3 /* RampPhase.swift */,
 				CC6A7E5FF989282D490A4C66 /* RunMode.swift */,
 				5818164758316FF4BD59C44C /* RunSession.swift */,
+				1100AA01ZONE01MODEL0002 /* RunZone.swift */,
 				AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */,
 				2EB39C3B2920F997B27D9396 /* SpotifyError.swift */,
 				B88F5A5153F1EE34D366F68D /* SpotifyPlaylist.swift */,
@@ -325,6 +341,7 @@
 				B7C4D2E3F5A6179023456789 /* RunTabView.swift */,
 				51071A444A70CF8FE4921C0E /* RunView.swift */,
 				9F53B43A668691E6914501E3 /* TolerancePicker.swift */,
+				1100AA01ZONE01PICK00002 /* ZonePickerView.swift */,
 			);
 			path = Run;
 			sourceTree = "<group>";
@@ -333,6 +350,7 @@
 			isa = PBXGroup;
 			children = (
 				A82812B49FA131871ECBA508 /* SettingsView.swift */,
+				1100AA01ZONE01SROW0002 /* ZoneSettingsRow.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -483,8 +501,11 @@
 				C917C59D3A0C398244915F94 /* ModelDecodingTests.swift in Sources */,
 				D0137734CC98E5E3748C0EA8 /* PacePresetTests.swift in Sources */,
 				DCE0AF6AB958364A68FFEEB3 /* RunEngineServiceTests.swift in Sources */,
+				1100AA01ZONE01TEST0001 /* RunZoneTests.swift in Sources */,
 				7DB8106A70167775807F7587 /* SpotifyAPIServiceTests.swift in Sources */,
 				EA446206E85B736A1D25D982 /* SpotifyAuthServiceTests.swift in Sources */,
+				1100AA01ZONE01TEST0005 /* TrackCountTests.swift in Sources */,
+				1100AA01ZONE01TEST0003 /* ZoneSelectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,6 +553,9 @@
 				36999C3EDE71B7C949354187 /* SpotifyTrack.swift in Sources */,
 				004D1293FB22774C11392D96 /* SpotifyUser.swift in Sources */,
 				AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */,
+				1100AA01ZONE01MODEL0001 /* RunZone.swift in Sources */,
+				1100AA01ZONE01PICK00001 /* ZonePickerView.swift in Sources */,
+				1100AA01ZONE01SROW0001 /* ZoneSettingsRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
