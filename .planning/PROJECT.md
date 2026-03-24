@@ -2,7 +2,7 @@
 
 ## What This Is
 
-BeatStep is an iOS app that syncs your running music to your stride. It detects cadence in real-time via CoreMotion, then queues Spotify tracks whose BPM matches your running rhythm. Supports both free run mode (music adapts to your pace) and guided mode (you set a target BPM with warm-up/cool-down ramps). Smart song selection ranks matches by danceability.
+BeatStep is an iOS app that syncs your running music to your stride. It detects cadence in real-time via CoreMotion, then queues Spotify tracks whose BPM matches your running rhythm. Supports both free run mode (music adapts to your pace) and guided mode (you set a target BPM with warm-up/cool-down ramps). Smart song selection ranks matches by danceability. The app has a dark-only UI with a cohesive heartbeat red (#FF4545) design system and tab-based navigation.
 
 ## Core Value
 
@@ -22,16 +22,17 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Song discovery from Spotify catalog when library lacks matches — v1.0
 - ✓ Configurable BPM tolerance — v1.0
 - ✓ Smart song selection using danceability ranking — v1.0
+- ✓ Dark-mode-only UI with light-mode logic stripped — v1.1
+- ✓ Design system: color (#FF4545 heartbeat red accent), typography, spacing/component tokens — v1.1
+- ✓ Bottom tab navigation: Library, Run, Settings with per-tab NavigationStack — v1.1
+- ✓ All views migrated to design tokens (zero hardcoded colors) — v1.1
+- ✓ Run tab shows last-used playlist context — v1.1
+- ✓ Fix track count displaying zero for algorithmic playlists — v1.1
+- ✓ App icon (ECG pulse mark) and BEATSTEP wordmark — v1.1
 
 ### Active
 
-<!-- v1.1 Dark by Design -->
-
-- [ ] Dark-mode-only UI with light-mode logic stripped
-- [ ] Design system: typeface, color palette (electric green accent), spacing/component tokens
-- [ ] Bottom tab navigation: Library, Run, Settings
-- [ ] Fix track count displaying zero in playlist view
-- [ ] App icon and wordmark (rough brand mark)
+(No active requirements — next milestone not yet planned)
 
 ### Out of Scope
 
@@ -41,10 +42,11 @@ When you run, your music should move with you — every footstrike landing on th
 - Apple Music / local file support — Spotify only for v1
 - Real-time tempo stretching of audio — queue matching songs instead
 - Android support — iOS native only for v1
+- Light mode support — v1.1 is intentional dark commitment; revisit only if feedback demands it
 
 ## Context
 
-Shipped v1.0 with 5,162 LOC Swift.
+Shipped v1.1 with 5,677 LOC Swift across 9 phases (5 MVP + 4 design).
 Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache.
 
 Key architecture:
@@ -53,8 +55,12 @@ Key architecture:
 - `GetSongBPMService` → Cloudflare Worker → GetSongBPM API (bypasses bot protection)
 - `BPMDiscoveryService` — on-demand Spotify catalog search when pool runs low
 - `CadenceService` — CMPedometer wrapper with rolling average smoothing
+- `DesignTokens.swift` — centralized Color, Font, Spacing, Radius, ComponentSize tokens
+- `ContentView` — TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
+
+Known tech debt from v1.1: 5 unused ComponentSize tokens, LastRunPlaylist.id written but unread, REQUIREMENTS.md had stale "electric green" wording (implementation uses #FF4545 per user decision).
 
 ## Constraints
 
@@ -63,6 +69,7 @@ BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 202
 - **Privacy**: Accelerometer data stays on-device, no tracking or analytics collected
 - **BPM data**: GetSongBPM via Cloudflare Worker proxy — rate limits and coverage gaps for niche tracks
 - **Spotify API**: PKCE OAuth flow; rate limits on catalog search and playback control
+- **Visual identity**: Dark-only UI with #FF4545 heartbeat red accent — no light mode
 
 ## Key Decisions
 
@@ -78,19 +85,13 @@ BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 202
 | Cloudflare Worker proxy for GetSongBPM | iOS URLSession blocked by bot protection | ✓ Good — resolved BPM data access |
 | Danceability for smart selection | Only viable audio attribute from GetSongBPM (energy/genre not available) | ✓ Good — fallback to 50 when missing |
 | 8 BPM step per song for ramp | Balance between gradual ramp and reaching target in reasonable songs | — Pending user feedback |
-
-## Current Milestone: v1.1 Dark by Design
-
-**Goal:** Establish BeatStep's visual identity — dark-only fitness aesthetic, design system with electric green accent, tab-based navigation, and brand mark.
-
-**Target features:**
-- Dark-mode-only commitment (strip light-mode logic)
-- Design system: typeface, electric green accent palette, spacing/component tokens
-- Bottom tab navigation (Library, Run, Settings)
-- Fix track count bug in playlist view
-- App icon and wordmark
-
-**Design workflow:** Approve design system (tokens, palette, type) first, then build screens — review after.
+| #FF4545 heartbeat red over electric green | Better heartbeat association, differentiates from Spotify green | ✓ Good — cohesive brand identity |
+| Dark-mode-only commitment | Fitness aesthetic, simpler code, stronger brand | ✓ Good — no light/dark conditional code |
+| Belt-and-suspenders dark mode | Info.plist + window override for complete coverage | ✓ Good — covers all edge cases |
+| TabView with per-tab NavigationStack | Independent nav state per tab, MiniPlayer via safeAreaInset | ✓ Good — clean tab separation |
+| SF Symbol sizing not tokenized | Icon sizing is layout, not typography — .font(.system(size:)) is idiomatic | ✓ Good — avoids over-abstraction |
+| Test-as-generator for app icon | Core Graphics in unit test produces reproducible PNG | ✓ Good — no external tool dependency |
+| SF Pro Bold (not .rounded) for wordmark | One-off brand treatment, .displayHero uses .rounded design | ✓ Good — clear brand distinction |
 
 ---
-*Last updated: 2026-03-23 after v1.1 milestone started*
+*Last updated: 2026-03-24 after v1.1 milestone*
