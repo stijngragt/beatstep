@@ -44,6 +44,14 @@ final class BPMToleranceTests: XCTestCase {
         XCTAssertEqual(BPMTolerance.saved, .defaultTolerance)
     }
 
+    // MARK: - Display Name
+
+    func testDisplayNameShowsBPMDelta() {
+        XCTAssertEqual(BPMTolerance.tight.displayName, "\u{00B1}3 BPM")
+        XCTAssertEqual(BPMTolerance.normal.displayName, "\u{00B1}7 BPM")
+        XCTAssertEqual(BPMTolerance.loose.displayName, "\u{00B1}12 BPM")
+    }
+
     // MARK: - CaseIterable
 
     func testCaseIterableIncludesAllThreeCases() {
