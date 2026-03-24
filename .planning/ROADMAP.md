@@ -43,7 +43,7 @@
 
 - [x] **Phase 13: Engine Extensions + Design Tokens** - Add syncQuality, cadenceDelta, tempoMode to RunEngineService and sync color tokens to DesignTokens (completed 2026-03-24)
 - [x] **Phase 14: Cadence Display + Status Bar** - Build enhanced CadenceDisplayView and RunStatusBar as standalone previewable components (completed 2026-03-24)
-- [ ] **Phase 15: Run Player View** - Build integrated music player with album art, track info, BPM, and playback controls
+- [x] **Phase 15: Run Player View** - Build integrated music player with album art, track info, BPM, and playback controls (completed 2026-03-24)
 - [ ] **Phase 16: Active Run Assembly** - Compose full-screen ActiveRunView via fullScreenCover with long-press stop and MiniPlayer hiding
 
 ## Phase Details
@@ -128,5 +128,5 @@ Note: Phases 14 and 15 both depend only on Phase 13, so they could execute in pa
 | 12. Onboarding | v1.2 | 2/2 | Complete | 2026-03-24 |
 | 13. Engine Extensions + Design Tokens | 2/2 | Complete    | 2026-03-24 | - |
 | 14. Cadence Display + Status Bar | 2/2 | Complete    | 2026-03-24 | - |
-| 15. Run Player View | v1.3 | 0/1 | Not started | - |
+| 15. Run Player View | 1/1 | Complete   | 2026-03-24 | - |
 | 16. Active Run Assembly | v1.3 | 0/2 | Not started | - |

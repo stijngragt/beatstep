@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: In The Zone
 status: executing
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-03-24T19:26:43.713Z"
-last_activity: 2026-03-24 -- Completed 14-02 (zone band, ramp indicator, cadence display)
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-24T19:59:39Z"
+last_activity: 2026-03-24 -- Completed 15-01 (RunPlayerView with album art, track info, playback controls)
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
   percent: 100
 ---
 
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 14 -- Cadence Display + Status Bar
+**Current focus:** Phase 15 -- Run Player View
 
 ## Current Position
 
-Phase: 14 of 16 (Cadence Display + Status Bar)
-Plan: 2 of 2 in current phase (COMPLETE)
+Phase: 15 of 16 (Run Player View)
+Plan: 1 of 1 in current phase (COMPLETE)
 Status: Executing
-Last activity: 2026-03-24 -- Completed 14-02 (zone band, ramp indicator, cadence display)
+Last activity: 2026-03-24 -- Completed 15-01 (RunPlayerView with album art, track info, playback controls)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27 (11 v1.0, 7 v1.1, 6 v1.2, 3 v1.3)
+- Total plans completed: 28 (11 v1.0, 7 v1.1, 6 v1.2, 4 v1.3)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
@@ -63,6 +63,8 @@ Recent decisions affecting current work:
 - [14-02]: Position/progress as static functions on views for unit testability
 - [14-02]: CadenceDisplayView SPM colored by syncQuality.color per research recommendation
 - [14-02]: RunView call site uses default sync parameters until Phase 16 wiring
+- [15-01]: Album art URL selection as static function for unit testability
+- [15-01]: Mid-size image range 200-400px for optimal 80pt @3x display
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T19:22:30Z
-Stopped at: Completed 14-02-PLAN.md
-Resume file: .planning/phases/15-player-controls/15-01-PLAN.md
+Last session: 2026-03-24T19:54:09Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: .planning/phases/16-active-run-assembly/16-01-PLAN.md

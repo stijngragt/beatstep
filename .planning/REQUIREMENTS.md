@@ -23,9 +23,9 @@ Requirements for v1.3 "In The Zone" milestone. Each maps to roadmap phases.
 
 ### Music Player
 
-- [ ] **PLR-01**: User sees album art (80pt) for the current track in the integrated run screen player
-- [ ] **PLR-02**: User sees song name, artist name, and current track BPM in the player area
-- [ ] **PLR-03**: User can play/pause and skip tracks with large touch targets (56pt+) during a run
+- [x] **PLR-01**: User sees album art (80pt) for the current track in the integrated run screen player
+- [x] **PLR-02**: User sees song name, artist name, and current track BPM in the player area
+- [x] **PLR-03**: User can play/pause and skip tracks with large touch targets (56pt+) during a run
 - [x] **PLR-04**: User can toggle between 1:1 and 1/2 tempo matching mid-run, which changes how songs are matched to cadence and updates the sync/delta display accordingly
 
 ## v2 Requirements
@@ -72,9 +72,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAD-03 | Phase 14 | Complete |
 | CAD-04 | Phase 14 | Complete |
 | CAD-05 | Phase 14 | Complete |
-| PLR-01 | Phase 15 | Pending |
-| PLR-02 | Phase 15 | Pending |
-| PLR-03 | Phase 15 | Pending |
+| PLR-01 | Phase 15 | Complete |
+| PLR-02 | Phase 15 | Complete |
+| PLR-03 | Phase 15 | Complete |
 | PLR-04 | Phase 13 | Complete |
 
 **Coverage:**
