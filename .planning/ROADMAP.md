@@ -97,6 +97,6 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | 7. Tab Navigation Shell | v1.1 | 1/1 | Complete | 2026-03-23 |
 | 8. Token Adoption + RunHomeView | v1.1 | 2/2 | Complete | 2026-03-23 |
 | 9. Bug Fix + Brand Assets | v1.1 | 2/2 | Complete | 2026-03-24 |
-| 10. Models, Settings & Library UX | v1.2 | 0/2 | Not started | - |
+| 10. Models, Settings & Library UX | 1/2 | In Progress|  | - |
 | 11. Run Experience | v1.2 | 0/? | Not started | - |
 | 12. Onboarding | v1.2 | 0/? | Not started | - |

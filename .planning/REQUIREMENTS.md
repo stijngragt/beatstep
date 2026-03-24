@@ -16,8 +16,8 @@ Requirements for v1.2 "The Right Flow". Each maps to roadmap phases.
 
 ### Library
 
-- [ ] **LIB-01**: User can see analyzed/unanalyzed state on each playlist row in the Library tab
-- [ ] **LIB-02**: User can trigger playlist analysis inline from the Library list without navigating to the detail screen
+- [x] **LIB-01**: User can see analyzed/unanalyzed state on each playlist row in the Library tab
+- [x] **LIB-02**: User can trigger playlist analysis inline from the Library list without navigating to the detail screen
 
 ### Run Setup
 
@@ -59,8 +59,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBD-02 | Phase 12 | Pending |
 | ONBD-03 | Phase 12 | Pending |
 | ONBD-04 | Phase 12 | Pending |
-| LIB-01 | Phase 10 | Pending |
-| LIB-02 | Phase 10 | Pending |
+| LIB-01 | Phase 10 | Complete |
+| LIB-02 | Phase 10 | Complete |
 | RUN-01 | Phase 11 | Pending |
 | RUN-02 | Phase 11 | Pending |
 | RUN-03 | Phase 10 | Pending |
