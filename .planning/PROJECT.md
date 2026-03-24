@@ -40,7 +40,16 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(None — planning next milestone)
+## Current Milestone: v1.3 In The Zone
+
+**Goal:** Build the core running experience — a focused run screen with integrated music player, nuanced cadence feedback, half-tempo matching, and deliberate pause state.
+
+**Target features:**
+- Rebuilt active run screen (big cadence center-stage, status bar with zone/BPM match/time)
+- Integrated music player with album art, song/artist, playback controls, visible BPM
+- Nuanced cadence indicators (zone band, delta "+4 spm", color shift for sync state)
+- Half-tempo matching mode (1:1 vs ½ toggle, switchable mid-run)
+- Pause/idle state UX when cadence stops (deliberate design, not broken-looking)
 
 ### Out of Scope
 
@@ -114,7 +123,7 @@ Known tech debt from v1.1 (carried): 5 unused ComponentSize tokens, LastRunPlayl
 
 ## Current State
 
-v1.2 shipped. 12 phases complete across 3 milestones. Planning next milestone.
+v1.2 shipped. 12 phases complete across 3 milestones. Starting v1.3 In The Zone.
 
 ---
-*Last updated: 2026-03-24 after v1.2 milestone*
+*Last updated: 2026-03-24 after v1.3 milestone start*
