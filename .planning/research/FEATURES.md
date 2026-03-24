@@ -1,12 +1,12 @@
 # Feature Research
 
-**Domain:** iOS running/music app — onboarding, playlist state UX, zone-based running
+**Domain:** Active run screen, music player, cadence visualization, tempo matching, pause/idle UX for a BPM-syncing running music app
 **Researched:** 2026-03-24
-**Confidence:** MEDIUM-HIGH
+**Confidence:** MEDIUM-HIGH (competitor patterns well-documented, codebase thoroughly analyzed)
 
 ## Scope Note
 
-This file covers NEW features for v1.2 "The Right Flow" only. All v1.0/v1.1 features (cadence detection, BPM matching, Spotify playback, free/guided run, design system, tab nav) are shipped and stable. Research below addresses: onboarding flow, playlist analyzed state UX, zone-based running, inline analyze action, full-width Run CTA, and BPM tolerance picker redesign.
+This file covers NEW features for v1.3 "In The Zone" only. All v1.0-v1.2 features (cadence detection, BPM matching, Spotify playback, free/guided run, design system, tab nav, onboarding, zones, library analysis UX) are shipped and stable. Research below addresses: rebuilt active run screen, integrated music player, cadence sync indicators, half-tempo matching mode, and pause/idle state UX.
 
 ---
 
@@ -14,154 +14,135 @@ This file covers NEW features for v1.2 "The Right Flow" only. All v1.0/v1.1 feat
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist in a polished iOS fitness app. Missing these = product feels unfinished or untrustworthy.
+Features users assume exist on an active run screen. Missing these = the run experience feels broken.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Value-framed permission screens | iOS users have learned to deny permissions reflexively. A pre-prompt screen explaining "why we need this" before showing the system dialog is the industry standard. Apps that go straight to the system dialog get higher denial rates. Headspace, Strava, Nike Run Club all use pre-prompts. | LOW | Show a branded screen with benefit copy before `requestAuthorization`. One screen per permission type (Spotify, HealthKit). Use the permission-priming pattern: tell the user what they'll gain, then trigger the system dialog. |
-| Re-triggerable permissions from Settings | Users who denied a permission at first launch need a recovery path. Without it, they hit a dead end — the app is broken for them with no obvious fix. | LOW | Store onboarding completion state in `UserDefaults`. Settings tab shows a "Reconnect Spotify" row and "Enable Health Access" row when permissions are missing. Tapping deep-links to the iOS Settings app via `UIApplication.openSettingsURLString`. |
-| Visible analyzed/unanalyzed state on playlists | Users need to know which playlists are ready to run with. If BPM data hasn't been fetched, running against that playlist will fail silently or produce poor results. State visibility is the table stake; the inline action is the differentiator. | MEDIUM | Playlist rows in Library need a visual indicator. Common patterns: a badge, icon, or muted label ("Not analyzed" vs a checkmark). The state comes from `BPMCacheService` — check whether cached BPM count for a playlist meets a threshold. |
-| Prominent Run CTA | The primary action of the app is starting a run. Burying this behind a small button or requiring navigation through multiple screens violates "primary action = biggest button" convention. Nike Run Club, Runna, and Strava all use a full-width primary CTA for their core action. | LOW | Full-width button at bottom of Run tab. `Button` with `.frame(maxWidth: .infinity)` and `.buttonStyle(.borderedProminent)`. Keep consistent with the existing `#FF4545` accent. |
-| Effort/zone labels users recognize | "Z1–Z5" and "Free" maps to training zone vocabulary users know from Garmin, Apple Watch, Strava, and coaching apps. Generic labels like "Easy/Medium/Hard" feel toy-like. Zone labels signal that the app understands running. | LOW | Replace current effort labels with Zone 1–5 + Free. Zone numbers are the recognized standard across platforms. Include brief descriptors (Recovery, Endurance, Tempo, Threshold, Max) as subtitles. |
+| **Large center-stage cadence number** | Every fitness app puts the primary metric big and center; runners glance mid-stride. NRC, Strava, Apple Fitness all use oversized primary metrics | LOW | Already have `CadenceDisplayView` with `.displaySPM` font. Needs promotion to hero element in rebuilt layout. Keep trend arrow |
+| **Elapsed run time** | Universal across NRC, Strava, Apple Fitness, Peloton. Runners orient by duration even when not tracking distance | LOW | New addition. Simple `Date`-based timer, pause-aware (freeze when `CadenceService.state == .paused`). Display in status bar area, not hero size |
+| **Now Playing: song + artist** | Users expect to know what's playing without switching apps. RockMyRun and TrailMix show this inline. MiniPlayer already does this but is disconnected from the run screen | LOW | `SpotifyPlayerService.currentTrack` provides `name` and `artistName`. Elevate into run screen layout alongside album art |
+| **Play/pause + skip controls** | Every music player during exercise provides these. Must be thumb-reachable per one-handed navigation patterns | LOW | Already in `MiniPlayerView`. Move into run screen with larger touch targets (44pt minimum per Apple HIG, ideally 56pt+ for sweaty fingers) |
+| **Current song BPM visible** | BeatStep's entire value prop is BPM matching. Hiding the song BPM during the run contradicts the core promise | LOW | `BPMCacheService.shared.getBPM(forTrackID:)` already computed in MiniPlayer. Surface prominently in the integrated player area |
+| **Zone / mode indicator** | User selected a zone before starting; confirming which zone is active provides orientation. "Am I in guided or free mode?" should never be ambiguous | LOW | `runEngine.runMode` and zone data available. Display as persistent label in status bar area |
+| **Stop run action (protected)** | Must be available but protected from accidental taps. Accidental stop mid-run is catastrophic UX | LOW | Current `stopRunButton` has no protection. Add long-press confirmation or swipe-to-stop. Long-press is simpler and works with gloves |
+| **Pause-aware idle state** | Runner stops at traffic light. Screen must acknowledge the pause, not show stale data. Strava/NRC use auto-pause detection; BeatStep uses cadence timeout | MEDIUM | `CadenceService` already transitions to `.paused` after 5s inactivity. Current `pausedView` is a minimal placeholder ("Paused" + "Resume running to continue"). Needs deliberate, polished design |
+| **Album art / visual anchor** | Music players universally show album art. Creates visual interest on an otherwise metric-heavy screen | LOW | Spotify API provides image URLs via `currentTrack`. Not currently displayed on run screen. Use `AsyncImage` with playlist/track artwork |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set BeatStep apart or deepen the core value proposition.
+Features that set BeatStep apart. These make the "music syncs to your stride" promise tangible and visible.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Inline analyze action on playlist row | Competing apps (Spotify itself, Pacemaker) require navigating into a detail screen or finding a buried menu to trigger analysis. An inline action on the row — a button or swipe action — lets users analyze playlists from the list without a context switch. | MEDIUM | Two options: (a) trailing swipe action (`swipeActions`) on playlist row, or (b) a small analyze button rendered on the row alongside the state indicator. Option (b) is more discoverable; option (a) is more iOS-native. Recommendation: trailing swipe for cleanliness, with the state badge acting as a hint that an action exists. |
-| Zone BPM defaults with user-configurable overrides | Apps like Runna show zones but don't let users adjust the BPM targets. Runners who know their actual cadence zones (from a lactate test or Garmin data) want to override defaults. This turns zone-based running from a rough guide into a personalized training tool. | MEDIUM | Store zone BPM values in a settings struct (backed by `UserDefaults` or a simple value model). Provide sensible defaults (see cadence table below). Expose editable fields per zone in Settings. Validate input: BPM must be in 100–220 range, each zone's upper must exceed its lower. |
-| BPM tolerance as segmented control showing ±delta | Most running apps with BPM tolerance use a slider (imprecise on small screens) or a text field (requires keyboard). A segmented control with three pre-calibrated options — Tight (±3), Normal (±7), Loose (±12) — communicates exactly how many BPMs of wiggle room the user will get, in terms they can reason about. This is more understandable than a percentage. | LOW | Replace current tolerance control with `Picker` using `.pickerStyle(.segmented)`. Segments: "±3 BPM", "±7 BPM", "±12 BPM". Map to existing tolerance logic — the values are absolute BPM delta, which is what `BPMMatchingService` already uses (HIGH confidence based on codebase). |
-| Onboarding with zone vocabulary introduction | Most onboarding flows are account setup. BeatStep's onboarding can explain the zone model in 1–2 screens, so the Run tab makes immediate sense on first use. Users who understand the zone model are more likely to use guided mode instead of defaulting to free run only. | LOW | One brief "How it works" screen after permissions showing the zone concept. Keep it 2–3 sentences max. Skippable — don't gate the app on reading it. |
+| **Sync state indicator (in-sync / drifting / mismatched)** | No competitor visualizes how well the music BPM matches cadence in real-time. TrailMix stretches tempo silently; RockMyRun adjusts BPM invisibly; Weav Run makes tempo changes audible but doesn't quantify the gap. BeatStep queues matching songs, so showing sync state IS the feedback loop that closes the experience | MEDIUM | Compare `currentSPM` against current song BPM (from `BPMCacheService`). Three states: **synced** (within tolerance), **drifting** (within 2x tolerance), **mismatched** (beyond). Color-code using existing tokens: `stateSuccess` / `stateWarning` / `stateError`. Must account for half-tempo mode in comparison |
+| **Delta indicator ("+4 SPM" / "-6 SPM")** | Quantifies the gap between cadence and song BPM. Runners can self-correct pace. Garmin shows HR zone delta; same principle applied to cadence. No running music app does this | LOW | Simple arithmetic: `currentSPM - effectiveSongBPM` (where effective accounts for half/double tempo). Display as signed number near cadence. Only meaningful during `.active` state; hide during `.paused` |
+| **Half-tempo toggle (1:1 vs 1/2)** | BeatStep already matches at half/double BPM internally (`findMatchingTracks` checks `spm/2` and `spm*2`), but users have zero visibility or control. A 90 BPM song at 180 SPM feels perfectly synced but the numbers "90 vs 180" look broken. Making this explicit and toggleable mid-run gives runners agency and eliminates confusion | MEDIUM | UI toggle that sets which BPM multiples are considered primary. When in half-tempo mode, the sync/delta display compares `currentSPM` against `songBPM * 2` rather than `songBPM`. Must persist during the run but reset between runs. Display: show effective comparison ("90 BPM x2") so user understands the math |
+| **Zone band visualization** | Shows cadence within context of the target zone range. A horizontal bar or arc showing where current SPM sits relative to zone min/max. More informative than a bare number -- provides spatial awareness of "how far off am I?" | MEDIUM | Zones have a BPM target; band = target +/- tolerance. Visual: simple gauge bar with current position marker. Fills green when in range, amber when approaching edge. Only shown in guided mode (free mode has no target) |
+| **Cadence-responsive color shift** | The screen subtly shifts color temperature based on sync state. Green-tinted accent when locked in, warm shift when drifting. Creates a visceral "in the zone" feeling without requiring focus. Subconscious feedback | LOW | Tint background or accent elements via `.opacity` modifiers on existing color tokens. Subtle -- not a full screen color change. Derive from sync state computation (same data as sync indicator) |
+| **Ramp phase progress** | In guided mode, show progression through warm-up / at-pace / cool-down with visual indicator. Users know where they are in the guided experience without counting songs | LOW | `runEngine.rampPhase` and `rampSongsPlayed` exist. Display as segmented bar with three sections or phase dots with active highlight |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Auto-analyze all playlists on first launch | "Just analyze everything automatically" | BPM lookups cost API calls against GetSongBPM (rate limited) and are slow for large libraries. Analyzing 50 playlists × 50 songs each = 2,500 API calls. This will hit rate limits, create a terrible first-launch experience, and exhaust the Cloudflare Worker proxy budget. | Analyze on demand. Show state clearly so users know which playlists need analysis. Let them choose what to analyze. |
-| Full onboarding quiz (goals, fitness level, preferred genres) | "Personalization from day one" | Every additional question in onboarding reduces completion rate (studies show 20–40% drop per extra screen). BeatStep's value is immediate — music matching your cadence — not personalized recommendations based on a quiz. | Get users to their first run fast. Personalization surfaces naturally through zone selection and playlist choice. |
-| Blocking permission gate | "Force users to grant Spotify access before using the app" | Blocking gates on permissions increase denial rates and App Store rejections (Apple guideline 5.1.1 — don't require unnecessary info before providing app value). | Show the value proposition first. Ask for permission second. Make the cost of denial visible but not coercive. |
-| Zone-based heart rate monitoring | "Auto-detect which zone the user is in based on HR" | Requires HealthKit continuous HR reading during a run, real-time zone calculation, and dynamic BPM target adjustment mid-run. This is a substantial new system touching RunEngineService, CadenceService, and HealthKit integration. Out of scope for v1.2. | Users select their target zone before starting a run. Zone = cadence target. No HR required. |
-| Granular per-song analyze status | "Show which individual songs are analyzed vs not" | Song-level state display requires a different list layout, adds complexity to the playlist detail screen, and creates noise. Users care about "is this playlist ready to run with?" not "which of these 47 songs has a cached BPM?" | Playlist-level analyzed state only. A playlist is "analyzed" when enough tracks have BPM data. |
+| **Real-time tempo stretching** | Weav Run and TrailMix do this. Seems like the "perfect" sync | Degrades audio quality noticeably. Requires audio processing pipeline (AVAudioEngine + time-pitch node). Increases battery drain. Licensing complexity. BeatStep's queuing model is a deliberate design choice (PROJECT.md key decision) | Show sync state clearly so users understand the relationship. The queue model preserves original audio quality -- that IS the differentiator |
+| **Distance / pace / calories overlay** | "Every running app shows this" | BeatStep is explicitly not a fitness tracker (PROJECT.md: "No workout tracking -- focused product"). Adding these metrics dilutes focus and competes with Strava/Apple Fitness which do it better with GPS/HR | Keep the run screen about music + cadence only. The absence of fitness metrics IS the brand statement. Users run Strava simultaneously |
+| **Heart rate display** | Peloton and Apple Fitness show HR prominently | Requires HealthKit continuous HR reading, watch pairing, creates another metric competing for screen real estate on a music-focused screen | Defer entirely. If added later, belongs in a secondary swipe-screen, not the primary run view |
+| **Auto-pause with timer freeze** | Standard in NRC/Strava -- timer pauses when you stop | BeatStep doesn't track workout duration for fitness purposes. Music continuing during brief stops (intersection wait) is actually desirable. A frozen timer implies workout tracking that BeatStep explicitly doesn't do | Show "Paused" state visually when cadence drops. Music behavior during pause is a separate concern (keep playing vs pause). Don't freeze a workout timer |
+| **Metronome / audio click** | Running metronome apps (RunCadence, My Cadence) use audio clicks to guide cadence | Conflicts with music playback. Annoying layered over headphones. The matched-BPM music IS the metronome -- that's the whole product | The music beat IS the pacing guide. Sync state indicator provides visual confirmation that the beat matches your stride |
+| **Song queue preview / upcoming tracks** | "What's playing next?" -- standard in music apps | BeatStep doesn't know what's next until the current song ends and cadence is re-evaluated. Showing a queue implies a fixed playlist, contradicting the adaptive model | Show nothing, or show "Next: matched to your cadence." The adaptive-unknown-next is a feature, not a bug |
+| **Complex gesture controls** | Swipe patterns, multi-finger gestures for different actions | Sweaty fingers, bouncing phone in armband, gloves in winter. Complex gestures fail during physical activity. Auto-pause research confirms: fewer controls = better during exercise | Large tap targets only. Play/pause, skip, stop. Three actions maximum for primary controls |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Onboarding flow
-    └── requires: Permission pre-prompt screens designed
-    └── requires: UserDefaults flag for onboarding completion
-    └── enables: Re-triggerable permissions from Settings (same permission screens reused)
-    └── note: Onboarding shows BEFORE tab navigation loads on first launch
+[Rebuilt Run Screen Layout]
+    |-- contains --> [All table stakes features]
+    |-- contains --> [All differentiator features]
+    |-- requires --> [Status bar area: zone + time + sync state]
+    |-- requires --> [Hero area: cadence number + delta + trend]
+    |-- requires --> [Player area: art + song + controls + BPM]
+    |-- requires --> [Controls area: stop (protected)]
 
-Zone-based running (Z1-5 + Free)
-    └── requires: Zone BPM defaults defined (research-derived values below)
-    └── requires: Zone model struct (name, BPM range, description)
-    └── enables: Zone-configurable overrides in Settings (additional feature)
-    └── note: Replaces effort label enum in RunView; RunEngineService BPM target logic unchanged
+[Sync State Indicator]
+    |-- requires --> [Song BPM visible on run screen]
+    |-- requires --> [Cadence display active]
+    |-- feeds into --> [Cadence-responsive color shift]
+    |-- must account for --> [Half-tempo toggle mode]
 
-Zone BPM defaults (user-configurable)
-    └── requires: Zone model defined
-    └── requires: Settings UI for per-zone BPM editing
-    └── note: Persisted in UserDefaults; falls back to compiled-in defaults if not set
+[Delta Indicator "+4 SPM"]
+    |-- requires --> [Song BPM visible on run screen]
+    |-- requires --> [Cadence display active]
+    |-- enhances --> [Sync State Indicator]
+    |-- must account for --> [Half-tempo toggle mode]
 
-Playlist analyzed state (Library view)
-    └── requires: BPMCacheService query to count cached tracks per playlist
-    └── enables: Inline analyze action (state indicator is the trigger context)
-    └── note: "Analyzed" threshold: suggest ≥70% of tracks have cached BPM
+[Half-Tempo Toggle]
+    |-- requires --> [Song BPM visible on run screen]
+    |-- modifies --> [RunEngineService.findMatchingTracks multiplier logic]
+    |-- modifies --> [Sync state + delta calculations]
+    |-- must ship with --> [Sync State Indicator] (otherwise numbers confuse users)
 
-Inline analyze action
-    └── requires: Playlist analyzed state display (users need to see state to act on it)
-    └── requires: Existing BPMAnalysisService / GetSongBPMService analyze flow
-    └── note: Swipe action triggers the same analysis flow already used in PlaylistDetailView
+[Zone Band Visualization]
+    |-- requires --> [Zone / mode indicator in status bar]
+    |-- only shown in --> [Guided mode runs]
 
-Full-width Run CTA
-    └── requires: Nothing (isolated UI change to RunView bottom area)
-    └── note: Confirm Run tab state when no playlist is selected — show CTA disabled or with prompt
+[Cadence-Responsive Color Shift]
+    |-- requires --> [Sync State Indicator computed state]
 
-BPM tolerance segmented control
-    └── requires: Nothing (replaces existing tolerance UI in SettingsView)
-    └── note: Values ±3/±7/±12 map to existing BPM tolerance field in RunEngineService
+[Ramp Phase Progress]
+    |-- reads from --> [RunEngineService.rampPhase + rampSongsPlayed]
+    |-- only shown in --> [Guided mode runs]
 
-Re-triggerable onboarding from Settings
-    └── requires: Onboarding flow completed
-    └── requires: Permission state detection (check if Spotify token exists, if HealthKit authorized)
-    └── note: Settings rows open iOS Settings via UIApplication.openSettingsURLString for already-denied permissions
+[Pause/Idle State UX]
+    |-- requires --> [CadenceService.state == .paused] (already implemented)
+    |-- affects --> [All display areas: dim hero, ghost last SPM, hide delta]
+    |-- independent of --> [Other differentiator features]
+
+[Elapsed Time Display]
+    |-- pauses when --> [CadenceService.state == .paused]
+    |-- independent of --> [Music player features]
 ```
 
 ### Dependency Notes
 
-- **Onboarding must show before the main tab view on first launch.** Pattern: `ContentView` checks `UserDefaults.bool(forKey: "onboardingComplete")`; if false, presents `OnboardingView` as a full-screen cover. After completion, sets the flag and dismisses. This avoids re-architecting the app for first-launch state.
-
-- **Analyzed state requires a BPMCacheService query per playlist.** `BPMCacheService` stores BPM data per track ID. To compute playlist analyzed state, the app needs to query how many tracks in the playlist have cached BPM entries. This may require a new method on `BPMCacheService` — `cachedTrackCount(for playlistID:)` or similar. Adds a pass over SwiftData on playlist list load.
-
-- **Inline analyze action reuses existing analysis logic.** `PlaylistDetailView` already triggers BPM analysis for a playlist's tracks. The inline action extracts that trigger into a reusable method on a ViewModel or the service layer, callable from both the row action and the detail screen.
-
-- **Zone model is a new type, not a modification of existing types.** `RunEngineService` currently takes a BPM target value. Zone-based running maps a zone selection to a BPM value and passes it in — the engine itself does not need to know about zones.
-
----
-
-## Cadence/BPM Zone Reference
-
-Research-derived typical cadence ranges by running effort zone. These inform zone BPM defaults.
-
-| Zone | Name | Typical Cadence (SPM) | Recommended Default BPM | Effort Character |
-|------|------|----------------------|------------------------|-----------------|
-| Z1 | Recovery | 150–164 | 155 | Walking-to-jog pace; fully conversational; breathing effortless |
-| Z2 | Endurance | 160–170 | 165 | Easy jog; sustainable for long runs; can hold full sentences |
-| Z3 | Tempo | 170–178 | 174 | Comfortably uncomfortable; limited to short phrases |
-| Z4 | Threshold | 175–182 | 178 | Hard; breathing labored; single-word responses only |
-| Z5 | Max | 180–190+ | 185 | All-out sprint; not sustainable; speech collapses |
-| Free | Free | n/a | n/a | Matches detected cadence; no target BPM set |
-
-Note: Cadence (steps per minute) maps 1:1 to music BPM for on-beat running. These defaults are starting points — configurable per user. Z1–Z2 overlap exists by design; stride length varies at the same cadence.
-
-Confidence: MEDIUM. Derived from multiple sources. Individual runners vary ±15 SPM. User-configurable overrides are essential — defaults are just sensible starting points, not prescriptions.
-
----
-
-## Permission Priming Pattern
-
-The permission-priming pattern used by fitness apps (Headspace, Strava, Nike Run Club):
-
-1. **Custom pre-prompt screen** — app's own screen explaining: "BeatStep needs access to your Spotify account to queue music" with a benefit statement and a CTA ("Continue").
-2. **System permission dialog** — triggered only after user taps the CTA on the custom screen.
-3. **Denial recovery** — if the user denies, show a non-blocking informational state (not an error) with a "Go to Settings" link.
-
-For BeatStep v1.2, two permissions need priming:
-- **Spotify OAuth** — already exists (LoginView). Needs value-framed redesign of the copy and layout.
-- **Apple Health** — new for v1.2. Pre-prompt: "Optionally connect Health to log your runs." Make it skippable — Health integration is not core to the running experience.
-
-Re-triggerable onboarding from Settings: Settings rows should show "Reconnect Spotify" and "Connect Apple Health" when permissions are missing or expired. Tapping opens iOS Settings for Health; for Spotify, re-triggers the OAuth flow.
+- **Half-tempo toggle MUST ship with sync state indicator.** Without sync visualization, toggling between 1:1 and 1/2 is meaningless to the user. The toggle changes which BPM comparison is shown -- if nothing is shown, there's nothing to toggle.
+- **Sync state and delta both depend on song BPM.** Song BPM must be surfaced on the run screen before either indicator makes sense. Build the player area (with BPM display) first.
+- **Pause state is independent.** `CadenceService` already handles the `.paused` transition at 5s inactivity. The UX work is purely view-layer: dimming, ghosting last SPM, hiding active-only elements.
+- **Zone band and ramp progress are guided-mode-only.** These features are irrelevant in free mode. The layout must conditionally show/hide them based on `runEngine.runMode`.
+- **Color shift is a visual layer on top of sync state.** Same underlying computation, different output. Build sync state logic once, consume it in both the indicator and the color shift.
 
 ---
 
 ## MVP Definition
 
-### This Milestone (v1.2) — All Eight Features
+### Launch With (v1.3 Core)
 
-These are all P1 for the milestone. Each is scoped and achievable without deep architectural change.
+The rebuilt run screen must ship with all of these to feel complete:
 
-- [ ] Onboarding flow with value-framed Spotify + Apple Health permission screens
-- [ ] Re-triggerable onboarding from Settings for missed permissions
-- [ ] Library playlists show analyzed/unanalyzed state
-- [ ] Analyze button inline with playlist row (swipe action)
-- [ ] Zone-based running: Zone 1–5 + Free replacing effort labels
-- [ ] Zone BPM defaults with user-configurable overrides in Settings
-- [ ] Full-width Run CTA at bottom of Run tab
-- [ ] BPM tolerance as segmented control showing ±3, ±7, ±12 BPM
+- [ ] **Rebuilt run screen layout** -- three zones: status bar (zone, time, sync), hero area (cadence, delta, trend), player area (art, song, controls, BPM)
+- [ ] **Sync state indicator** -- color-coded in-sync/drifting/mismatched based on cadence vs song BPM (accounting for half-tempo)
+- [ ] **Delta indicator** -- "+4 SPM" / "-6 SPM" near cadence number, accounting for effective BPM comparison
+- [ ] **Song BPM on run screen** -- visible in the integrated player area, not just the global MiniPlayer
+- [ ] **Half-tempo toggle** -- 1:1 / 1/2 switch, visible mid-run, affects matching behavior and display math
+- [ ] **Pause/idle state** -- deliberate visual: dimmed elements, "Paused" overlay, last-known SPM ghosted, delta hidden
+- [ ] **Elapsed time** -- pause-aware timer in status bar
+- [ ] **Album art** -- visual anchor in player area
+- [ ] **Protected stop action** -- long-press to stop (prevents accidental mid-run stop)
 
-### Add After Validation (v1.x)
+### Add After Validation (v1.3.x)
 
-- [ ] Zone auto-detection from Apple Health HR data — requires real-time HealthKit HR during run; high complexity, high value if users adopt Health integration
-- [ ] Per-zone playlist pairing — suggest/remember which playlists work best at each zone
+- [ ] **Zone band visualization** -- gauge bar showing cadence position within zone range. Add if users report confusion about whether they're "in zone"
+- [ ] **Cadence-responsive color shift** -- subtle background tinting based on sync state. Add if static sync indicator feels insufficient
+- [ ] **Ramp phase progress** -- visual warm-up/pace/cool-down progression. Add if guided mode users want more phase awareness
 
 ### Future Consideration (v2+)
 
-- [ ] Workout summary with zones run — post-run screen showing time in each zone
-- [ ] Shared zone configurations — export/import BPM zone settings
+- [ ] **Haptic feedback on sync state changes** -- vibrate when entering/leaving sync. iOS haptics are cheap but need user preference toggle
+- [ ] **Lock screen / Dynamic Island** -- Live Activities showing cadence + sync state without unlocking
+- [ ] **Apple Watch companion** -- cadence + sync on wrist, controls on watch
+- [ ] **Customizable run screen layout** -- let users choose which metrics are shown (like Cadence app's customizable screens)
 
 ---
 
@@ -169,48 +150,144 @@ These are all P1 for the milestone. Each is scoped and achievable without deep a
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Onboarding flow (Spotify pre-prompt) | HIGH — first impression; affects permission grant rate | LOW — new screens, no service changes | P1 |
-| Re-triggerable permissions from Settings | HIGH — recovery path for denied permissions | LOW — Settings rows + openSettingsURLString | P1 |
-| Playlist analyzed state display | HIGH — users can't make informed playlist choice without it | MEDIUM — BPMCacheService query per playlist | P1 |
-| Inline analyze action | HIGH — removes navigation friction for the most common action | MEDIUM — extracts existing logic; swipeActions UI | P1 |
-| Zone-based running (Z1–5 + Free) | HIGH — vocabulary users know; positions app as serious training tool | LOW — new enum, same RunEngine BPM target logic | P1 |
-| Zone BPM overrides in Settings | MEDIUM — advanced users only; defaults serve most users | MEDIUM — settings UI + UserDefaults persistence | P1 |
-| Full-width Run CTA | MEDIUM — discoverability; most users will find the current button | LOW — frame modifier on existing button | P1 |
-| BPM tolerance segmented control | MEDIUM — clarity improvement; existing tolerance works | LOW — replace existing picker with segmented Picker | P1 |
+| Rebuilt run screen layout | HIGH | MEDIUM | P1 |
+| Sync state indicator | HIGH | LOW | P1 |
+| Delta indicator | MEDIUM | LOW | P1 |
+| Song BPM on run screen | HIGH | LOW | P1 |
+| Half-tempo toggle | HIGH | MEDIUM | P1 |
+| Pause/idle state UX | HIGH | LOW | P1 |
+| Album art in player | MEDIUM | LOW | P1 |
+| Elapsed time display | MEDIUM | LOW | P1 |
+| Protected stop action | MEDIUM | LOW | P1 |
+| Zone band visualization | MEDIUM | MEDIUM | P2 |
+| Cadence-responsive color shift | LOW | LOW | P2 |
+| Ramp phase progress | LOW | LOW | P2 |
 
 **Priority key:**
-- P1: Must have for this milestone
-- P2: Should have, add when possible
+- P1: Must have for v1.3 launch
+- P2: Should have, add in v1.3.x if time permits
 - P3: Nice to have, future consideration
+
+---
+
+## Run Screen Layout Recommendation
+
+Based on competitor analysis and the existing codebase, the rebuilt run screen should use a three-zone vertical layout optimized for mid-run glanceability:
+
+```
++----------------------------------+
+| STATUS BAR                       |
+| [Zone 3] [12:34] [IN SYNC]      |
++----------------------------------+
+|                                  |
+|           HERO AREA              |
+|            172                   |
+|         +4 SPM  ->              |
+|            SPM                   |
+|                                  |
++----------------------------------+
+| PLAYER AREA                      |
+| [art] Song Name        [BPM]    |
+|       Artist Name               |
+|    [<<]  [||]  [>>]             |
++----------------------------------+
+| [====== STOP (long press) =====] |
++----------------------------------+
+```
+
+**Rationale:**
+- **Status bar at top:** Secondary info that orients but doesn't demand attention. Zone label, elapsed time, sync state pill.
+- **Hero cadence center stage:** The number runners glance at mid-stride. Largest element. Delta indicator and trend arrow are satellites to this number.
+- **Player area at bottom-center:** Album art provides visual weight. Song info + BPM visible. Controls in thumb zone for one-handed operation.
+- **Stop action at very bottom:** Protected by long-press. Full-width for findability but requires intentional action.
+
+---
+
+## Half-Tempo Matching: Design Details
+
+The 180 SPM / 90 BPM equivalence is well-documented in running literature. Research confirms:
+
+- A runner at 180 SPM matches perfectly to a 180 BPM song (1:1 -- one step per beat)
+- The same runner also matches to a 90 BPM song (1/2 -- two steps per beat, each foot lands on alternating beats)
+- `RunEngineService.findMatchingTracks` already checks `spm`, `spm/2`, and `spm*2`
+
+**The problem:** When BeatStep plays a 90 BPM song for a 180 SPM runner, the display shows "90 BPM" next to "180 SPM". Without context, this looks like a mismatch -- the delta shows "-90 SPM" which is alarming.
+
+**The solution:**
+1. **Toggle control:** Small segmented toggle or icon button: "1:1" vs "1/2". Defaults to 1:1.
+2. **When 1/2 is active:**
+   - Song BPM display shows effective BPM: "90 BPM (x2)" or "= 180"
+   - Delta computes against `songBPM * 2` instead of `songBPM`
+   - Sync state evaluates against the doubled value
+   - `findMatchingTracks` prioritizes half-tempo matches (or exclusively matches them)
+3. **When 1:1 is active:**
+   - Standard behavior: compare SPM directly to song BPM
+   - Half/double matches still work in the engine but aren't prioritized
+4. **Mid-run switching:** Toggle is accessible during the run. State persists for the duration of the run, resets on next run start.
+
+---
+
+## Pause/Idle State: Design Details
+
+Current behavior: `CadenceService` transitions to `.paused` after 5 seconds of no steps. The `pausedView` shows "Paused" + "Resume running to continue" + last known SPM dimmed.
+
+**Enhanced pause state should:**
+
+| Element | Active State | Paused State |
+|---------|-------------|--------------|
+| Cadence number | Full brightness, updating | Ghosted (30% opacity), frozen at last value |
+| Trend arrow | Visible, colored | Hidden |
+| Delta indicator | Visible, signed number | Hidden |
+| Sync state | Color-coded pill | Neutral/grey |
+| Elapsed time | Counting | Frozen (or shows "Paused" badge) |
+| Music player | Playing | Keep playing (deliberate: music at traffic light is fine) |
+| Stop button | Available | Available |
+| Overall screen | Normal | Subtle dim overlay or reduced brightness on metrics |
+
+**Key design decision: Music continues during pause.** Unlike fitness apps that pause the workout timer, BeatStep's pause means "you stopped running" not "you want silence." The music keeps the energy up at traffic lights. When cadence resumes, the screen un-dims and metrics update live again.
+
+**Transition behavior:**
+- Active -> Paused: 5 second inactivity timeout (already implemented in `CadenceService`)
+- Paused -> Active: First step detected re-triggers `.active` state (already implemented)
+- The transition should animate: fade-to-dim over 0.5s, un-dim over 0.3s
 
 ---
 
 ## Competitor Feature Analysis
 
-| Feature | Strava | Nike Run Club | Runna | Pacemaker | BeatStep v1.2 Approach |
-|---------|--------|---------------|-------|-----------|------------------------|
-| Onboarding with permission priming | Yes — notifications pre-prompt | Yes — location pre-prompt with benefit copy | Yes — goal-setting flow + permissions | Minimal | Value-framed Spotify + skippable Health screens |
-| Zone-based running | Z1–5 (HR-based) | Guided runs with effort labels | Full 5-zone + custom HR zones | Not applicable | Z1–5 cadence-based + Free; no HR required |
-| Analyzed/ready state for content | N/A | N/A | Workout "ready" indicators | Playlist analyzed badge | Analyzed indicator on playlist row |
-| Re-triggerable settings for permissions | Settings → Connected Apps | Settings → Privacy | Settings → Integrations | N/A | Settings tab rows with direct re-auth |
-| Tolerance / matching settings | N/A | N/A | N/A | BPM match setting (slider) | Segmented control: ±3/±7/±12 BPM |
+| Feature | Nike Run Club | Strava | TrailMix | RockMyRun | Weav Run | BeatStep v1.3 |
+|---------|--------------|--------|----------|-----------|----------|---------------|
+| Primary metric | Pace (large) | Pace + distance | Cadence | BPM target | Pace | **Cadence (hero)** |
+| Music integration | Separate app | None | Built-in tempo stretch | Built-in tempo adjust | Built-in tempo stretch | **Built-in queue match** |
+| BPM sync method | N/A | N/A | Tempo stretching | Body-Driven Music (accelerometer) | Tempo stretching (100-240 BPM range) | **Song queuing (preserves audio)** |
+| Sync feedback to user | None | None | None visible | BPM number only | Speed change audible | **Visual sync state + delta number** |
+| Half/double BPM | N/A | N/A | Manual tempo lock | N/A | Automatic (invisible) | **Explicit toggle with math shown** |
+| Pause detection | Auto-pause (GPS speed) | Auto-pause (GPS, configurable threshold) | Unknown | Unknown | Unknown | **Cadence-based (5s no-step timeout)** |
+| Pause behavior | Timer freezes | Timer freezes, configurable | Unknown | Unknown | Unknown | **Music continues, metrics dim** |
+| Run metrics shown | Distance, pace, HR, time | Distance, pace, elevation, HR, cadence | Steps, cadence | Steps, distance, HR, calories | Cadence, distance | **Cadence, time, zone, sync state only** |
+| Album art during run | N/A (separate player) | N/A | Yes | Yes (mix art) | Yes | **Yes** |
+
+**Key competitive insight:** No competitor in the running-music space visualizes the cadence-to-music sync relationship. TrailMix and RockMyRun adjust tempo silently. Weav Run makes tempo changes audible but doesn't quantify the gap. BeatStep's sync state indicator + delta display is genuinely novel. This is the primary differentiator for v1.3.
 
 ---
 
 ## Sources
 
-- [Permission Priming Pattern — UserOnboard](https://www.useronboard.com/onboarding-ux-patterns/permission-priming/)
-- [App Onboarding Best Practices for iOS Developers 2025 — Medium](https://ravi6997.medium.com/app-onboarding-best-practices-for-ios-developers-f65e29327a58)
-- [Building a Better Onboarding Flow in SwiftUI for iOS 18+ — Rivera Labs](https://www.riveralabs.com/blog/swiftui-onboarding/)
-- [Running BPM Mastery: 2025 Heart Rate and Cadence Playbook — BPM Finder](https://bpm-finder.net/posts/running-bpm)
-- [How to Use Heart Rate Zones to Improve Your Running — Strava](https://stories.strava.com/articles/how-to-use-heart-rate-zones-to-improve-your-running)
-- [Finding Your Optimal Running Cadence — TrainingPeaks](https://www.trainingpeaks.com/blog/finding-your-perfect-run-cadence/)
-- [Running Cadence Guide — TrainCalc](https://traincalc.com/guides/running-cadence-guide)
-- [Apple Developer: Authorizing access to health data](https://developer.apple.com/documentation/healthkit/authorizing-access-to-health-data)
-- [UX Design Patterns for Loading — Pencil and Paper](https://www.pencilandpaper.io/articles/ux-pattern-analysis-loading-feedback)
-- [Apple HIG: Segmented Controls](https://developer.apple.com/design/human-interface-guidelines/segmented-controls)
-- Codebase analysis: `RunEngineService`, `BPMCacheService`, `SettingsView`, `PlaylistDetailView`, `ContentView`
+- [RockMyRun - Body-Driven Music technology](https://www.rockmyrun.com/)
+- [TrailMix: Step to the Beat - App Store](https://apps.apple.com/us/app/trailmix-step-to-the-beat/id647651691)
+- [Weav Run - Music matching pace - Women's Running](https://www.womensrunning.com/culture/weav-run-music-pace/)
+- [Nike Run Club app features](https://www.nike.com/nrc-app)
+- [Nike Run Club review - Tom's Guide](https://www.tomsguide.com/reviews/nike-run-club-review)
+- [Strava Auto-Pause documentation](https://support.strava.com/hc/en-us/articles/216919277-Auto-Pause)
+- [Garmin Auto-Pause best practices](https://forums.garmin.com/developer/connect-iq/f/discussion/7232/best-practices-to-implement-auto-pause-in-an-app)
+- [Running Music BPM Guide - half/double tempo](https://www.runoapp.com/blog/running-music-bpm-guide)
+- [Spontaneous Entrainment of Running Cadence to Music Tempo - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC4526248/)
+- [Fitness App UI Design principles - Stormotion](https://stormotion.io/blog/fitness-app-ux/)
+- [Running Apps UX Research - Medium](https://fernandocomet.medium.com/running-apps-ux-research-7e07e41f556c)
+- [Cadence app - customizable run screens](https://getcadence.app/features/)
+- [SportTracks - Pros and cons of pausing workouts](https://sporttracks.mobi/blog/the-pros-and-cons-of-pausing-workouts)
+- Codebase analysis: `RunView.swift`, `CadenceDisplayView.swift`, `MiniPlayerView.swift`, `CadenceService.swift`, `RunEngineService.swift`
 
 ---
-*Feature research for: BeatStep v1.2 The Right Flow — onboarding, playlist state, zone-based running*
+*Feature research for: BeatStep v1.3 "In The Zone" -- active run screen, music player, cadence visualization, tempo matching, pause states*
 *Researched: 2026-03-24*

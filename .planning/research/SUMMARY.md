@@ -1,195 +1,163 @@
 # Project Research Summary
 
-**Project:** BeatStep v1.2 — The Right Flow
-**Domain:** Native iOS running/music sync app (Swift 6 / SwiftUI)
+**Project:** BeatStep v1.3 — In The Zone
+**Domain:** Native iOS running music app — active run experience rebuild
 **Researched:** 2026-03-24
 **Confidence:** HIGH
 
 ## Executive Summary
 
-BeatStep v1.2 is a focused UI-layer milestone on an already-working iOS fitness app. The app's core services — cadence detection (CoreMotion), Spotify playback (SpotifyiOS SDK + Web API), BPM matching (RunEngineService), and BPM caching (SwiftData) — are all stable and require zero changes. All 8 features in this milestone are SwiftUI view work that maps onto the existing service layer: new UI components, state gates in ContentView, and model enum additions. The recommended approach is incremental, dependency-ordered UI construction using exclusively first-party Apple APIs with no new external dependencies.
+BeatStep v1.3 rebuilds the active run screen into a focused, glanceable experience with three visual zones: a status bar (zone, elapsed time, sync state), a hero cadence display (big SPM number, delta indicator, sync color), and an integrated music player (album art, song/artist, controls, BPM, half-tempo toggle). This replaces the current monolithic RunView (269 lines handling 5 states) and the disconnected MiniPlayer strip.
 
-The key architectural decision is that zone-based running (Z1–Z5 + Free) is a thin UI wrapper: `RunZone` maps to the existing `RunMode` + `targetBPM` parameters at the call site in `RunView`. `RunEngineService` never changes. Similarly, onboarding is pure UI sequencing — it calls existing `authService.initiateAuth()` and `cadenceService.requestPermission()` methods that already work. The playlist analyzed state surfaces existing `ScannedPlaylist.tracksWithBPM` and `totalTracks` fields already persisted in SwiftData. Every feature has a natural seam into the codebase without requiring service rewrites.
+Zero new external dependencies are needed. Every capability — numeric text animation, phase-driven effects, haptic feedback, async image loading, long-press gestures, periodic time updates — is available in SwiftUI's iOS 17 built-in APIs. The RunEngineService needs three new observable properties (syncQuality, tempoMode, runStartTime) but its core matching logic stays intact. CadenceService and SpotifyPlayerService are unchanged.
 
-The top risk is sequencing errors: specifically (1) placing the onboarding gate inside the TabView branch instead of at the ContentView root, causing a tab bar flash on first launch and firing `LibraryScanService.scanEnabledPlaylists()` before permissions are granted, and (2) deleting `PacePreset` without migrating its UserDefaults keys, silently resetting users' guided-mode BPM preferences to defaults on upgrade. Both are well-understood and easily avoided if addressed at the correct build phase.
-
----
+The highest-risk feature is half-tempo matching: the existing `findMatchingTracks` already checks `spm/2` and `spm*2`. A naive implementation that divides the input BPM by 2 causes double-halving (spm/4 = ~42 BPM — no songs exist there). Half-tempo must be implemented as a ranking preference, not a BPM transformation. The second risk is false pause triggers: the current 5-second inactivity threshold is too aggressive for v1.3's deliberate pause UX (music behavior, visual state changes), and should increase to 8-10 seconds.
 
 ## Key Findings
 
 ### Recommended Stack
 
-BeatStep v1.2 requires zero new external dependencies. The full stack is first-party Apple APIs on iOS 17+, consistent with the existing project target. The only meaningful additions are HealthKit (permission request only — app never reads Health data) linked as Optional to avoid iPad crashes, and `ScrollPosition` + `.containerRelativeFrame` for the onboarding horizontal scroll flow.
+All first-party Apple APIs on iOS 17+. No new dependencies.
 
 **Core technologies:**
-- `SwiftUI .overlay` + `@AppStorage` — onboarding gate and state persistence; avoids modifying NavigationStack/TabView structure
-- `SwiftUI ScrollView (horizontal)` + `ScrollPosition` (iOS 17) — multi-step onboarding with programmatic forward-only progression; cleaner than TabView's free-swipe which cannot enforce forward-only navigation
-- `HealthKit (HKHealthStore)` — permission pre-prompt in onboarding only; never reads Health data; requires `NSHealthShareUsageDescription` in Info.plist and Optional framework link for iPad compatibility
-- `enum RunZone` (new model) — replaces `PacePreset`; zone BPM defaults stored per-key in UserDefaults via `@AppStorage`; `effectiveBPM` computed property reads override then falls back to default
-- `safeAreaInset(edge: .bottom)` — full-width Run CTA; pattern already proven in ContentView for MiniPlayer; stacks correctly with MiniPlayer
-- `SwiftUI.Picker` with `.segmented` — BPM tolerance redesign; no model changes required, label text only
+- `.contentTransition(.numericText())` — per-digit cadence counter animation with direction awareness
+- `.phaseAnimator` — pulse/breathe effects for sync state and pause state (already in use in RunView)
+- `.sensoryFeedback()` — haptic confirmation on long-press completion, half-tempo toggle, zone transitions
+- `AsyncImage` + thin `NSCache` wrapper — album art from Spotify CDN (300px for 80pt display)
+- `TimelineView` / `Text(date, style: .timer)` — elapsed run time without Combine
+- `.onLongPressGesture(minimumDuration:onPressingChanged:)` — protected stop action with progress ring
 
 ### Expected Features
 
-All 8 features are P1 for this milestone. Research confirms none require deep architectural change and all map cleanly onto existing service APIs.
-
 **Must have (table stakes):**
-- Value-framed permission screens — iOS users reflexively deny blind permission dialogs; Strava, Nike Run Club, Headspace all use pre-prompts; denial rates drop significantly with benefit framing before the system dialog fires
-- Re-triggerable permissions from Settings — recovery path for users who denied on first launch; without it, they reach a dead end with no obvious fix
-- Visible playlist analyzed/unanalyzed state — users cannot make informed playlist choices without knowing which playlists have BPM data; current state is invisible; `ScannedPlaylist.tracksWithBPM` already exists in the model
-- Prominent full-width Run CTA — the primary action is starting a run; Nike Run Club, Runna, and Strava all use a full-width primary button for their core action
-- Zone vocabulary (Z1–Z5 + Free) — users know this from Garmin, Apple Watch, Strava; generic effort labels feel toy-like and signal the app doesn't understand running
+- Large center-stage cadence number — every fitness app puts primary metric big and center
+- Elapsed run time — universal across NRC, Strava, Apple Fitness
+- Now Playing: song + artist + album art — users expect to know what's playing
+- Play/pause + skip controls — thumb-reachable, 44pt+ touch targets
+- Song BPM visible — BeatStep's entire value prop; hiding it contradicts the promise
+- Zone/mode indicator — confirm which zone is active
+- Protected stop action — long-press prevents accidental mid-run stop
+- Pause-aware idle state — deliberate design when cadence drops
 
 **Should have (competitive differentiators):**
-- Inline analyze action on playlist row — competitors require navigating into a detail screen; an inline swipe action eliminates the context switch
-- Zone BPM defaults with user-configurable overrides — runners with lactate test data or Garmin zone calibrations need to override defaults; turns zone selection from a rough guide into a personalized training tool
-- BPM tolerance as segmented control showing ±delta — ±3/±7/±12 communicates exactly what the user gets; more understandable than named labels or a percentage
+- Sync state indicator (in-sync/drifting/mismatched) — no competitor visualizes cadence-to-music sync. This is genuinely novel
+- Delta indicator ("+4 SPM") — quantifies the gap; runners can self-correct pace
+- Half-tempo toggle (1:1 vs 1/2) — makes the 180 SPM / 90 BPM relationship explicit and controllable
+- Zone band visualization — spatial awareness of where cadence sits within target range
+- Cadence-responsive color shift — subconscious sync feedback
 
 **Defer (v2+):**
-- Zone auto-detection from Apple Health HR data — requires real-time HealthKit during runs and dynamic BPM target adjustment mid-run; substantial new system touching RunEngineService; out of scope for v1.2
-- Per-zone playlist pairing and workout summary with zones run
-- Auto-analyze all playlists on first launch (anti-feature — hits GetSongBPM API rate limits, terrible first-launch UX)
+- Haptic feedback on sync state changes
+- Live Activities / Dynamic Island
+- Apple Watch companion
+- Customizable run screen layout
 
 ### Architecture Approach
 
-v1.2 integration is entirely additive to a clean existing layered architecture: App Entry → Tab Views → Services → Data. All new work lives in the view layer or adds new model enums. The existing services form stable integration boundaries that do not change. `ContentView` gains a computed `appState: AppState` enum (onboarding / login / authenticated) as the single routing decision point. `RunEngineService` is completely untouched — zones map to its existing `runMode` + `targetBPM` parameters at the `RunView` call site only.
+Split RunView (currently 269 lines, 5 states) into: idle/detecting stays in RunView, active/paused moves to a new ActiveRunView presented via `fullScreenCover`. This prevents accidental dismissal (interactiveDismissDisabled), hides the tab bar automatically, and separates pre-run setup from the running experience. Pause state is an overlay on ActiveRunView, not a navigation transition — music keeps playing, run state preserved.
 
-**New or modified components:**
-1. `ContentView` — add computed `appState: AppState` enum routing to `OnboardingFlow` when `!hasCompletedOnboarding`
-2. `OnboardingFlow` + 3 step views — new view hierarchy; TabView(.page) container; writes `onboardingCompleted` to UserDefaults on completion
-3. `RunZone` enum — new model replacing `PacePreset`; `effectiveBPM` reads UserDefaults override or default BPM
-4. `ZonePicker` — new component replacing `ModePicker` + `PacePresetPicker`; zone chip scroll UI
-5. `RunView` + `RunTabView` — zone integration; `selectedZone: RunZone` replaces `runMode + selectedPreset + customBPM`; full-width CTA in RunTabView
-6. `PlaylistListView` + `PlaylistRow` — `PlaylistCoverage` typed value (3 explicit states) replaces optional string; inline analyze closure propagated to parent
-7. `SettingsView` — zone BPM defaults section; "Revisit Permissions" action
+**New components:**
+1. `ActiveRunView` — full-screen run experience container, presented via fullScreenCover
+2. `RunStatusBar` — zone label, sync quality badge, elapsed time
+3. `RunPlayerView` — album art, song/artist, BPM badge, controls, half-tempo toggle
+4. `PauseOverlayView` — translucent overlay when cadence pauses
 
-**Stable and unchanged (service boundaries):**
-`RunEngineService`, `CadenceService`, `SpotifyAuthService`, `LibraryScanService`, `BPMCacheService`, `ScannedPlaylist`, `BPMTolerance`, `SwiftData schema` (no new non-optional fields)
+**Modified components:**
+5. `RunEngineService` — add TempoMode, syncQuality, cadenceDelta, runStartTime
+6. `CadenceDisplayView` — add delta label, sync color, zone band
+7. `RunView` — simplify to idle/detecting only
+8. `MiniPlayerView` — hide when ActiveRunView is showing (one-line change)
+9. `DesignTokens` — add sync color aliases, delta font, component sizes
 
 ### Critical Pitfalls
 
-1. **Onboarding gate at wrong view hierarchy level** — Adding `hasCompletedOnboarding` inside the TabView branch causes a tab bar flash on first launch and fires `LibraryScanService.scanEnabledPlaylists()` before permissions are granted. Avoid: gate at the same level as `isAuthenticated` in `ContentView.body` using the computed `appState` enum. TabView must never render before onboarding completes.
+1. **Half-tempo double-halving** — `findMatchingTracks` already checks spm/2. Adding another /2 creates spm/4 (~42 BPM). Implement as ranking preference, not BPM transformation.
 
-2. **PacePreset UserDefaults migration missing** — Deleting `PacePreset` without migrating its raw string keys (`"easyJog"`, `"steady"`, etc.) silently defaults all returning users to the wrong BPM on upgrade. Avoid: write a migration in `BeatStepApp.init()` that reads stale keys and writes their `RunZone` equivalents before removing the enum. Keep `PacePreset` as a `fileprivate` migration-only type until migration runs.
+2. **False pause triggers** — 5-second inactivity threshold is too aggressive for v1.3's deliberate pause UX. Increase to 8-10 seconds; add internal `.pausePending` intermediate state.
 
-3. **Zone BPM `effectiveBPM` not wired — Settings overrides silently ignored** — If `RunZone.defaultBPM` is used directly at the run-start call site instead of `RunZone.effectiveBPM`, Settings overrides have no effect. Avoid: design `effectiveBPM` as the single BPM resolution point from the start; never call `defaultBPM` outside of `effectiveBPM` itself.
+3. **Free mode delta is meaningless** — Delta assumes a fixed reference (guided mode target). In free mode, show sync quality (in-sync/adapting) not corrective delta (+4 SPM). Never show corrective arrows in free mode.
 
-4. **HealthKit read permission state is undetectable** — `HKHealthStore.authorizationStatus(for:)` returns `.notDetermined` for denied read access by design (iOS privacy protection). Code branching on `.denied` for read types never fires. Avoid: store "did we request" in `@AppStorage` not "was it granted." Re-triggerable onboarding links to iOS Settings rather than calling `requestAuthorization` again.
+4. **Accidental run dismissal** — Current `onDisappear { stopRun() }` + NavigationLink allows swipe-to-dismiss. Use `fullScreenCover(interactiveDismissDisabled: true)` with explicit long-press stop only.
 
-5. **Inline Analyze button gesture conflict with row navigation** — In a SwiftUI `List`, a `Button` with default `.automatic` style extends its tap area to fill the entire row, intercepting the `NavigationLink`. Avoid: apply `.buttonStyle(.plain)` to the Analyze button. Must verify on physical device — this conflict behaves differently in Simulator.
-
----
+5. **Background/foreground pipeline break** — CMPedometer delivers in background but song-end polling gets suspended. Add "catch up on foreground" pattern: fetch current playback + cadence on `scenePhase == .active`, re-evaluate match.
 
 ## Implications for Roadmap
 
-Based on the dependency graph in ARCHITECTURE.md, cross-feature dependencies, and pitfall sequencing requirements, three phases are recommended.
+### Phase 1: RunEngine Extensions + Design Tokens
 
-### Phase 1: Foundation — Models, Quick Wins, Library UX
+**Rationale:** All new views depend on syncQuality, cadenceDelta, tempoMode, and runStartTime. Building views without this data means placeholder logic that gets rewritten.
+**Delivers:** TempoMode enum, syncQuality computed property, cadenceDelta, runStartTime tracking, modified findMatchingTracks for explicit tempo mode, new design token aliases (sync colors, delta font, component sizes).
+**Addresses:** Half-tempo matching engine logic, sync state computation
+**Avoids:** Pitfall 1 (half-tempo double-halving) by designing the matching change first
 
-**Rationale:** `RunZone` model must exist before any run UI can be built; it is the unblocking dependency for Phase 2. `TolerancePicker` label change is zero-risk and validates the tolerance approach early. Playlist analyzed state and inline analyze are fully independent of the zone work and can proceed in parallel within this phase. Writing the `PacePreset` migration code here, alongside `RunZone` creation, ensures the migration exists before the old enum is deleted.
+### Phase 2: CadenceDisplayView + RunStatusBar
 
-**Delivers:** `RunZone` model with `effectiveBPM` UserDefaults resolution; `PacePreset` migration code; `BPMTolerance` segmented picker label update (±3/±7/±12); `PlaylistCoverage` typed 3-state value; playlist analyzed state indicator on all Library rows; inline swipe analyze action; zone BPM defaults section in `SettingsView`.
+**Rationale:** Center-stage cadence and status bar are self-contained components that read from Phase 1's new engine properties. Can be previewed independently before the full run screen exists.
+**Delivers:** Enhanced CadenceDisplayView (big SPM, delta label, sync color, zone band), RunStatusBar (zone label, match quality, elapsed time via Text(date, style: .timer)).
+**Addresses:** Cadence indicators, elapsed time display
+**Avoids:** Pitfall 3 (free mode delta) by making delta display mode-aware from the start, Pitfall 7 (choppy updates) by observing CadenceService directly
 
-**Features:** Visible playlist analyzed/unanalyzed state, inline analyze action, BPM tolerance segmented control, zone BPM overrides in Settings.
+### Phase 3: RunPlayerView
 
-**Pitfalls to address:** PacePreset migration (must run before enum deletion in Phase 2), SwiftData schema approach (add only optional fields — no `VersionedSchema` needed), inline Analyze button gesture conflict.
+**Rationale:** Independent component, no dependency on ActiveRunView layout. Reads from SpotifyPlayerService (already complete) and RunEngineService (Phase 1 additions). Can be previewed standalone.
+**Delivers:** Album art (AsyncImage + NSCache), song/artist display, BPM badge, play/pause/skip controls, half-tempo toggle UI.
+**Addresses:** Integrated music player, half-tempo toggle UX
+**Avoids:** Pitfall 6 (album art memory) by building caching from the start
 
-**Research flag:** Standard patterns — no research phase needed. All work is well-documented iOS patterns with clear codebase integration points fully specified in ARCHITECTURE.md.
+### Phase 4: ActiveRunView Assembly + Pause State
 
----
-
-### Phase 2: Core Run Experience — Zone Picker, RunView, Run Tab CTA
-
-**Rationale:** Requires `RunZone` from Phase 1. This phase completes the user-visible running experience changes: replaces `ModePicker` + `PacePresetPicker` with `ZonePicker`, integrates zone selection into `RunView`, and adds the full-width CTA to `RunTabView`. Deletes `PacePreset` (after migration from Phase 1 is confirmed working).
-
-**Delivers:** `ZonePicker` component; `RunView` updated with `selectedZone: RunZone` replacing `runMode + selectedPreset + customBPM`; `ModePicker` and `PacePresetPicker` removed; `PacePreset` deleted; `RunTabView` with `ZonePicker` + full-width Start Run CTA + async track load; zone→engine mapping at `RunView.controlsSection` call site only.
-
-**Features:** Zone-based running (Z1–Z5 + Free), prominent full-width Run CTA, zone vocabulary that users recognize.
-
-**Pitfalls to avoid:** Zone BPM resolution must use `effectiveBPM` not `defaultBPM` at call site (Pitfall 3). `RunEngineService` must not be modified. Zone mapping lives only at `RunView.controlsSection`.
-
-**Research flag:** Standard patterns — zone-as-thin-wrapper is fully designed in ARCHITECTURE.md. `safeAreaInset` CTA pattern is already proven in the codebase. No research phase needed.
-
----
-
-### Phase 3: Onboarding — First-Launch Flow + Re-Triggerable Permissions
-
-**Rationale:** Onboarding is a UI sequencing wrapper over already-working services (`authService.initiateAuth()`, `cadenceService.requestPermission()`). Building it last means all features behind the gate are tested and functional before the gate is built. Requires clean-install simulator testing that is simpler to run as a final integration step. The re-trigger path in Settings requires the onboarding flow to be complete first.
-
-**Delivers:** `AppState` computed enum in `ContentView`; `OnboardingFlow` + `OnboardingValueView` + `OnboardingSpotifyView` + `OnboardingHealthView` view hierarchy; `hasCompletedOnboarding` `@AppStorage` flag; HealthKit Optional framework link + `NSHealthShareUsageDescription` in Info.plist; "Revisit Permissions" action in `SettingsView`; re-trigger path deep-linking to iOS Settings; `LibraryScanService.scanEnabledPlaylists()` gated behind onboarding completion.
-
-**Features:** Value-framed permission screens (Spotify + Apple Health), re-triggerable permissions from Settings.
-
-**Pitfalls to address:** Onboarding gate at ContentView root not TabView branch (Pitfall 1), HealthKit "did we request" model not "was it granted" (Pitfall 4), re-trigger path is read/link-to-Settings only not re-requestAuthorization (Pitfall 7), LibraryScanService background scan gated behind onboarding flag.
-
-**Research flag:** Requires careful testing on clean-install simulator and physical device for permission flows. The patterns are well-documented but the integration has multiple gotchas. Consider a brief research-phase check on Spotify Premium detection timing during onboarding (flagged in PITFALLS.md) before building `OnboardingSpotifyView`.
-
----
+**Rationale:** Pure composition — all building blocks exist from Phases 1-3. Wire up the full-screen experience, add pause overlay, handle dismissal and lifecycle.
+**Delivers:** ActiveRunView (fullScreenCover, composition of all sub-views), PauseOverlayView (dimmed metrics, music continues), long-press-to-end with progress ring, MiniPlayer hide-when-active, idle timer management, foreground catch-up logic.
+**Addresses:** Run screen rebuild, pause/idle state, protected stop action
+**Avoids:** Pitfall 4 (accidental dismissal) via interactiveDismissDisabled, Pitfall 2 (false pauses) by tuning inactivity threshold, Pitfall 9 (background break) with foreground catch-up
 
 ### Phase Ordering Rationale
 
-- **Models before UI:** `RunZone` must exist before `ZonePicker` or `RunView` can be updated; creating it first unblocks all run UI work in Phase 2
-- **Migration before deletion:** `PacePreset` migration code is written and tested in Phase 1 alongside `RunZone` creation; `PacePreset` is deleted in Phase 2 once migration is confirmed
-- **Parallel workstreams in Phase 1:** Playlist state work is independent of zone model work and can be developed simultaneously by the same engineer in any order
-- **Onboarding last:** Consistent with ARCHITECTURE.md recommendation — testing requires clean-install simulator; simpler to validate as the final integration step after all features behind the gate are already working
+- **Engine before views:** syncQuality, cadenceDelta, tempoMode must exist before any view can consume them
+- **Components before container:** CadenceDisplayView, RunStatusBar, RunPlayerView are built and previewed independently, then composed into ActiveRunView
+- **Pause last (with assembly):** Pause overlay is a thin layer on top of the complete run screen; it needs all other elements to exist so it knows what to dim
+- **4 phases, not 5:** Assembly and pause state are tightly coupled (pause affects all display areas) — combining them avoids a too-thin final phase
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 3 (Onboarding):** Consider `/gsd:research-phase` specifically for: (1) Spotify Premium detection timing during onboarding — whether to surface it there or leave to playback is an unresolved product decision, and (2) exact code placement for gating `LibraryScanService.scanEnabledPlaylists()` behind the onboarding completion flag without restructuring ContentView's authenticated branch.
-
 Phases with standard patterns (skip research-phase):
-- **Phase 1:** All patterns are well-documented Apple APIs; codebase integration points are fully mapped in ARCHITECTURE.md; `PlaylistCoverage` type design is fully specified
-- **Phase 2:** Zone-as-thin-wrapper is explicitly designed in ARCHITECTURE.md; no API questions remain; `safeAreaInset` CTA pattern already in the codebase
+- **Phase 1:** Engine extensions are well-defined computed properties; matching change is a sort preference tweak
+- **Phase 2:** SwiftUI built-in APIs (contentTransition, TimelineView); patterns documented in STACK.md
+- **Phase 3:** AsyncImage + NSCache is standard; player controls mirror existing MiniPlayerView
 
----
+Phases that may benefit from brief research:
+- **Phase 4:** Background/foreground lifecycle handling — verify song-end prediction approach works with Spotify Web API's playback state response
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All first-party Apple APIs; iOS 17+ target already established; no version conflicts; HealthKit Optional link pattern is documented; zero new external dependencies |
-| Features | MEDIUM-HIGH | Feature list is clear and well-scoped; zone BPM defaults use research-derived cadence values (MEDIUM — individual variation is ±15 SPM; user-configurable overrides mitigate this) |
-| Architecture | HIGH | Based on direct codebase read of all Swift source files; component boundaries clearly identified; integration points fully specified; no external verification needed |
-| Pitfalls | HIGH | 7 specific actionable pitfalls with phase assignments; recovery strategies for each; derived from both codebase inspection and Apple Developer documentation |
+| Stack | HIGH | All first-party Apple APIs at iOS 17 target; zero new dependencies; verified against Apple docs |
+| Features | HIGH | Feature list derived from competitor analysis + codebase capabilities; novel sync indicator has no precedent but is straightforward computation |
+| Architecture | HIGH | Based on full codebase read of all 29 Swift source files; integration points verified |
+| Pitfalls | HIGH | 9 specific pitfalls with prevention strategies; derived from codebase inspection + Apple docs |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Zone BPM default values diverge between research files:** STACK.md recommends (Z1: 150, Z2: 160, Z3: 170, Z4: 180, Z5: 190); FEATURES.md recommends (Z1: 155, Z2: 165, Z3: 174, Z4: 178, Z5: 185). Since all values are user-configurable, either set works as starting defaults. Pick one set during Phase 1 implementation and document the decision; this does not block any work.
-
-- **Spotify Premium detection timing:** PITFALLS.md flags that onboarding grants Spotify auth but Premium check only happens on first playback attempt. Whether to surface this proactively during onboarding or leave it to the existing playback error path is an unresolved product decision. Address before building `OnboardingSpotifyView` in Phase 3.
-
-- **LibraryScanService gate placement:** The `.task` in `ContentView.authenticatedView` fires the background scan on every authenticated launch. How to gate this behind `hasCompletedOnboarding` without restructuring the authenticated branch needs a brief design pass at the start of Phase 3. The condition is clear; the exact code location is not specified in the research.
-
----
+- **Music behavior during pause:** Research recommends keeping music playing (runner at traffic light). Confirm this as the default behavior during Phase 4.
+- **Half-tempo default:** 1:1 is the intuitive default, but if most songs in typical playlists are ~90 BPM, 1/2 might be better. Test with real song pools during implementation.
+- **Inactivity threshold tuning:** Research suggests 8-10 seconds. Exact value needs physical device testing during Phase 4 — Simulator cannot replicate real CMPedometer timing.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- Apple Developer Documentation: Authorizing access to health data — HealthKit permission flow and authorizationStatus limitations for read types
-- Apple Developer Documentation: NSHealthShareUsageDescription — Info.plist key requirement
-- Apple Developer Documentation: Configuring HealthKit access — Optional framework linking to prevent iPad crash
-- Apple Developer Documentation: SegmentedPickerStyle — native segmented control API
-- Apple Developer Documentation: CMPedometer — authorization check before starting updates
-- Apple HIG: Onboarding — permission priming best practices
-- Direct codebase read: all Swift source files under `/BeatStep/` — architecture integration research on the live codebase
+- Apple Developer Documentation: contentTransition(.numericText()), phaseAnimator, sensoryFeedback, AsyncImage, LongPressGesture, TimelineView
+- Full codebase read: all Swift source files under /BeatStep/ (29 files)
+- RunEngineService.swift: findMatchingTracks logic, effectiveBPM, cadence monitor polling
 
 ### Secondary (MEDIUM confidence)
-
-- Rivera Labs: Building a Better Onboarding Flow in SwiftUI for iOS 18+ — ScrollPosition + overlay patterns
-- magnuskahr: Better placements of bottom buttons in SwiftUI — safeAreaInset for bottom CTA
-- Running Writings / TrainingPeaks: Science of cadence and finding your perfect run cadence — zone BPM default value ranges
-- Donny Wals: A Deep Dive into SwiftData migrations — migration strategy for enum replacement
-- Nil Coalescing: Multiple buttons in SwiftUI List rows — gesture conflict and `.buttonStyle(.plain)` resolution
-- UserOnboard: Permission Priming Pattern — pre-prompt UX pattern with denial rate context
-- App Onboarding Best Practices for iOS Developers 2025 — completion rate impact of extra onboarding screens
+- Competitor analysis: Nike Run Club, Strava, TrailMix, RockMyRun, Weav Run — App Store listings and public documentation
+- Running literature: spontaneous entrainment of cadence to music tempo (PMC), half/double tempo matching patterns
 
 ### Tertiary (LOW confidence)
-
-- Permission denial rate reduction claims — industry-cited but hard to verify independently; directionally consistent across multiple sources
+- Spotify Web API rate limits: community-reported ~180 req/min, not officially documented per-endpoint
 
 ---
 *Research completed: 2026-03-24*

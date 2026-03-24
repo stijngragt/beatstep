@@ -1,213 +1,139 @@
 # Stack Research
 
-**Domain:** Native iOS running music-sync app (accelerometer cadence to Spotify BPM matching)
+**Domain:** iOS running app -- active run screen, integrated music player, cadence visualization, half-tempo matching, pause state UX
 **Researched:** 2026-03-24
-**Confidence:** HIGH (all v1.2 additions use first-party Apple APIs; no third-party libraries required)
+**Confidence:** HIGH
 
 ---
 
-## v1.0 Foundation (Validated — Do Not Re-Research)
-
-All of the following are working in production. No changes needed:
+## Existing Stack (Validated -- Do Not Re-Research)
 
 | Technology | Status |
 |------------|--------|
-| Swift 6 / SwiftUI + @Observable | Working |
-| CoreMotion (CMPedometer) | Working |
-| Spotify Web API (PKCE) | Working |
+| Swift 6 / SwiftUI + `@Observable` | Working |
+| CoreMotion (CMPedometer) via CadenceService | Working |
+| Spotify Web API (PKCE) via SpotifyPlayerService | Working |
 | GetSongBPM API via Cloudflare Worker | Working |
 | SwiftData (BPM cache) | Working |
-| SpotifyiOS SDK v5 | Working |
+| DesignTokens.swift (Color, Font, Spacing, Radius, ComponentSize) | Working |
+| RunEngineService (cadence monitor, song-end monitor, BPM matching, ramp state machine) | Working |
+| iOS 17.0 deployment target | Confirmed |
 
 ---
 
-## v1.1 Stack Additions: Dark by Design (Validated — Do Not Re-Research)
+## v1.3 Stack Additions: In The Zone
 
-All v1.1 additions are first-party SwiftUI patterns working in production. See prior research file for full detail on design token architecture, dark mode Info.plist config, TabView with UITabBarAppearance, and app icon asset catalog setup.
+v1.3 requires **zero new external dependencies**. Every capability needed is available in SwiftUI's iOS 17 built-in APIs.
 
----
+### Core Technologies (v1.3)
 
-## v1.2 Stack Additions: The Right Flow
+| Technology | API | iOS Version | Purpose | Why This |
+|------------|-----|-------------|---------|----------|
+| Numeric text animation | `.contentTransition(.numericText())` | 17.0+ | Animate SPM counter digit changes (e.g., 164 to 168) with per-digit rolling transition | Built into SwiftUI. Digits animate individually with direction awareness (counts up vs down). Far cleaner than custom per-digit animation code. Already at target. |
+| Phase-driven animations | `.phaseAnimator(_:content:animation:)` | 17.0+ | Pulse effect on sync state, breathing animation for pause state, cadence indicator color transitions | Already used in RunView detecting state (`detectingView` opacity pulse). Extend same pattern to more states. Zero learning curve. |
+| Keyframe animations | `KeyframeAnimator` | 17.0+ | Multi-property choreography if needed (simultaneous scale + opacity + offset on BPM match events) | Reserve for cases where phaseAnimator is insufficient. Available at deployment target but use sparingly -- phaseAnimator handles most cases. |
+| Haptic feedback | `.sensoryFeedback(_:trigger:)` | 17.0+ | Tactile confirmation on long-press-to-end completion, half-tempo toggle, zone transitions mid-run | Native SwiftUI modifier. Declarative -- attach to view, specify trigger value. Note: no iPad haptic support (acceptable for running app). |
+| Async image loading | `AsyncImage(url:content:placeholder:)` | 15.0+ | Album art from Spotify CDN in run screen music player | Built-in SwiftUI. SpotifyTrack already has `album.images` array with 3 sizes (640px, 300px, 64px). Use 300px for run screen. |
+| Long press gesture | `.onLongPressGesture(minimumDuration:onPressingChanged:)` | 15.0+ | Long-press-to-end run with visual progress ring | `onPressingChanged` callback fires with `Bool` indicating press state. Drive a circular `ProgressView` or custom `trim()` arc from a timer started when pressing begins. |
+| Periodic UI updates | `TimelineView(.periodic(every: 1))` | 15.0+ | Run elapsed time display (HH:MM:SS) in status bar | Declarative periodic view updates. Cleaner than `Timer.publish` + `.onReceive` -- no Combine needed, stays in SwiftUI paradigm. |
+| Color interpolation | `.contentTransition(.interpolate)` | 17.0+ | Smooth color transition on cadence sync state changes (synced/close/off) | Animates between color values without explicit `withAnimation` wrapping. Pair with `animation(.easeInOut)` for smooth state-driven color shifts. |
 
-All v1.2 capabilities use **zero new external dependencies**. Every item below is a first-party Apple pattern.
+### Supporting Patterns (no libraries)
 
-### Core Technologies (v1.2)
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| SwiftUI `.overlay` + `@AppStorage` | iOS 17+ | Onboarding flow gate and state persistence | `.overlay` presents onboarding above existing ContentView without modifying the NavigationStack or TabView. `@AppStorage("hasCompletedOnboarding")` persists state in UserDefaults with automatic SwiftUI binding — no manual UserDefaults reads needed. |
-| SwiftUI `ScrollView` (horizontal, programmatic) with `ScrollPosition` | iOS 17+ | Multi-step onboarding screen progression | `ScrollPosition` (iOS 17) allows programmatic screen-to-screen navigation while disabling free swiping. Each step fills width via `.containerRelativeFrame([.horizontal])`. Cleaner than `TabView` which allows uncontrolled swiping; cleaner than `ZStack` with manual state. |
-| `HealthKit` (`HKHealthStore`) | iOS 13+ | Apple Health permission request in onboarding | Only required for the permission-priming screen in onboarding. BeatStep does NOT need to read Health data — it reads motion from CoreMotion directly. `HKHealthStore.requestAuthorization(toShare: [], read: [HKQuantityType(.stepCount)])` triggers the iOS permission sheet, which is the value-framed moment: "BeatStep works better with Health access." |
-| `SwiftUI.Picker` with `.segmented` style | iOS 17+ | BPM tolerance picker redesign (±3, ±7, ±12) | The existing `BPMTolerance.description` computed property already returns "±3 BPM" etc. Replace the three-label segmented control labels ("Tight (±3 BPM)") with just the delta values ("±3", "±7", "±12") — no model change needed, only the `TolerancePicker` view label. |
-| `enum RunZone` (new model, no persistence API needed) | Swift / iOS 17+ | Zone-based running: Z1–Z5 + Free | Replace `PacePreset` with `RunZone`. Zone BPM defaults stored in `UserDefaults` via `@AppStorage` for user configurability. `RunZone` carries zone number, default BPM, display name, and color (maps to DesignTokens palette). No new persistence framework needed — SwiftData already used for BPM cache; `UserDefaults` is appropriate for simple scalar settings. |
-| `safeAreaInset(edge: .bottom)` | iOS 15+ | Full-width Run CTA at bottom of Run tab | Already used in `ContentView` for `MiniPlayerView`. Apply same pattern to `RunTabView`: pin a full-width accent button above the safe area bottom edge. Button gets `.frame(maxWidth: .infinity)` before `.background` so the background fills the full width. |
-
-### Supporting Libraries (v1.2)
-
-None. All v1.2 work is first-party SwiftUI and Apple framework patterns.
-
-### Development Tools (v1.2)
-
-No new tools required. Existing Xcode project with Swift 6, SwiftData, and CoreMotion is sufficient.
+| Pattern | Implementation | Purpose | Detail |
+|---------|---------------|---------|--------|
+| Album art caching | `NSCache<NSURL, UIImage>` thin wrapper (~30 lines) | Prevent re-fetch on state transitions | AsyncImage does NOT cache between view reloads. On the run screen, the same album art persists across pause/resume/sync state changes. A simple in-memory cache avoids redundant network calls. |
+| Sync state computation | `SyncState` enum on RunEngineService | Single source of truth for cadence indicator colors | Compare `CadenceService.currentSPM` vs `RunEngineService.effectiveBPM` with tolerance thresholds. Three states: `.synced` (within tolerance), `.close` (within 2x tolerance), `.off` (beyond). Drives color + haptic feedback. |
+| Half-tempo flag | `Bool` on RunEngineService | Toggle 1:1 vs 1:2 step-to-beat ratio | `findMatchingTracks` already checks `spm`, `spm/2`, `spm*2`. Half-tempo mode changes `effectiveBPM` to use `sustainedSPM / 2` as primary. This is a ~3-line change in the computed property. |
+| Run elapsed time | `Date` on RunEngineService | HH:MM:SS display via TimelineView | Store `runStartDate` at `startRun()`. Compute elapsed on each TimelineView tick. Reset on `stopRun()`. |
+| Long-press progress | `@State private var isPressing = false` + Timer | Circular progress ring fills over 2-second hold | On `onPressingChanged: true`, start a 2-second animation filling a `Circle().trim()`. On release before completion, reset. On completion, stop run. Pair with `.sensoryFeedback(.success, trigger: runEnded)`. |
 
 ---
 
-## Zone Model Design
+## Design Token Extensions
 
-### RunZone enum replaces PacePreset
+Existing `DesignTokens.swift` needs small additions:
 
-The existing `PacePreset` enum (easyJog/steady/tempo/fast/sprint/custom with hardcoded BPM) must be replaced by `RunZone` with user-configurable defaults:
+### New Color Tokens
+
+| Token | Value | Purpose |
+|-------|-------|---------|
+| `Color.syncGood` | `Color.stateSuccess` (reuse) | Cadence synced with BPM target -- green |
+| `Color.syncClose` | `Color.stateWarning` (reuse) | Cadence within 2x tolerance -- yellow |
+| `Color.syncOff` | `Color.accent` (reuse heartbeat red) | Cadence outside tolerance -- red |
+
+These are semantic aliases, not new color values. They map to existing palette colors but communicate intent in the run screen context.
+
+### New Font Tokens
+
+| Token | Value | Purpose |
+|-------|-------|---------|
+| `Font.displayDelta` | `.system(size: 18, weight: .bold, design: .monospaced)` | Delta indicator text: "+4 spm", "-2 spm" |
+
+### New Component Size Tokens
+
+| Token | Value | Purpose |
+|-------|-------|---------|
+| `ComponentSize.albumArtRun` | `80` | Album art in run screen player (between existing small 44 and large 200) |
+| `ComponentSize.longPressRing` | `72` | Long-press progress ring diameter |
+
+---
+
+## RunEngineService Extensions
 
 ```swift
-enum RunZone: String, CaseIterable, Identifiable {
-    case free
-    case z1, z2, z3, z4, z5
+// New observable properties:
+var runStartDate: Date?              // Set at startRun(), nil at stopRun()
+var isHalfTempo: Bool = false        // Toggled mid-run by user
+var syncState: SyncState = .off      // Updated by cadence monitor
 
-    var id: String { rawValue }
+enum SyncState: Equatable {
+    case synced   // |cadence - effectiveBPM| <= tolerance
+    case close    // |cadence - effectiveBPM| <= tolerance * 2
+    case off      // |cadence - effectiveBPM| > tolerance * 2
+}
 
-    var displayName: String {
-        switch self {
-        case .free: return "Free"
-        case .z1: return "Z1 — Recovery"
-        case .z2: return "Z2 — Aerobic"
-        case .z3: return "Z3 — Tempo"
-        case .z4: return "Z4 — Threshold"
-        case .z5: return "Z5 — Max Effort"
-        }
-    }
-
-    var defaultBPM: Int? {
-        switch self {
-        case .free: return nil      // No target — music adapts to pace
-        case .z1: return 150
-        case .z2: return 160
-        case .z3: return 170
-        case .z4: return 180
-        case .z5: return 190
-        }
+// Modified effectiveBPM computed property:
+var effectiveBPM: Int {
+    switch runMode {
+    case .free:
+        return isHalfTempo ? sustainedSPM / 2 : sustainedSPM
+    case .guided:
+        // existing ramp logic unchanged
+        let base = /* existing calculation */
+        return isHalfTempo ? base / 2 : base
     }
 }
 ```
 
-BPM defaults are informed by the running cadence literature: recreational runners range 150–170 spm, with 180 spm as the widely-cited optimum for tempo running, and elite runners reaching up to 190–200 spm. These align with the existing `PacePreset` BPM values, so no RunEngine recalibration is needed.
+### CadenceService -- no changes needed
 
-Zone color mapping: use existing DesignTokens palette. Z1 → `textTertiary`, Z2 → `textSecondary`, Z3 → `stateWarning`, Z4 → `stateError`, Z5 → `accent`, Free → `stateSuccess`.
+Already exposes `currentSPM`, `trend` (speedingUp/steady/slowingDown), `state` (idle/detecting/active/paused). The v1.3 run screen reads these existing properties.
 
-### Zone BPM UserDefaults Persistence
+### SpotifyPlayerService -- no changes needed
 
-Store per-zone overrides as individual `@AppStorage` keys rather than encoding to JSON:
+Already exposes `currentTrack` (with `album.images` for art), `isPaused`. The run screen player reads these same properties.
 
-```
-"zoneBPM_z1" → Int (default 150)
-"zoneBPM_z2" → Int (default 160)
-"zoneBPM_z3" → Int (default 170)
-"zoneBPM_z4" → Int (default 180)
-"zoneBPM_z5" → Int (default 190)
-```
+### SpotifyTrack -- already has album art
 
-A `ZoneSettingsService` (or Settings section in `SettingsView`) reads/writes these keys. `RunZone.bpm(forUser:)` resolves override → default.
+`SpotifyTrack.album.images` is `[SpotifyImage]?`. Spotify returns 3 sizes: 640px, 300px, 64px. For the run screen player at `ComponentSize.albumArtRun` (80pt), use the 300px image (closest to 80pt * 3x scale = 240px).
 
 ---
 
-## Onboarding Flow Architecture
+## Integration Points Summary
 
-### State gate pattern
-
-```swift
-// In ContentView
-@AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-
-var body: some View {
-    Group {
-        if authService.isAuthenticated {
-            authenticatedView
-        } else {
-            LoginView()
-        }
-    }
-    .overlay {
-        if !hasCompletedOnboarding {
-            OnboardingFlow(isComplete: $hasCompletedOnboarding)
-                .transition(.opacity)
-        }
-    }
-}
-```
-
-The overlay presents before authentication — users see the value proposition before being sent to Spotify login. This is the correct UX order: prime the value, request permissions, then authenticate.
-
-### Permission priming sequence
-
-1. **Welcome screen** — value proposition, "Your music, your stride"
-2. **Motion access screen** — explain why cadence detection needs motion; trigger `CMMotionActivityManager.authorizationStatus` check; button triggers the actual permission request
-3. **Apple Health screen** — explain the benefit ("Works better with Health sync"); trigger `HKHealthStore().requestAuthorization(...)`; skip allowed
-4. **Spotify screen** — "Connect your music"; routes to existing `LoginView` / `SpotifyAuthService.initiateAuth()`
-
-### Re-triggerable from Settings
-
-Add "Permissions" section to `SettingsView` with individual "Re-authorize" buttons. Each button triggers the OS permission dialog again (for motion and Health). For Spotify, re-auth is already handled by the Disconnect/Reconnect pattern. Set `hasCompletedOnboarding = false` via `@AppStorage` to replay full flow on request.
-
----
-
-## HealthKit Integration Scope
-
-**BeatStep does NOT read Health data.** The only reason to integrate HealthKit is to surface the Apple Health permission dialog in onboarding as a value-framing moment. If the user declines, the app functions identically — CoreMotion's `CMPedometer` does not require Health authorization.
-
-Required Info.plist additions:
-
-```xml
-<key>NSHealthShareUsageDescription</key>
-<string>BeatStep can read your step data from Apple Health to improve cadence accuracy when your phone is pocketed.</string>
-```
-
-Do NOT add `NSHealthUpdateUsageDescription` — BeatStep never writes to Health.
-
-Required framework: `HealthKit.framework` linked as Optional (not Required) so the app does not crash on devices where HealthKit is unavailable (e.g., iPad). Check `HKHealthStore.isHealthDataAvailable()` before calling `requestAuthorization`.
-
----
-
-## BPM Tolerance Picker Redesign
-
-No model changes. `BPMTolerance` enum and its `range` / `description` properties are correct as-is.
-
-Change is isolated to `TolerancePicker.swift`: replace `"\(level.displayName) (\(level.description))"` labels with just `level.description` ("±3 BPM", "±7 BPM", "±12 BPM") or even shorter ("±3", "±7", "±12") for the segmented control.
-
-Segmented control character count matters — the current labels ("Tight (±3 BPM)") are long enough to compress on small screens. Shorter labels fix this without any model or logic changes.
-
----
-
-## Full-Width Run CTA
-
-Pattern: `.safeAreaInset(edge: .bottom)` on the `NavigationStack` wrapping `RunTabView`, or within `RunTabView` itself using a `VStack` with a `Spacer` pushing the button down. The `safeAreaInset` approach is preferred because it keeps the button visible even when the MiniPlayer is shown (both stack in the safe area inset chain).
-
-```swift
-// In RunTabView or its NavigationStack
-.safeAreaInset(edge: .bottom) {
-    Button { /* start run */ } label: {
-        Text("Start Run")
-            .font(.bodyBold)
-            .foregroundStyle(Color.textOnAccent)
-            .frame(maxWidth: .infinity)
-            .frame(height: ComponentSize.buttonHeight)
-            .background(Color.accent)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.pill))
-    }
-    .padding(.horizontal, Spacing.md)
-    .padding(.bottom, Spacing.sm)
-}
-```
-
-Note: `ComponentSize.buttonHeight` (52) is already defined in `DesignTokens.swift`. No new token needed.
-
----
-
-## Analyzed State UX
-
-`ScannedPlaylist` already has `tracksWithBPM`, `totalTracks`, and `lastScanned` fields. No model changes needed.
-
-The visual change is in `PlaylistListView` (Library tab): surface the existing `coverageText` property as a pill or badge on each playlist row. An "Analyze" button inline with the row calls the existing `LibraryScanService.shared.scan(playlist:)` flow.
-
-No new APIs or services required.
+| v1.3 Feature | Existing Code Touched | Change Type |
+|---|---|---|
+| Active run screen layout | `RunView.swift` | Rebuild -- new layout with status bar, center cadence, player |
+| Cadence visualization | `CadenceDisplayView.swift` | Enhance -- add `.contentTransition(.numericText())`, sync color, delta text |
+| Integrated music player | New view (e.g., `RunPlayerView.swift`) | New -- album art, song/artist, BPM badge, playback controls |
+| Run status bar | New view (e.g., `RunStatusBar.swift`) | New -- zone label, BPM match indicator, elapsed time |
+| Half-tempo toggle | `RunEngineService.swift`, `RunView.swift` | Small -- add `isHalfTempo` flag, toggle button in run UI |
+| Pause/idle state | `RunView.swift` | Rebuild -- deliberate pause design with breathing animation |
+| Long-press-to-end | `RunView.swift` | Replace -- replace stop button with long-press gesture + progress ring |
+| Sync state | `RunEngineService.swift` | Add -- `SyncState` enum, update in cadence monitor loop |
+| Elapsed time | `RunEngineService.swift`, `RunStatusBar` | Add -- `runStartDate`, `TimelineView` in status bar |
+| Design tokens | `DesignTokens.swift` | Extend -- add sync colors, delta font, component sizes |
 
 ---
 
@@ -215,58 +141,63 @@ No new APIs or services required.
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Third-party onboarding library (OnboardingKit, etc.) | Zero benefit over native SwiftUI; adds dependency; doesn't use BeatStep's design tokens | `ScrollView` + `ScrollPosition` + `.overlay` pattern |
-| `TabView` with `.tabViewStyle(.page)` for onboarding | Allows uncontrolled free-swiping between screens; hard to enforce forward-only flow | Horizontal `ScrollView` with `scrollTargetBehavior(.viewAligned)` and `ScrollPosition` |
-| Full HealthKit integration (workout sessions, HRV, etc.) | Out of scope per PROJECT.md — no workout tracking, no analytics | Permission request only; read nothing |
-| Core Data / additional SwiftData models for zone settings | Overkill for 5 integer values | `@AppStorage` / `UserDefaults` with per-zone keys |
-| Custom segmented control library | Native `Picker` with `.segmented` supports simple text labels cleanly; shorter label text is the fix | Shorten `BPMTolerance` display labels |
-| `NSHealthUpdateUsageDescription` | BeatStep never writes to Health | Only add `NSHealthShareUsageDescription` |
+| Lottie / Rive animation library | Every animation is achievable with built-in phaseAnimator, keyframeAnimator, contentTransition. Adding a dependency for animations on a run screen that must stay responsive is unnecessary weight and complexity. | `.phaseAnimator`, `.contentTransition(.numericText())`, `KeyframeAnimator` |
+| SDWebImage / Kingfisher / Nuke | Album art is one image at a time (current track). These libraries solve list-scrolling performance with dozens of images -- not relevant here. | `AsyncImage` + thin NSCache wrapper (~30 lines) |
+| CoreHaptics | Low-level haptic pattern authoring. Overkill for discrete feedback events (toggle, completion, zone change). | `.sensoryFeedback()` modifier |
+| Combine (Timer.publish, PassthroughSubject) | Codebase uses Swift Observation exclusively. Introducing Combine creates two reactive paradigms and training overhead. | `TimelineView` for periodic updates, `@Observable` for state, async/await for async work |
+| SwiftUI Charts | No data visualization in v1.3. The cadence zone band is a simple shape (progress bar), not a chart. | Custom `Capsule` / `RoundedRectangle` with `.frame(width:)` |
+| Custom audio session changes | Background audio already configured in Info.plist (`UIBackgroundModes: audio`). AudioSessionService already handles session setup. Run screen does not alter audio behavior. | Existing infrastructure |
+| UIKit gesture recognizers | SwiftUI's `onLongPressGesture` with `onPressingChanged` provides everything needed for the long-press-to-end pattern. Dropping to UIKit adds bridging complexity. | `.onLongPressGesture(minimumDuration:onPressingChanged:)` |
+| Third-party circular progress view | A `Circle().trim(from: 0, to: progress)` with `.animation` is ~10 lines of SwiftUI. No library needed. | Native `Circle().trim()` + `.rotationEffect` |
+
+---
+
+## Alternatives Considered
+
+| Recommended | Alternative | When to Use Alternative |
+|-------------|-------------|------------------------|
+| `AsyncImage` + NSCache | Kingfisher | If BeatStep later adds a scrollable track history with many images. Not needed for single-image run player. |
+| `.sensoryFeedback()` | `UIImpactFeedbackGenerator` | Only if targeting iOS < 17. BeatStep targets 17.0. |
+| `TimelineView` | `Timer.publish` + `.onReceive` | If Combine is already in the codebase (it is not) or if sub-second precision is needed (it is not -- 1-second ticks suffice). |
+| `.contentTransition(.numericText())` | Custom per-digit animation view | If non-standard digit animation is needed (slot machine effect). Built-in numericText handles the SPM counter perfectly. |
+| `phaseAnimator` for continuous effects | `withAnimation` + State toggles | For one-shot user-triggered animations. phaseAnimator is better for continuous state-driven cycles (pulse, breathe, glow). |
+| `Circle().trim()` for progress ring | `ProgressView(.circular)` | If you want system-styled indeterminate progress. For determinate long-press progress with custom styling, `Circle().trim()` gives full control. |
 
 ---
 
 ## Version Compatibility
 
-| Feature | Min iOS | Notes |
-|---------|---------|-------|
-| `@AppStorage` | iOS 14 | Standard UserDefaults binding |
-| `ScrollPosition` | iOS 17 | Required for programmatic horizontal scroll navigation |
-| `.containerRelativeFrame([.horizontal])` | iOS 17 | Each onboarding page fills container width |
-| `scrollTargetBehavior(.viewAligned)` | iOS 17 | Snap-to-page behavior |
-| `HKHealthStore.requestAuthorization` | iOS 13 | Standard HealthKit permission |
-| `HKHealthStore.isHealthDataAvailable()` | iOS 13 | Availability check before calling HealthKit |
-| `safeAreaInset(edge:)` | iOS 15 | Already used in ContentView for MiniPlayer |
-| `HealthKit.framework` as Optional link | Xcode 14+ | Prevents crash on iPad/non-Health devices |
-
-Project already targets iOS 17+ (based on `ScrollPosition` usage being available and existing code patterns). All v1.2 additions are within this target.
+| API | Minimum iOS | BeatStep Target (17.0) | Status |
+|-----|-------------|------------------------|--------|
+| `.contentTransition(.numericText())` | 17.0 | 17.0 | Available |
+| `.contentTransition(.numericText(countsDown:))` | 17.0 | 17.0 | Available |
+| `.phaseAnimator` | 17.0 | 17.0 | Already in use (RunView) |
+| `KeyframeAnimator` | 17.0 | 17.0 | Available |
+| `.sensoryFeedback()` | 17.0 | 17.0 | Available |
+| `AsyncImage` | 15.0 | 17.0 | Available |
+| `TimelineView` | 15.0 | 17.0 | Available |
+| `.onLongPressGesture(minimumDuration:onPressingChanged:)` | 15.0 | 17.0 | Available |
+| `@Observable` macro | 17.0 | 17.0 | Already in use |
+| `.contentTransition(.interpolate)` | 17.0 | 17.0 | Available |
 
 ---
 
-## Integration Points
+## Key Takeaway
 
-| v1.2 Feature | Existing Code Touched | Change Type |
-|---|---|---|
-| Onboarding flow | `ContentView.swift` | Add `.overlay` gate with `@AppStorage` |
-| Zone model | `PacePreset.swift` | Replace enum; update callers in RunEngine |
-| Zone settings | `SettingsView.swift` | Add Zone BPM section |
-| Tolerance picker | `TolerancePicker.swift` | Change label text only |
-| Analyzed state | `PlaylistListView` (Library views) | Surface existing `ScannedPlaylist` fields |
-| Full-width Run CTA | `RunTabView.swift` | Restructure button into `safeAreaInset` |
-| Info.plist | `Info.plist` | Add `NSHealthShareUsageDescription` |
-| App target | Xcode project file | Add `HealthKit.framework` as optional |
+v1.3 requires zero new dependencies. Every capability -- numeric animations, phase-driven effects, haptic feedback, image loading, gesture handling, periodic updates -- is built into SwiftUI at iOS 17. The work is composing these APIs into a cohesive run screen, not adding libraries.
 
 ---
 
 ## Sources
 
-- [Apple Developer: Authorizing access to health data](https://developer.apple.com/documentation/healthkit/authorizing-access-to-health-data) — HealthKit permission flow (HIGH confidence)
-- [Apple Developer: NSHealthShareUsageDescription](https://developer.apple.com/documentation/BundleResources/Information-Property-List/NSHealthShareUsageDescription) — Info.plist key requirement (HIGH confidence)
-- [Apple Developer: Configuring HealthKit access](https://developer.apple.com/documentation/xcode/configuring-healthkit-access) — Optional framework linking (HIGH confidence)
-- [Apple Developer: SegmentedPickerStyle](https://developer.apple.com/documentation/swiftui/segmentedpickerstyle) — Native segmented control API (HIGH confidence)
-- [Rivera Labs: Building a Better Onboarding Flow in SwiftUI for iOS 18+](https://www.riveralabs.com/blog/swiftui-onboarding/) — ScrollPosition + overlay patterns (MEDIUM confidence)
-- [magnuskahr: Better placements of bottom buttons in SwiftUI](https://www.magnuskahr.dk/posts/2022/10/better-placements-of-bottom-buttons-in-swiftui/) — safeAreaInset for bottom CTA (MEDIUM confidence)
-- [Running Writings: Science of cadence](https://runningwritings.com/2026/01/science-of-cadence.html) — Cadence range 150–190 spm for zone BPM defaults (MEDIUM confidence)
-- [TrainingPeaks: Finding Your Perfect Run Cadence](https://www.trainingpeaks.com/blog/finding-your-perfect-run-cadence/) — 180 spm as widely-cited tempo optimum (MEDIUM confidence)
+- [Apple: PhaseAnimator](https://developer.apple.com/documentation/swiftui/phaseanimator) -- confirmed iOS 17.0+, cycling phase animation (HIGH confidence)
+- [Apple: contentTransition numericText](https://developer.apple.com/documentation/SwiftUI/ContentTransition/numericText(countsDown:)) -- confirmed iOS 17.0+, per-digit animation (HIGH confidence)
+- [Apple: SensoryFeedback](https://developer.apple.com/documentation/swiftui/sensoryfeedback) -- confirmed iOS 17.0+, no iPad haptics (HIGH confidence)
+- [Apple: AsyncImage](https://developer.apple.com/documentation/swiftui/asyncimage) -- confirmed no built-in cache between reloads (HIGH confidence)
+- [Apple: LongPressGesture](https://developer.apple.com/documentation/swiftui/longpressgesture) -- confirmed onPressingChanged callback (HIGH confidence)
+- [Apple: onLongPressGesture](https://developer.apple.com/documentation/swiftui/view/onlongpressgesture(minimumduration:perform:onpressingchanged:)) -- press tracking API (HIGH confidence)
+- Codebase inspection: RunEngineService.swift (effectiveBPM already supports spm/2), CadenceService.swift (exposes state/trend/currentSPM), SpotifyPlayerService.swift (exposes currentTrack with album.images), SpotifyTrack.swift (Album has images array), DesignTokens.swift (existing token structure), RunView.swift (current layout and phaseAnimator usage), MiniPlayerView.swift (existing player pattern)
 
 ---
-*Stack research for: BeatStep v1.2 The Right Flow — onboarding, zone model, analyzed state UX, tolerance picker, Run CTA*
+*Stack research for: BeatStep v1.3 In The Zone -- run screen, music player, cadence visualization, half-tempo, pause state*
 *Researched: 2026-03-24*
