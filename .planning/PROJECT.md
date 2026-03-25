@@ -52,7 +52,11 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(None — next milestone requirements TBD)
+- [ ] Sensor Lab debug screen behind settings toggle (raw accelerometer, cadence confidence, step count, detection interval, algorithm state)
+- [ ] Configurable detection interval in debug mode (0.5–1s instead of 5s for desk testing)
+- [ ] Tap BPM input for songs with no server BPM (tap-along interface in library, saved as manual confidence)
+- [ ] BPM confidence indicator per track in playlist view (verified/approximate/manual)
+- [ ] Configurable zero-BPM fallback behavior (skip, play regardless, or prompt)
 
 ### Out of Scope
 
@@ -135,9 +139,19 @@ Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullS
 | fullScreenCover over NavigationLink | Prevents swipe-back dismiss, hides tab bar automatically, supports interactiveDismissDisabled | ✓ Good — run screen feels focused |
 | MiniPlayer hidden via isRunActive check | ContentView gates MiniPlayer on !RunEngineService.shared.isRunActive | ✓ Good — no visual clutter during run |
 
+## Current Milestone: v1.4 Under The Hood
+
+**Goal:** Make the algorithm observable, testable, and trustworthy — debug tooling, manual BPM input, confidence indicators, and defined fallback behavior.
+
+**Target features:**
+- Sensor Lab debug screen (raw data, configurable detection interval)
+- Tap BPM input for missing tracks
+- BPM confidence indicators in playlist view
+- Zero-BPM fallback configuration
+
 ## Current State
 
-v1.3 shipped. 17 phases complete across 4 milestones. All 12 v1.3 requirements satisfied. Ready for next milestone.
+v1.3 shipped. 17 phases complete across 4 milestones. All 12 v1.3 requirements satisfied. Starting v1.4.
 
 ---
-*Last updated: 2026-03-25 after v1.3 milestone*
+*Last updated: 2026-03-25 after v1.4 milestone start*
