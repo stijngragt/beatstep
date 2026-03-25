@@ -113,10 +113,11 @@ Plans:
   1. User can choose zero-BPM behavior in Settings: skip, play regardless, or prompt
   2. During an active run, tracks without BPM are handled according to the user's configured fallback
   3. The default behavior (skip) matches current behavior so existing users see no change without action
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 21-01: TBD
+- [ ] 21-01-PLAN.md -- ZeroBPMFallback enum + Settings picker + unit tests
+- [ ] 21-02-PLAN.md -- RunEngineService fallback integration + engine tests
 
 ### Phase 22: Sensor Lab
 **Goal**: Developers and power users can inspect raw cadence detection data to build trust in the algorithm
@@ -161,5 +162,5 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 18. BPM Confidence Model | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 19. Confidence Badges | 2/2 | Complete    | 2026-03-25 | - |
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
-| 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
+| 21. Zero-BPM Fallback | v1.4 | 0/2 | Not started | - |
 | 22. Sensor Lab | v1.4 | 0/? | Not started | - |
