@@ -40,5 +40,21 @@ struct PlaylistTrackItem: Codable {
 
     enum CodingKeys: String, CodingKey {
         case item
+        case track
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // Feb 2026+ uses "item"; legacy uses "track"
+        if let value = try container.decodeIfPresent(SpotifyTrack.self, forKey: .item) {
+            item = value
+        } else {
+            item = try container.decodeIfPresent(SpotifyTrack.self, forKey: .track)
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(item, forKey: .item)
     }
 }

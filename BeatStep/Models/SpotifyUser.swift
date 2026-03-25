@@ -19,7 +19,8 @@ struct SpotifyUser: Codable {
         case images
     }
 
+    // Dev Mode (Feb 2026+) requires Premium; product field no longer returned
     var isPremium: Bool {
-        product == "premium"
+        product == "premium" || product == nil
     }
 }
