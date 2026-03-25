@@ -181,6 +181,52 @@
 
 ---
 
+## Milestone: v1.4 — Under The Hood
+
+**Shipped:** 2026-03-25
+**Phases:** 6 | **Plans:** 11 | **Sessions:** ~2
+
+### What Was Built
+- BPM confidence tracking: every cached BPM carries origin (API/manual) and confidence level with separate write paths
+- Confidence badges: color-coded capsules (green/yellow/blue) in playlist view showing BPM reliability
+- Tap BPM input: half-sheet tap-along interface with rolling 8-interval average, outlier rejection, haptic feedback
+- Zero-BPM fallback: configurable behavior (skip/play regardless/prompt) in Settings, respected by run engine
+- Sensor Lab: hidden debug screen with live accelerometer data, cadence readout, real-time waveform chart, configurable detection interval
+- Step count fix (gap closure): wired live pedometer data into Sensor Lab via CadenceService
+
+### What Worked
+- **Pure-logic engine pattern** — TapBPMEngine as a standalone class (no UI dependency) enabled 11 unit tests covering all edge cases. Same pattern as v1.0's RunEngine approach.
+- **Gap closure cycle speed** — Phase 23 (stepCount fix) went from audit finding → research → plan → execute → verify in a single session. The gap-closure workflow is now a well-oiled machine.
+- **Separate write paths** — cacheFromAPI/cacheManual design prevented the most likely bug (API overwriting manual BPM) by making it structurally impossible. Correct by construction.
+- **Lazy backfill over migration** — CachedBPM computed getter handles old records without a SwiftData migration. Zero risk of data loss on upgrade.
+- **Integration checker** — Caught the stepCount gap (declared but never written) that phase-level verification missed. The cross-phase perspective is valuable.
+
+### What Was Inefficient
+- **SUMMARY one-liner fields still not populated** — Fifth milestone in a row. Officially accepting this as a known limitation.
+- **Nyquist VALIDATION.md files remain draft** — All 6 phases created but none completed. Persistent across all 5 milestones.
+- **stepCount gap should have been caught during planning** — The plan specified `stepCount` as a property but never included a task to write to it. Plan checker should verify that displayed properties have write paths.
+- **Phase 22 VERIFICATION human_needed for items already verified** — User approved items 1, 3, 4 during the checkpoint but verifier still flagged them.
+
+### Patterns Established
+- Badge-as-button pattern: wrapping BPM capsule in Button for tap-to-action without conflicting with row tap
+- Median-deviation outlier rejection for rhythm input (40% threshold + boundary guards)
+- Hidden feature toggle: @AppStorage + tap-count gesture for developer features
+- Swift Charts + drawingGroup() for real-time data visualization
+- Service property exposure for cross-service data (CadenceService.stepCount for SensorLabView)
+
+### Key Lessons
+1. **Plan checkers should verify that displayed properties have write paths** — stepCount was declared and bound to UI but never assigned. Static analysis of data flow during planning would have caught this.
+2. **Cross-phase integration checking is worth the cost** — The integration checker found a real bug that per-phase verification missed. Always run it at milestone audit.
+3. **Lazy backfill beats migration for optional new fields** — Computed getters with nil-checks are simpler, safer, and reversible. Use this pattern for all backward-compatible model extensions.
+4. **One gap closure phase is better than reopening a completed phase** — Phase 23 was clean, focused, and fast. Don't try to amend completed phases; add a new one.
+
+### Cost Observations
+- Model mix: ~60% opus (execution), ~30% sonnet (verification/integration), ~10% haiku
+- Sessions: ~2 in a single day
+- Notable: Entire milestone (6 phases, 11 plans, 55 commits) completed in a single day
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -191,6 +237,7 @@
 | v1.1 | ~3 | 4 | Parallel execution, faster phases, approval gates |
 | v1.2 | ~2 | 3 | Single-day milestone, features-before-gate sequencing |
 | v1.3 | ~3 | 5 | Component-first assembly, gap closure cycle, reactive chain |
+| v1.4 | ~2 | 6 | Pure-logic engine pattern, integration checker value, lazy backfill |
 
 ### Cumulative Quality
 
@@ -200,6 +247,7 @@
 | v1.1 | 35+ | Services + design tokens | 0 (zero new deps) |
 | v1.2 | 50+ | Services + models + onboarding | 0 (HealthKit is first-party) |
 | v1.3 | 70+ | Services + models + views + run screen | 0 (all SwiftUI native) |
+| v1.4 | 90+ | Services + models + views + engine + debug | 0 (Swift Charts is first-party) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -213,3 +261,6 @@
 8. Component-first → assembly sequencing makes composition phases fast and confident (v1.3 — Phase 16 was pure wiring)
 9. Verify user-facing requirements against actual UI, not just backend APIs (v1.3 — PLR-04 gap)
 10. Static pure functions are the best SwiftUI testability pattern — extract, test, call (v1.3 — 3 components used this)
+11. Cross-phase integration checking catches bugs per-phase verification misses (v1.4 — stepCount gap)
+12. Plan checkers should verify displayed properties have write paths (v1.4 — stepCount declared but never assigned)
+13. Lazy backfill via computed getters beats migration for backward-compatible model extensions (v1.4 — BPMConfidence)
