@@ -1,5 +1,14 @@
 # Milestones
 
+## v1.4 Under The Hood (Shipped: 2026-03-25)
+
+**Phases completed:** 6 phases, 11 plans, 0 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
 ## v1.3 In The Zone (Shipped: 2026-03-25)
 
 **Phases completed:** 5 phases, 8 plans

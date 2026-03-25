@@ -4,7 +4,7 @@ milestone: v1.4
 milestone_name: Under The Hood
 status: completed
 stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-25T13:55:36.267Z"
+last_updated: "2026-03-25T14:05:59.353Z"
 last_activity: 2026-03-25 -- Plan 23-01 complete (step count fix wired to CadenceService)
 progress:
   total_phases: 6

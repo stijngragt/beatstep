@@ -49,14 +49,18 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Song name, artist, BPM display in player area — v1.3
 - ✓ Play/pause and skip with 56pt+ touch targets — v1.3
 - ✓ Toggle 1:1/1:2 tempo matching mid-run with persistence — v1.3
+- ✓ BPM confidence tracking per cached track (verified/approximate/manual source) — v1.4
+- ✓ Existing BPM cache records backfilled with default confidence on migration — v1.4
+- ✓ Confidence badges in playlist view (green checkmark/yellow hand/blue tilde capsules) — v1.4
+- ✓ Tap BPM input via half-sheet with rolling 8-interval average and outlier rejection — v1.4
+- ✓ Configurable zero-BPM fallback (skip/play regardless/prompt) in Settings — v1.4
+- ✓ Sensor Lab debug screen behind hidden 5-tap Settings toggle — v1.4
+- ✓ Live accelerometer data, cadence, step count, algorithm state in Sensor Lab — v1.4
+- ✓ Real-time waveform chart with Swift Charts and configurable detection interval — v1.4
 
 ### Active
 
-- [ ] Sensor Lab debug screen behind settings toggle (raw accelerometer, cadence confidence, step count, detection interval, algorithm state)
-- [ ] Configurable detection interval in debug mode (0.5–1s instead of 5s for desk testing)
-- [ ] Tap BPM input for songs with no server BPM (tap-along interface in library, saved as manual confidence)
-- [ ] BPM confidence indicator per track in playlist view (verified/approximate/manual)
-- [ ] Configurable zero-BPM fallback behavior (skip, play regardless, or prompt)
+(None — define next milestone requirements via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -67,34 +71,6 @@ When you run, your music should move with you — every footstrike landing on th
 - Real-time tempo stretching of audio — queue matching songs instead
 - Android support — iOS native only for v1
 - Light mode support — v1.1 is intentional dark commitment; revisit only if feedback demands it
-
-## Context
-
-Shipped v1.3 with 7,725 LOC Swift across 17 phases (5 MVP + 4 design + 3 flow + 5 run experience).
-Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache.
-
-Key architecture:
-- `AppState` — enum with `resolve()` gating onboarding → login → authenticated
-- `OnboardingFlow` — 3-screen forward-only ScrollView (Spotify, Health/Motion, Zones)
-- `RunEngineService` — orchestrator: cadence monitor, song-end monitor, BPM matching, ramp state machine, syncQuality/cadenceDelta/tempoMode reactive chain
-- `RunZone` — struct with UserDefaults persistence, Z1-Z5 defaults + user-configurable BPM
-- `ZonePickerView` — horizontal capsule picker replacing PacePresetPicker + ModePicker
-- `BPMCacheService` — SwiftData-backed local BPM + danceability cache
-- `GetSongBPMService` → Cloudflare Worker → GetSongBPM API (bypasses bot protection)
-- `BPMDiscoveryService` — on-demand Spotify catalog search when pool runs low
-- `CadenceService` — CMPedometer wrapper with rolling average smoothing
-- `LibraryScanService` — playlist BPM scanning with per-playlist progress tracking
-- `DesignTokens.swift` — centralized Color, Font, Spacing, Radius, ComponentSize tokens + sync-state color aliases
-- `ContentView` — AppState-gated TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset (hidden during active run)
-- `ActiveRunView` — full-screen three-zone composition (status bar, hero cadence, player) via fullScreenCover
-- `LongPressStopButton` — 2-second timer-based progress ring with DragGesture cancel
-- `RunPlayerView` — 80pt album art, track info, BPM, 56pt+ playback controls
-- `SyncQuality` — enum with threshold computation from cadence delta and tolerance
-- `TempoMode` — 1:1/1:2 enum with UserDefaults persistence
-
-BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
-
-Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation (cosmetic).
 
 ## Constraints
 
@@ -138,20 +114,39 @@ Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullS
 | Tempo toggle always visible | Not gated by guided mode or track presence — user can set preference before first match | ✓ Good — reduces confusion |
 | fullScreenCover over NavigationLink | Prevents swipe-back dismiss, hides tab bar automatically, supports interactiveDismissDisabled | ✓ Good — run screen feels focused |
 | MiniPlayer hidden via isRunActive check | ContentView gates MiniPlayer on !RunEngineService.shared.isRunActive | ✓ Good — no visual clutter during run |
+| Separate cacheFromAPI/cacheManual write paths | Prevents API overwrites of manual BPM, each sets correct confidence/source | ✓ Good — clean data integrity |
+| Lazy backfill over migration for confidence | CachedBPM computed getter returns .verified for old records without confidenceRaw | ✓ Good — zero-migration approach |
+| BPMInfo struct decoupled from SwiftData | Lightweight view data type avoids passing SwiftData models to views | ✓ Good — clean view layer |
+| TapBPMEngine as pure-logic class | All rhythm analysis testable without UI — rolling average, outlier rejection, reset | ✓ Good — 11 unit tests, 100% logic coverage |
+| Median-deviation outlier rejection (40% threshold) | Better than fixed-interval rejection for varying tempos | ✓ Good — catches erratic taps without false positives |
+| ZeroBPMFallback via UserDefaults (not SwiftData) | Simple enum persistence, no model migration needed | ✓ Good — matches RunZone pattern |
+| CMMotionManager in SensorLabService (separate from CadenceService) | CadenceService uses CMPedometer; raw accelerometer is a different sensor | ✓ Good — no interference with cadence detection |
+| Hidden 5-tap toggle for Sensor Lab | Developer/power-user feature that shouldn't clutter normal Settings | ✓ Good — discoverable but not distracting |
+| Swift Charts with drawingGroup() for waveform | Metal-backed rendering prevents frame drops with 100-sample rolling buffer | ✓ Good — smooth chart updates |
+| stepCount from CadenceService (not SensorLabService) | CadenceService owns CMPedometer — authoritative source for step data | ✓ Good — fixed gap closure, single source of truth |
 
-## Current Milestone: v1.4 Under The Hood
+## Context
 
-**Goal:** Make the algorithm observable, testable, and trustworthy — debug tooling, manual BPM input, confidence indicators, and defined fallback behavior.
+Shipped v1.4 with 5,968 LOC Swift across 23 phases (5 milestones). All 12 v1.4 requirements satisfied.
+Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer + CMMotionManager), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache, Swift Charts for waveform visualization.
 
-**Target features:**
-- Sensor Lab debug screen (raw data, configurable detection interval)
-- Tap BPM input for missing tracks
-- BPM confidence indicators in playlist view
-- Zero-BPM fallback configuration
+Key architecture additions in v1.4:
+- `BPMConfidence` / `BPMSource` — enums on CachedBPM for confidence tracking
+- `BPMInfo` — lightweight view data struct decoupled from SwiftData
+- `TapBPMEngine` — pure-logic class with rolling 8-interval BPM, outlier rejection, inactivity reset
+- `TapBPMView` — half-sheet tap-along interface presented from badge tap in PlaylistDetailView
+- `ZeroBPMFallback` — enum with UserDefaults persistence, consumed by RunEngineService
+- `SensorLabService` — @Observable singleton wrapping CMMotionManager with rolling buffer
+- `SensorLabView` — debug screen with accelerometer data, cadence readout, waveform chart, interval slider
+- `CadenceService.stepCount` — public observable property written from CMPedometer
+
+BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
+
+Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation (cosmetic).
 
 ## Current State
 
-v1.3 shipped. 17 phases complete across 4 milestones. All 12 v1.3 requirements satisfied. Starting v1.4.
+v1.4 shipped. 23 phases complete across 5 milestones. BPM matching algorithm is now observable, testable, and trustworthy. Next milestone TBD.
 
 ---
-*Last updated: 2026-03-25 after v1.4 milestone start*
+*Last updated: 2026-03-25 after v1.4 milestone*
