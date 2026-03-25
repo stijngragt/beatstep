@@ -10,6 +10,7 @@ struct PlaylistDetailView: View {
     @State private var error: String?
     @State private var bpmCache: [String: BPMInfo] = [:]
     @State private var isScanning = false
+    @State private var tapBPMTrack: SpotifyTrack?
 
     private let limit = 100
     private var playerService: SpotifyPlayerService { .shared }
@@ -72,7 +73,8 @@ struct PlaylistDetailView: View {
                     track: track,
                     index: index + 1,
                     isPlaying: playerService.currentTrack?.uri == track.uri,
-                    bpmInfo: bpmCache[track.id] ?? .empty
+                    bpmInfo: bpmCache[track.id] ?? .empty,
+                    onBadgeTap: { tapBPMTrack = track }
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -95,6 +97,16 @@ struct PlaylistDetailView: View {
             }
         }
         .listStyle(.plain)
+        .sheet(item: $tapBPMTrack) { track in
+            TapBPMView(
+                track: track,
+                playlistURI: "spotify:playlist:\(playlist.id)",
+                onSave: { _ in
+                    bpmCache[track.id] = BPMCacheService.shared.getBPMInfo(forTrackID: track.id)
+                }
+            )
+            .presentationDetents([.medium])
+        }
     }
 
     private var playlistHeader: some View {
@@ -218,6 +230,7 @@ private struct TrackRow: View {
     let index: Int
     let isPlaying: Bool
     let bpmInfo: BPMInfo
+    var onBadgeTap: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: Spacing.md) {
@@ -251,26 +264,31 @@ private struct TrackRow: View {
             Spacer()
 
             // BPM badge
-            if let bpm = bpmInfo.bpm, let confidence = bpmInfo.confidence {
-                HStack(spacing: Spacing.xxs) {
-                    Image(systemName: confidence.iconName)
-                    Text("\(bpm) BPM")
-                }
-                .font(.labelText)
-                .fontWeight(.bold)
-                .foregroundStyle(confidence.color)
-                .padding(.horizontal, 6)
-                .padding(.vertical, Spacing.xxs)
-                .background(Capsule().fill(confidence.color.opacity(0.15)))
-            } else {
-                Text("-- BPM")
+            Button {
+                onBadgeTap?()
+            } label: {
+                if let bpm = bpmInfo.bpm, let confidence = bpmInfo.confidence {
+                    HStack(spacing: Spacing.xxs) {
+                        Image(systemName: confidence.iconName)
+                        Text("\(bpm) BPM")
+                    }
                     .font(.labelText)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.textTertiary)
+                    .foregroundStyle(confidence.color)
                     .padding(.horizontal, 6)
                     .padding(.vertical, Spacing.xxs)
-                    .background(Capsule().fill(Color.textTertiary.opacity(0.15)))
+                    .background(Capsule().fill(confidence.color.opacity(0.15)))
+                } else {
+                    Text("-- BPM")
+                        .font(.labelText)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.textTertiary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, Spacing.xxs)
+                        .background(Capsule().fill(Color.textTertiary.opacity(0.15)))
+                }
             }
+            .buttonStyle(.plain)
 
             // Duration
             Text(formatDuration(ms: track.durationMs))

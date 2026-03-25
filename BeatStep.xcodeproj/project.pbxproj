@@ -16,6 +16,7 @@
 		AA19010101010101AA010102 /* BPMInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010101 /* BPMInfo.swift */; };
 		AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */; };
 		AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010101 /* TapBPMEngine.swift */; };
+		AA20020101010101AA010102 /* TapBPMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20020101010101AA010101 /* TapBPMView.swift */; };
 		AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010103 /* TapBPMEngineTests.swift */; };
 		126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6274DEE660A35399701FA544 /* BeatStepTests.swift */; };
 		1B9FE1F5B9EA81A1566F6282 /* GetSongBPMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D166178F00CF25146611C6FB /* GetSongBPMResponse.swift */; };
@@ -158,6 +159,7 @@
 		AA19010101010101AA010101 /* BPMInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMInfo.swift; sourceTree = "<group>"; };
 		AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceBadgeTests.swift; sourceTree = "<group>"; };
 		AA20010101010101AA010101 /* TapBPMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngine.swift; sourceTree = "<group>"; };
+		AA20020101010101AA010101 /* TapBPMView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMView.swift; sourceTree = "<group>"; };
 		AA20010101010101AA010103 /* TapBPMEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngineTests.swift; sourceTree = "<group>"; };
 		78164965B7403F7D8CB49EC3 /* CadenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceService.swift; sourceTree = "<group>"; };
 		813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
@@ -439,6 +441,7 @@
 			children = (
 				35908E9591D37AF34E26E975 /* PlaylistDetailView.swift */,
 				6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */,
+				AA20020101010101AA010101 /* TapBPMView.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -630,6 +633,7 @@
 				E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */,
 				280FE96EC7CE420EBABD5DB8 /* PlaylistDetailView.swift in Sources */,
 				A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */,
+				AA20020101010101AA010102 /* TapBPMView.swift in Sources */,
 				737D7EABE7F317271B047DAF /* RampPhase.swift in Sources */,
 				3414E11A00864E259B571BA0 /* RampPhaseIndicator.swift in Sources */,
 				9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */,
