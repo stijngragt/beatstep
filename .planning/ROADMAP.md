@@ -84,10 +84,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Each track in playlist detail view displays an icon badge indicating its BPM confidence (checkmark for verified, tilde for approximate, hand for manual)
   2. Tracks with no BPM data are visually distinguishable from tracks with any level of confidence
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 19-01: TBD
+- [ ] 19-01-PLAN.md -- Data contracts: BPMInfo struct, BPMConfidence display properties, getBPMInfo service method, stateApproximate color token, unit tests
+- [ ] 19-02-PLAN.md -- View integration: update PlaylistDetailView + TrackRow to render confidence badges with visual checkpoint
 
 ### Phase 20: Tap BPM Input
 **Goal**: Users can manually set BPM for any track by tapping along with the music
@@ -156,8 +157,8 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 15. Run Player View | v1.3 | 1/1 | Complete | 2026-03-24 |
 | 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
-| 18. BPM Confidence Model | 2/2 | Complete   | 2026-03-25 | - |
-| 19. Confidence Badges | v1.4 | 0/? | Not started | - |
+| 18. BPM Confidence Model | v1.4 | 2/2 | Complete | 2026-03-25 |
+| 19. Confidence Badges | v1.4 | 0/2 | Not started | - |
 | 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
 | 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
 | 22. Sensor Lab | v1.4 | 0/? | Not started | - |
