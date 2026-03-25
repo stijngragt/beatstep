@@ -6,7 +6,7 @@
 - v1.1 Dark by Design -- Phases 6-9 (shipped 2026-03-24)
 - v1.2 The Right Flow -- Phases 10-12 (shipped 2026-03-24)
 - v1.3 In The Zone -- Phases 13-17 (shipped 2026-03-25)
-- **v1.4 Under The Hood** -- Phases 18-22 (in progress)
+- **v1.4 Under The Hood** -- Phases 18-23 (in progress)
 
 ## Phases
 
@@ -60,6 +60,7 @@
 - [x] **Phase 20: Tap BPM Input** - Manual BPM entry via tap-along interface for unanalyzed tracks (completed 2026-03-25)
 - [x] **Phase 21: Zero-BPM Fallback** - Configurable behavior when tracks lack BPM data (completed 2026-03-25)
 - [x] **Phase 22: Sensor Lab** - Debug screen exposing raw cadence detection internals (completed 2026-03-25)
+- [ ] **Phase 23: Sensor Lab Step Count Fix** - Wire live step count data into Sensor Lab display (gap closure)
 
 ## Phase Details
 
@@ -135,6 +136,17 @@ Plans:
 - [ ] 22-01-PLAN.md -- SensorLabService + AccelerometerSample model + unit tests (buffer, interval, state)
 - [ ] 22-02-PLAN.md -- SensorLabView UI + waveform chart + hidden Settings toggle + visual checkpoint
 
+### Phase 23: Sensor Lab Step Count Fix
+**Goal**: Sensor Lab displays a live step count sourced from the pedometer, closing the SLAB-02 gap where stepCount was declared but never written
+**Depends on**: Phase 22
+**Requirements**: SLAB-02
+**Gap Closure**: Closes gap from v1.4 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. SensorLabView displays a non-zero step count when the user is walking/running on a real device
+  2. Step count data comes from CMPedometer (the authoritative source), not a proxy calculation
+  3. Existing SensorLabService tests still pass
+**Plans**: 0 plans (pending /gsd:plan-phase 23)
+
 ## Progress
 
 **Execution Order:**
@@ -165,3 +177,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
 | 22. Sensor Lab | 2/2 | Complete    | 2026-03-25 | - |
+| 23. Sensor Lab Step Count Fix | 0/0 | Pending | - | - |
