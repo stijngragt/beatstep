@@ -25,7 +25,7 @@ final class BPMViewWiringTests: XCTestCase {
     // MARK: - BPM Data for Views
 
     func testBPMCacheReturnsDataForKnownTrack() {
-        service.cache(trackID: "abc", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
+        service.cacheFromAPI(trackID: "abc", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
         XCTAssertEqual(service.getBPM(forTrackID: "abc"), 172)
     }
 
@@ -34,9 +34,9 @@ final class BPMViewWiringTests: XCTestCase {
     }
 
     func testCoverageStatsAccuracy() {
-        service.cache(trackID: "t1", name: "Song 1", artist: "A", bpm: 120)
-        service.cache(trackID: "t2", name: "Song 2", artist: "B", bpm: 140)
-        service.cache(trackID: "t3", name: "Song 3", artist: "C", bpm: nil)
+        service.cacheFromAPI(trackID: "t1", name: "Song 1", artist: "A", bpm: 120)
+        service.cacheFromAPI(trackID: "t2", name: "Song 2", artist: "B", bpm: 140)
+        service.cacheFromAPI(trackID: "t3", name: "Song 3", artist: "C", bpm: nil)
 
         let stats = service.coverageStats(forTrackIDs: ["t1", "t2", "t3"])
         XCTAssertEqual(stats.withBPM, 2)
@@ -44,7 +44,7 @@ final class BPMViewWiringTests: XCTestCase {
     }
 
     func testHasLookupAfterCache() {
-        service.cache(trackID: "cached_track", name: "Song", artist: "Artist", bpm: 120)
+        service.cacheFromAPI(trackID: "cached_track", name: "Song", artist: "Artist", bpm: 120)
         XCTAssertTrue(service.hasLookup(forTrackID: "cached_track"))
         XCTAssertFalse(service.hasLookup(forTrackID: "never_cached"))
     }
@@ -58,7 +58,7 @@ final class BPMViewWiringTests: XCTestCase {
     // MARK: - BPM Display Formatting
 
     func testBPMBadgeShowsNumberForKnownTrack() {
-        service.cache(trackID: "track_known", name: "Song", artist: "Artist", bpm: 172)
+        service.cacheFromAPI(trackID: "track_known", name: "Song", artist: "Artist", bpm: 172)
         let bpm = service.getBPM(forTrackID: "track_known")
         XCTAssertNotNil(bpm)
         XCTAssertEqual("\(bpm!) BPM", "172 BPM")
@@ -71,7 +71,7 @@ final class BPMViewWiringTests: XCTestCase {
     }
 
     func testBPMBadgeShowsDashForNilBPMTrack() {
-        service.cache(trackID: "nil_bpm", name: "Song", artist: "Artist", bpm: nil)
+        service.cacheFromAPI(trackID: "nil_bpm", name: "Song", artist: "Artist", bpm: nil)
         let bpm = service.getBPM(forTrackID: "nil_bpm")
         XCTAssertNil(bpm)
         // View would show "--" when bpm is nil

@@ -17,17 +17,50 @@ final class BPMCacheService {
         container!.mainContext
     }
 
-    func cache(trackID: String, name: String, artist: String, bpm: Int?) {
+    func cacheFromAPI(trackID: String, name: String, artist: String, bpm: Int?) {
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == trackID }
+        )
+
+        if let existing = try? context.fetch(descriptor).first {
+            // Manual wins over API: preserve user's explicit BPM correction
+            if existing.confidenceRaw == BPMConfidence.manual.rawValue {
+                existing.lookupAttempted = true
+                existing.lastUpdated = Date()
+            } else {
+                existing.bpm = bpm
+                existing.confidenceRaw = bpm != nil ? BPMConfidence.verified.rawValue : nil
+                existing.sourceRaw = bpm != nil ? BPMSource.api.rawValue : nil
+                existing.lookupAttempted = true
+                existing.lastUpdated = Date()
+            }
+        } else {
+            let cached = CachedBPM(spotifyTrackID: trackID, trackName: name, artistName: artist, bpm: bpm, lookupAttempted: true)
+            if bpm != nil {
+                cached.confidenceRaw = BPMConfidence.verified.rawValue
+                cached.sourceRaw = BPMSource.api.rawValue
+            }
+            context.insert(cached)
+        }
+
+        try? context.save()
+    }
+
+    func cacheManual(trackID: String, name: String, artist: String, bpm: Int) {
         let descriptor = FetchDescriptor<CachedBPM>(
             predicate: #Predicate { $0.spotifyTrackID == trackID }
         )
 
         if let existing = try? context.fetch(descriptor).first {
             existing.bpm = bpm
+            existing.confidenceRaw = BPMConfidence.manual.rawValue
+            existing.sourceRaw = BPMSource.manual.rawValue
             existing.lookupAttempted = true
             existing.lastUpdated = Date()
         } else {
             let cached = CachedBPM(spotifyTrackID: trackID, trackName: name, artistName: artist, bpm: bpm, lookupAttempted: true)
+            cached.confidenceRaw = BPMConfidence.manual.rawValue
+            cached.sourceRaw = BPMSource.manual.rawValue
             context.insert(cached)
         }
 

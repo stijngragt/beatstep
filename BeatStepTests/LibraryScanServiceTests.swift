@@ -28,7 +28,7 @@ final class LibraryScanServiceTests: XCTestCase {
 
     func testScanPlaylistSkipsCachedTracks() async {
         // Pre-cache one track
-        cacheService.cache(trackID: "track_1", name: "Song 1", artist: "Artist 1", bpm: 120)
+        cacheService.cacheFromAPI(trackID: "track_1", name: "Song 1", artist: "Artist 1", bpm: 120)
 
         let tracks = [
             makeSpotifyTrack(id: "track_1", name: "Song 1", artist: "Artist 1"),
@@ -85,8 +85,8 @@ final class LibraryScanServiceTests: XCTestCase {
 
     func testScanPlaylistAllCachedSkipsAPICall() async {
         // Pre-cache all tracks
-        cacheService.cache(trackID: "track_1", name: "Song 1", artist: "Artist 1", bpm: 120)
-        cacheService.cache(trackID: "track_2", name: "Song 2", artist: "Artist 2", bpm: 140)
+        cacheService.cacheFromAPI(trackID: "track_1", name: "Song 1", artist: "Artist 1", bpm: 120)
+        cacheService.cacheFromAPI(trackID: "track_2", name: "Song 2", artist: "Artist 2", bpm: 140)
 
         let tracks = [
             makeSpotifyTrack(id: "track_1", name: "Song 1", artist: "Artist 1"),

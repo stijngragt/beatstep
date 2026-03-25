@@ -25,7 +25,7 @@ final class BPMCacheServiceTests: XCTestCase {
     // MARK: - Cache Insert and Retrieve
 
     func testCacheInsertAndRetrieve() {
-        service.cache(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
+        service.cacheFromAPI(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
         let bpm = service.getBPM(forTrackID: "track_1")
         XCTAssertEqual(bpm, 172)
     }
@@ -38,8 +38,8 @@ final class BPMCacheServiceTests: XCTestCase {
     // MARK: - Cache Update
 
     func testCacheUpdateExistingTrack() {
-        service.cache(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 170)
-        service.cache(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
+        service.cacheFromAPI(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 170)
+        service.cacheFromAPI(trackID: "track_1", name: "Run Boy Run", artist: "Woodkid", bpm: 172)
         let bpm = service.getBPM(forTrackID: "track_1")
         XCTAssertEqual(bpm, 172)
     }
@@ -51,14 +51,14 @@ final class BPMCacheServiceTests: XCTestCase {
     }
 
     func testHasLookupReturnsTrueForCached() {
-        service.cache(trackID: "track_1", name: "Song", artist: "Artist", bpm: 120)
+        service.cacheFromAPI(trackID: "track_1", name: "Song", artist: "Artist", bpm: 120)
         XCTAssertTrue(service.hasLookup(forTrackID: "track_1"))
     }
 
     // MARK: - Nil BPM with lookupAttempted
 
     func testCacheNilBPMSetsLookupAttempted() {
-        service.cache(trackID: "track_1", name: "Unknown Song", artist: "Unknown", bpm: nil)
+        service.cacheFromAPI(trackID: "track_1", name: "Unknown Song", artist: "Unknown", bpm: nil)
         XCTAssertTrue(service.hasLookup(forTrackID: "track_1"))
         XCTAssertNil(service.getBPM(forTrackID: "track_1"))
 
@@ -73,9 +73,9 @@ final class BPMCacheServiceTests: XCTestCase {
     // MARK: - Coverage Stats
 
     func testCoverageStats() {
-        service.cache(trackID: "t1", name: "Song 1", artist: "A", bpm: 120)
-        service.cache(trackID: "t2", name: "Song 2", artist: "B", bpm: 140)
-        service.cache(trackID: "t3", name: "Song 3", artist: "C", bpm: nil)
+        service.cacheFromAPI(trackID: "t1", name: "Song 1", artist: "A", bpm: 120)
+        service.cacheFromAPI(trackID: "t2", name: "Song 2", artist: "B", bpm: 140)
+        service.cacheFromAPI(trackID: "t3", name: "Song 3", artist: "C", bpm: nil)
 
         let stats = service.coverageStats(forTrackIDs: ["t1", "t2", "t3", "t4"])
         XCTAssertEqual(stats.withBPM, 2)

@@ -48,7 +48,7 @@ final class LibraryScanService {
                     artist: track.artistName
                 )
                 debugPrint("SCAN: '\(track.name)' → \(bpm.map { "\($0) BPM" } ?? "no match")")
-                BPMCacheService.shared.cache(
+                BPMCacheService.shared.cacheFromAPI(
                     trackID: track.id,
                     name: track.name,
                     artist: track.artistName,
@@ -58,7 +58,7 @@ final class LibraryScanService {
                 debugPrint("SCAN: '\(track.name)' → ERROR: \(error)")
                 // Network/API error for this track -- mark as attempted with nil
                 // so delta scan doesn't retry immediately
-                BPMCacheService.shared.cache(
+                BPMCacheService.shared.cacheFromAPI(
                     trackID: track.id,
                     name: track.name,
                     artist: track.artistName,
