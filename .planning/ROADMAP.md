@@ -180,4 +180,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other. Phase 23 depen
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
 | 22. Sensor Lab | 2/2 | Complete    | 2026-03-25 | - |
-| 23. Sensor Lab Step Count Fix | 1/1 | Complete   | 2026-03-25 | - |
+| 23. Sensor Lab Step Count Fix | 1/1 | Complete    | 2026-03-25 | - |
