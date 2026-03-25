@@ -46,9 +46,11 @@ final class SpotifyAPIService {
     // MARK: - Search & Discovery
 
     func searchTrack(title: String, artist: String, limit: Int = 1) async throws -> [SpotifyTrack] {
+        // Dev Mode (Feb 2026+) caps search at 10 results
+        let cappedLimit = min(limit, 10)
         let query = "track:\(title) artist:\(artist)"
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "\(baseURL)/search?q=\(encodedQuery)&type=track&limit=\(limit)") else {
+              let url = URL(string: "\(baseURL)/search?q=\(encodedQuery)&type=track&limit=\(cappedLimit)") else {
             return []
         }
         let response: SpotifySearchResponse = try await authenticatedRequest(url: url)
@@ -69,7 +71,7 @@ final class SpotifyAPIService {
     }
 
     func addTracksToPlaylist(playlistID: String, uris: [String]) async throws {
-        let url = URL(string: "\(baseURL)/playlists/\(playlistID)/tracks")!
+        let url = URL(string: "\(baseURL)/playlists/\(playlistID)/items")!
         let body = AddTracksBody(uris: uris)
         let _: SnapshotResponse = try await authenticatedPOSTRequest(url: url, body: body)
     }
