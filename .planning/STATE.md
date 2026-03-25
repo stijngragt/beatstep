@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: In The Zone
 status: executing
-stopped_at: Phase 17 gap closure planned, needs /gsd:plan-phase 17
-last_updated: "2026-03-24T23:10:00.000Z"
-last_activity: 2026-03-24 -- Created Phase 17 gap closure for PLR-04 (tempo mode toggle UI)
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-25T07:11:50.480Z"
+last_activity: 2026-03-25 -- Completed 17-01 (tempo mode toggle button in ActiveRunView)
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
-  percent: 93
+  completed_phases: 5
+  total_plans: 8
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 16 -- Active Run Assembly
+**Current focus:** Phase 17 -- Tempo Mode Toggle (gap closure)
 
 ## Current Position
 
-Phase: 16 of 16 (Active Run Assembly)
-Plan: 2 of 2 in current phase (COMPLETE)
+Phase: 17 of 17 (Tempo Mode Toggle)
+Plan: 1 of 1 in current phase (COMPLETE)
 Status: Executing
-Last activity: 2026-03-24 -- Completed 16-02 (fullScreenCover wiring + MiniPlayer hiding)
+Last activity: 2026-03-25 -- Completed 17-01 (tempo mode toggle button in ActiveRunView)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30 (11 v1.0, 7 v1.1, 6 v1.2, 6 v1.3)
+- Total plans completed: 31 (11 v1.0, 7 v1.1, 6 v1.2, 7 v1.3)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
@@ -70,6 +70,8 @@ Recent decisions affecting current work:
 - [16-01]: ActiveRunView reads directly from service singletons -- no @State copies of sync data
 - [16-02]: onChange(of: cadenceService.state) triggers fullScreenCover on .active transition
 - [16-02]: onDisappear guarded with isRunActive to prevent run kill during fullScreenCover
+- [17-01]: Toggle button always visible (not gated by guided mode) so user can set preference before first match
+- [17-01]: Reads directly from RunEngineService.tempoMode via @Observable -- no @State copy
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:30:22Z
-Stopped at: Completed 16-02-PLAN.md
-Resume file: Phase 16 complete -- all plans executed
+Last session: 2026-03-25T07:11:50.478Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None
