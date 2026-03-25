@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-03-25T23:00:00.000Z"
-last_activity: 2026-03-25 -- v1.6 roadmap created (6 phases, 13 requirements)
+status: planning
+stopped_at: Completed 27-02-PLAN.md
+last_updated: "2026-03-25T22:25:12.888Z"
+last_activity: 2026-03-25 -- v1.6 roadmap created
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -50,12 +49,14 @@ Progress (v1.6): [..........] 0/6 phases (0%)
 | 24-01 | fix-run-tab-start | 24min |
 | 25-01 | consolidate-run-entry | 18min |
 | 26-01 | onboarding-analysis-step | 2min |
+| Phase 27 P02 | 3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
+- [Phase 27]: BSHaptics uses UIKit feedback generators directly, BSAnimation uses spring/easing presets
 
 ### Pending Todos
 
@@ -69,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: v1.6 roadmap created, ready to plan Phase 27
+Last session: 2026-03-25T22:25:12.880Z
+Stopped at: Completed 27-02-PLAN.md
 Resume file: None

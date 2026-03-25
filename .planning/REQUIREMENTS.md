@@ -13,7 +13,7 @@ Requirements for v1.6 Little Big Things. Each maps to roadmap phases.
 - [ ] **LIB-02**: User can filter playlists by status (All / Analyzed / Unanalyzed)
 - [ ] **LIB-03**: Playlist cards show scan quality — matched tracks vs total tracks with visual coverage indicator
 - [ ] **LIB-04**: User can scan/delete scan via swipe action or context menu on each playlist (floating bar removed)
-- [ ] **LIB-05**: Library correctly shows analyzed status after scan completes (bug fix)
+- [x] **LIB-05**: Library correctly shows analyzed status after scan completes (bug fix)
 
 ### Run Tab
 
@@ -23,7 +23,7 @@ Requirements for v1.6 Little Big Things. Each maps to roadmap phases.
 
 ### Polish
 
-- [ ] **POL-01**: Design system includes haptic and animation tokens (BSHaptics, BSAnimation) referenced by all components
+- [x] **POL-01**: Design system includes haptic and animation tokens (BSHaptics, BSAnimation) referenced by all components
 - [ ] **POL-02**: Every tap, selection, and state change has appropriate haptic feedback and spring animation
 - [ ] **POL-03**: Loading states use skeleton shimmer instead of blank screens
 - [ ] **POL-04**: Settings screen organized into grouped sections: Account, Run Defaults, Permissions, Debug, About
@@ -61,11 +61,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIB-02 | Phase 28 | Pending |
 | LIB-03 | Phase 28 | Pending |
 | LIB-04 | Phase 28 | Pending |
-| LIB-05 | Phase 27 | Pending |
+| LIB-05 | Phase 27 | Complete |
 | RUN-01 | Phase 29 | Pending |
 | RUN-02 | Phase 29 | Pending |
 | RUN-03 | Phase 30 | Pending |
-| POL-01 | Phase 27 | Pending |
+| POL-01 | Phase 27 | Complete |
 | POL-02 | Phase 32 | Pending |
 | POL-03 | Phase 31 | Pending |
 | POL-04 | Phase 31 | Pending |
