@@ -528,6 +528,94 @@ final class RunEngineServiceTests: XCTestCase {
         XCTAssertEqual(selected?.id, "t85", "selectNextMatch in half mode should prefer track near spm/2")
     }
 
+    // MARK: - Zero-BPM Fallback
+
+    /// Helper tracks for nil-BPM fallback tests
+    private let trackNilBPM1 = SpotifyTrack(
+        id: "tNil1", name: "Nil BPM 1", uri: "spotify:track:tNil1",
+        durationMs: 200_000, artists: [Artist(name: "A")],
+        album: Album(name: "Album", images: nil)
+    )
+    private let trackNilBPM2 = SpotifyTrack(
+        id: "tNil2", name: "Nil BPM 2", uri: "spotify:track:tNil2",
+        durationMs: 200_000, artists: [Artist(name: "A")],
+        album: Album(name: "Album", images: nil)
+    )
+
+    func testSkipFallbackReturnsNilWhenOnlyNilBPMRemain() {
+        // Only nil-BPM tracks in playlist, no BPM match possible
+        let bpmMap: [String: Int] = [:]  // No BPM data for any track
+        let tracks = [trackNilBPM1, trackNilBPM2]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.setZeroBPMFallbackForTesting(.skip)
+        engine.tolerance = .normal
+
+        let selected = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNil(selected, "With fallback=skip, selectNextMatch should return nil when only nil-BPM tracks remain")
+    }
+
+    func testPlayRegardlessFallbackReturnsNilBPMTrack() {
+        // Only nil-BPM tracks available, no BPM match possible
+        let bpmMap: [String: Int] = [:]
+        let tracks = [trackNilBPM1, trackNilBPM2]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.setZeroBPMFallbackForTesting(.playRegardless)
+        engine.tolerance = .normal
+
+        let selected = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNotNil(selected, "With fallback=playRegardless, selectNextMatch should return a nil-BPM track")
+    }
+
+    func testPlayRegardlessPrefersBPMMatchOverNilBPM() {
+        // Mix of BPM-matched and nil-BPM tracks
+        let bpmMap: [String: Int] = ["t170": 170]  // Only track170 has BPM
+        let tracks = [track170, trackNilBPM1]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.setZeroBPMFallbackForTesting(.playRegardless)
+        engine.tolerance = .normal
+
+        let selected = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNotNil(selected)
+        XCTAssertEqual(selected?.id, "t170", "BPM-matched tracks should always be preferred over nil-BPM tracks")
+    }
+
+    func testPlayRegardlessFallbackTracksPlayedIDs() {
+        // Two nil-BPM tracks, no BPM matches
+        let bpmMap: [String: Int] = [:]
+        let tracks = [trackNilBPM1, trackNilBPM2]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.setZeroBPMFallbackForTesting(.playRegardless)
+        engine.tolerance = .normal
+
+        let first = engine.selectNextMatch(forSPM: 170)
+        let second = engine.selectNextMatch(forSPM: 170)
+
+        XCTAssertNotNil(first)
+        XCTAssertNotNil(second)
+        XCTAssertNotEqual(first?.id, second?.id, "Nil-BPM tracks should be tracked in playedTrackIDs -- no repeats until pool exhausted")
+    }
+
+    func testPlayRegardlessFallbackResetsWhenExhausted() {
+        // Single nil-BPM track -- should reset and replay after exhaustion
+        let bpmMap: [String: Int] = [:]
+        let tracks = [trackNilBPM1]
+
+        engine.loadForTesting(tracks: tracks, bpmMap: bpmMap)
+        engine.setZeroBPMFallbackForTesting(.playRegardless)
+        engine.tolerance = .normal
+
+        let first = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNotNil(first, "First selection should return the nil-BPM track")
+
+        let second = engine.selectNextMatch(forSPM: 170)
+        XCTAssertNotNil(second, "After pool exhaustion, nil-BPM pool should reset and return track again")
+        XCTAssertEqual(first?.id, second?.id, "Same track should be returned after pool reset")
+    }
+
     // MARK: - Discovery Flag
 
     func testDiscoveryFlagSetWhenPoolLow() {

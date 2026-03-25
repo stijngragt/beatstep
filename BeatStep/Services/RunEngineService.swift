@@ -43,6 +43,8 @@ final class RunEngineService {
     @ObservationIgnored
     private var danceabilityMap: [String: Int] = [:]
     @ObservationIgnored
+    private var zeroBPMFallback: ZeroBPMFallback = .skip
+    @ObservationIgnored
     private var isDiscovering: Bool = false
     @ObservationIgnored
     private(set) var needsDiscovery: Bool = false
@@ -495,5 +497,9 @@ final class RunEngineService {
 
     func setLatestCadenceForTesting(_ spm: Int) {
         latestCadence = spm
+    }
+
+    func setZeroBPMFallbackForTesting(_ fallback: ZeroBPMFallback) {
+        zeroBPMFallback = fallback
     }
 }
