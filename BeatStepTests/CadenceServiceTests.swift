@@ -127,5 +127,18 @@ final class CadenceServiceTests: XCTestCase {
         XCTAssertEqual(service.state, .idle)
         XCTAssertEqual(service.currentSPM, 0)
         XCTAssertEqual(service.trend, .steady)
+        XCTAssertEqual(service.stepCount, 0)
+    }
+
+    // MARK: - Step Count
+
+    func testStepCountInitiallyZero() {
+        XCTAssertEqual(service.stepCount, 0)
+    }
+
+    func testStepCountResetsOnStop() {
+        // stopDetecting should reset stepCount to 0 regardless of prior state
+        service.stopDetecting()
+        XCTAssertEqual(service.stepCount, 0)
     }
 }
