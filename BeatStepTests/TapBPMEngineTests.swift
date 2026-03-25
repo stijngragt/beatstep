@@ -58,18 +58,19 @@ final class TapBPMEngineTests: XCTestCase {
 
     func testRollingWindowUsesLast8Intervals() {
         let t0 = Date()
-        // First 6 taps at 120 BPM (0.5s intervals)
-        for i in 0..<6 {
+        // First 3 taps at 120 BPM (0.5s intervals) = 2 intervals
+        for i in 0..<3 {
             engine.tap(at: t0.addingTimeInterval(Double(i) * 0.5))
         }
-        // Next 6 taps at 100 BPM (0.6s intervals), starting from where we left off
-        let offset = 5.0 * 0.5 // last tap was at 2.5s
-        for i in 1...6 {
+        // Next 10 taps at 100 BPM (0.6s intervals) = 10 more intervals
+        // 0.6s is within 40% of 0.5s median (20% deviation), so not rejected
+        let offset = 2.0 * 0.5 // last tap was at 1.0s
+        for i in 1...10 {
             engine.tap(at: t0.addingTimeInterval(offset + Double(i) * 0.6))
         }
 
-        // After 12 taps, 11 intervals, but rolling window keeps last 8.
-        // The last 8 intervals are all 0.6s → BPM = 60/0.6 = 100
+        // After 13 taps (12 intervals), rolling window keeps last 8.
+        // Last 8 intervals are all 0.6s -> BPM = 60/0.6 = 100
         XCTAssertEqual(engine.currentBPM, 100)
         XCTAssertTrue(engine.isStable)
     }
