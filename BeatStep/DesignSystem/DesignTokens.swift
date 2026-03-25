@@ -26,6 +26,7 @@ extension Color {
     static let stateSuccess = Color(red: 0.20, green: 0.78, blue: 0.35)
     static let stateWarning = Color(red: 1.0, green: 0.76, blue: 0.0)
     static let stateError = Color(red: 1.0, green: 0.45, blue: 0.45)
+    static let stateApproximate = Color(red: 0.35, green: 0.55, blue: 0.95)
 
     // Sync State (aliases for downstream run views)
     static let syncInSync = Color.stateSuccess

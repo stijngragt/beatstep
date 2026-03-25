@@ -13,6 +13,8 @@
 		AA18010101010101AA010204 /* BPMSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010203 /* BPMSource.swift */; };
 		AA18010101010101AA010206 /* BPMConfidenceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */; };
 		AA18010101010101AA010208 /* BPMCacheWritePathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */; };
+		AA19010101010101AA010102 /* BPMInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010101 /* BPMInfo.swift */; };
+		AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */; };
 		126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6274DEE660A35399701FA544 /* BeatStepTests.swift */; };
 		1B9FE1F5B9EA81A1566F6282 /* GetSongBPMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D166178F00CF25146611C6FB /* GetSongBPMResponse.swift */; };
 		1D5883183D461FAA314B3D3B /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 1D645A47023EFFA3D0BA0FD8 /* SpotifyiOS */; };
@@ -151,6 +153,8 @@
 		AA18010101010101AA010203 /* BPMSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMSource.swift; sourceTree = "<group>"; };
 		AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceModelTests.swift; sourceTree = "<group>"; };
 		AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheWritePathTests.swift; sourceTree = "<group>"; };
+		AA19010101010101AA010101 /* BPMInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMInfo.swift; sourceTree = "<group>"; };
+		AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceBadgeTests.swift; sourceTree = "<group>"; };
 		78164965B7403F7D8CB49EC3 /* CadenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceService.swift; sourceTree = "<group>"; };
 		813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		82BA911E66F47778D3963B1D /* DesignTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
@@ -242,6 +246,7 @@
 				AA16010101010101AA010103 /* LongPressStopTests.swift */,
 				6274DEE660A35399701FA544 /* BeatStepTests.swift */,
 				1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */,
+				AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */,
 				AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */,
 				AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */,
 				D413FF5901AC08B98D7F067E /* BPMToleranceTests.swift */,
@@ -296,6 +301,7 @@
 			isa = PBXGroup;
 			children = (
 				AA18010101010101AA010201 /* BPMConfidence.swift */,
+				AA19010101010101AA010101 /* BPMInfo.swift */,
 				AA18010101010101AA010203 /* BPMSource.swift */,
 				70F275CA676707F7D92D5DFD /* BPMTolerance.swift */,
 				E443905E08D5A456779B4A8E /* CachedBPM.swift */,
@@ -554,6 +560,7 @@
 			files = (
 				41F1F675E36342CFA4903F98 /* AppIconGeneratorTests.swift in Sources */,
 				6D82D0B3807BF022AD71CDFE /* BPMCacheServiceTests.swift in Sources */,
+				AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */,
 				AA18010101010101AA010206 /* BPMConfidenceModelTests.swift in Sources */,
 				AA18010101010101AA010208 /* BPMCacheWritePathTests.swift in Sources */,
 				2B2DC5471E50AB176E0E0492 /* BPMToleranceTests.swift in Sources */,
@@ -592,6 +599,7 @@
 				CAC3FE8DBFFF14C88FF90371 /* BPMCacheService.swift in Sources */,
 				7F4BF1B63B24CFBFB608DB82 /* BPMDiscoveryService.swift in Sources */,
 				AA18010101010101AA010202 /* BPMConfidence.swift in Sources */,
+				AA19010101010101AA010102 /* BPMInfo.swift in Sources */,
 				AA18010101010101AA010204 /* BPMSource.swift in Sources */,
 				5267FFFF106C7E977E6BEAD1 /* BPMTolerance.swift in Sources */,
 				B3D880FCD4650FA44C6A6E67 /* BeatStepApp.swift in Sources */,
