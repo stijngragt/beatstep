@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RunTabView: View {
+    @Binding var selectedTab: Tab
     @State private var lastPlaylistName: String?
     @State private var lastPlaylistImageURL: String?
     @State private var selectedZoneId: Int? = RunZone.selectedZoneId

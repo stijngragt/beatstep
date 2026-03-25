@@ -14,6 +14,11 @@ final class SpotifyAPIService {
         return try await authenticatedRequest(url: url)
     }
 
+    func fetchPlaylist(id: String) async throws -> SpotifyPlaylist {
+        let url = URL(string: "\(baseURL)/playlists/\(id)")!
+        return try await authenticatedRequest(url: url)
+    }
+
     func fetchPlaylistTracks(playlistID: String, offset: Int = 0, limit: Int = 100) async throws -> PaginatedResponse<PlaylistTrackItem> {
         let url = URL(string: "\(baseURL)/playlists/\(playlistID)/items?limit=\(limit)&offset=\(offset)")!
         return try await authenticatedRequest(url: url)

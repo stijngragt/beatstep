@@ -1,8 +1,15 @@
 import SwiftUI
 
+enum Tab: Hashable {
+    case library
+    case run
+    case settings
+}
+
 struct ContentView: View {
     @Environment(SpotifyAuthService.self) private var authService
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var selectedTab: Tab = .run
 
     private var appState: AppState {
         AppState.resolve(hasCompletedOnboarding: hasCompletedOnboarding, isAuthenticated: authService.isAuthenticated)
@@ -40,17 +47,19 @@ struct ContentView: View {
     // MARK: - Authenticated View
 
     private var authenticatedView: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 PlaylistListView()
             }
+            .tag(Tab.library)
             .tabItem {
                 Label("Library", systemImage: "music.note.list")
             }
 
             NavigationStack {
-                RunTabView()
+                RunTabView(selectedTab: $selectedTab)
             }
+            .tag(Tab.run)
             .tabItem {
                 Label("Run", systemImage: "waveform.path.ecg")
             }
@@ -58,6 +67,7 @@ struct ContentView: View {
             NavigationStack {
                 SettingsView()
             }
+            .tag(Tab.settings)
             .tabItem {
                 Label("Settings", systemImage: "gearshape")
             }
