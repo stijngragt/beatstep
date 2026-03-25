@@ -94,6 +94,12 @@ struct PlaylistListView: View {
         .navigationDestination(for: SpotifyPlaylist.self) { playlist in
             PlaylistDetailView(playlist: playlist)
         }
+        .onChange(of: scanService.scanningPlaylistID) { oldValue, newValue in
+            if oldValue != nil && newValue == nil {
+                // Scan just completed, reload coverage data
+                loadCoverageData()
+            }
+        }
     }
 
     private func errorView(message: String) -> some View {
