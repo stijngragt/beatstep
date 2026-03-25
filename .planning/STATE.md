@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: One Way In
-status: active
-stopped_at: null
-last_updated: "2026-03-25T16:00:00.000Z"
+status: planning
+stopped_at: Phase 24 context gathered
+last_updated: "2026-03-25T18:10:44.787Z"
 last_activity: 2026-03-25 -- v1.5 roadmap created (Phases 24-26)
 progress:
   total_phases: 3
@@ -79,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: v1.5 roadmap created, ready to plan Phase 24
-Resume file: None
+Last session: 2026-03-25T18:10:44.784Z
+Stopped at: Phase 24 context gathered
+Resume file: .planning/phases/24-fix-run-tab-start/24-CONTEXT.md
