@@ -145,13 +145,16 @@ Plans:
   1. SensorLabView displays a non-zero step count when the user is walking/running on a real device
   2. Step count data comes from CMPedometer (the authoritative source), not a proxy calculation
   3. Existing SensorLabService tests still pass
-**Plans**: 0 plans (pending /gsd:plan-phase 23)
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md -- Expose stepCount on CadenceService, wire SensorLabView to cadence.stepCount, remove orphaned property
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
-Note: Phase 21 and 22 depend only on Phase 18, not on each other.
+Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22 -> 23
+Note: Phase 21 and 22 depend only on Phase 18, not on each other. Phase 23 depends on Phase 22.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -177,4 +180,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
 | 22. Sensor Lab | 2/2 | Complete    | 2026-03-25 | - |
-| 23. Sensor Lab Step Count Fix | 0/0 | Pending | - | - |
+| 23. Sensor Lab Step Count Fix | 0/1 | Planned | - | - |
