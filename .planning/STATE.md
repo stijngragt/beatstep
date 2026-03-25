@@ -10,8 +10,8 @@ progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -26,21 +26,21 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 21 of 22 (Zero-BPM Fallback) -- fourth of 5 v1.4 phases
-Plan: 1 of 2 complete
-Status: In Progress
-Last activity: 2026-03-25 -- Plan 21-01 complete (ZeroBPMFallback enum + Settings picker)
+Plan: 2 of 2 complete
+Status: Complete
+Last activity: 2026-03-25 -- Plan 21-02 complete (ZeroBPMFallback wired into RunEngineService)
 
-Progress: [████████░░] 88%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 37 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 5 v1.4)
+- Total plans completed: 38 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 6 v1.4)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
 - v1.3: 2 days, 8 plans
-- v1.4: in progress, 5 plans
+- v1.4: in progress, 6 plans
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -49,6 +49,7 @@ Progress: [████████░░] 88%
 | 20-01 | tap-bpm-engine | 7min | 2 | 3 |
 | 20-02 | tap-bpm-view | 28min | 2 | 3 |
 | 21-01 | zero-bpm-fallback-model | 9min | 2 | 4 |
+| 21-02 | zero-bpm-fallback-engine | 6min | 1 | 2 |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Full decision log in PROJECT.md Key Decisions table.
 - [20-02] Button wrapping on badge for gesture separation -- badge tap opens sheet, row tap plays track
 - [20-02] ShakeModifier with offset-based animation for outlier rejection visual feedback
 - [21-01] Default fallback is .skip preserving current behavior for existing users
+- [21-02] Separate playedNilBPMIDs set for independent nil-BPM pool cycling
+- [21-02] Prompt fallback shares playRegardless code path (plays track) -- future phase adds UI overlay
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T12:11:47Z
-Stopped at: Completed 21-01-PLAN.md
-Resume file: 21-02-PLAN.md
+Last session: 2026-03-25T12:29:30Z
+Stopped at: Completed 21-02-PLAN.md (Phase 21 complete)
+Resume file: Next milestone phase
