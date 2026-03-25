@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
-last_updated: "2026-03-25T22:00:00.000Z"
-last_activity: 2026-03-25 -- Milestone v1.6 started
+last_updated: "2026-03-25T23:00:00.000Z"
+last_activity: 2026-03-25 -- v1.6 roadmap created (6 phases, 13 requirements)
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** v1.6 Little Big Things — defining requirements
+**Current focus:** Phase 27 - Foundation + Fixes
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-25 — Milestone v1.6 started
+Phase: 27 (1 of 6 in v1.6 Little Big Things)
+Plan: Not yet planned
+Status: Ready to plan
+Last activity: 2026-03-25 -- v1.6 roadmap created
+
+Progress (v1.6): [..........] 0/6 phases (0%)
 
 ## Performance Metrics
 
@@ -62,8 +64,11 @@ None.
 ### Blockers/Concerns
 
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
+- Spotify Feb 2026 API changes may affect existing functionality (INF-01 addresses this)
+- Skip queue must use local buffer with play(uri:) -- never Spotify queue API (no remove endpoint)
 
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: v1.5 milestone complete
+Stopped at: v1.6 roadmap created, ready to plan Phase 27
+Resume file: None

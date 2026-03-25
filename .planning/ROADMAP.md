@@ -8,6 +8,7 @@
 - v1.3 In The Zone -- Phases 13-17 (shipped 2026-03-25)
 - v1.4 Under The Hood -- Phases 18-23 (shipped 2026-03-25)
 - v1.5 One Way In -- Phases 24-26 (shipped 2026-03-25)
+- v1.6 Little Big Things -- Phases 27-32 (in progress)
 
 ## Phases
 
@@ -73,7 +74,88 @@
 
 </details>
 
+### v1.6 Little Big Things (In Progress)
+
+**Milestone Goal:** Polish the UI, fix interaction pain points, and make every screen feel intentionally designed.
+
+- [ ] **Phase 27: Foundation + Fixes** - Design system tokens (haptics, animations), Spotify API audit, analysis status bug fix
+- [ ] **Phase 28: Library Polish** - Search, filter, playlist card redesign, contextual scan actions
+- [ ] **Phase 29: Run Menu Rebuild** - Cohesive custom components with haptics and multi-zone selection
+- [ ] **Phase 30: Skip Queue** - Pre-built local track buffer for instant song skipping
+- [ ] **Phase 31: Settings + Skeleton States** - Settings screen structure and shimmer loading states
+- [ ] **Phase 32: Micro-Interaction Pass** - Haptics, spring animations, and transitions on all interactions
+
+## Phase Details
+
+### Phase 27: Foundation + Fixes
+**Goal**: Every component built in v1.6 references shared haptic and animation tokens, API models are verified, and library coverage data is accurate
+**Depends on**: Nothing (first phase of v1.6)
+**Requirements**: POL-01, INF-01, LIB-05
+**Success Criteria** (what must be TRUE):
+  1. BSHaptics and BSAnimation token files exist and define named constants for haptic types and animation presets
+  2. Spotify API models decode correctly against February 2026 endpoint responses (search limit, field renames verified)
+  3. After scanning a playlist, the Library view immediately reflects the updated analyzed status without requiring a manual refresh
+**Plans**: TBD
+
+### Phase 28: Library Polish
+**Goal**: Users can find, filter, and manage playlists efficiently with visual scan quality feedback and native iOS interaction patterns
+**Depends on**: Phase 27 (bug fix ensures accurate coverage data; tokens used by new components)
+**Requirements**: LIB-01, LIB-02, LIB-03, LIB-04
+**Success Criteria** (what must be TRUE):
+  1. User can type in a search field and playlists filter by name in real-time without UI stutter
+  2. User can tap filter chips (All / Analyzed / Unanalyzed) and see only matching playlists
+  3. Each playlist card displays a visual indicator showing how many tracks have BPM data vs total tracks
+  4. User can swipe or long-press a playlist to scan or delete scan — no floating scan bar visible anywhere
+**Plans**: TBD
+
+### Phase 29: Run Menu Rebuild
+**Goal**: The Run tab feels cohesive and intentional with custom-designed components, haptic feedback on every selection, and multi-zone BPM range support
+**Depends on**: Phase 27 (haptic and animation tokens)
+**Requirements**: RUN-01, RUN-02
+**Success Criteria** (what must be TRUE):
+  1. Zone picker, tolerance selector, and playlist preview are visually cohesive custom components (not stock SwiftUI pickers)
+  2. Selecting a zone or changing tolerance triggers appropriate haptic feedback
+  3. User can select multiple zones and the displayed BPM range merges from lowest floor to highest ceiling
+  4. Starting a run with multiple zones selected uses the merged BPM range for song matching
+**Plans**: TBD
+
+### Phase 30: Skip Queue
+**Goal**: Skipping a song during a run feels instant with no perceptible delay
+**Depends on**: Phase 29 (run tab must be in final form before modifying engine)
+**Requirements**: RUN-03
+**Success Criteria** (what must be TRUE):
+  1. Tapping skip plays the next song within ~100ms (no spinner, no pause)
+  2. Skipping multiple times in quick succession works reliably without playback errors
+  3. The skip buffer refills automatically in the background after each skip
+**Plans**: TBD
+
+### Phase 31: Settings + Skeleton States
+**Goal**: Settings screen is organized and discoverable, and loading states across the app feel polished instead of empty
+**Depends on**: Phase 27 (animation tokens for shimmer)
+**Requirements**: POL-04, POL-03
+**Success Criteria** (what must be TRUE):
+  1. Settings screen shows grouped sections: Account, Run Defaults, Permissions, Debug, About
+  2. Each section is visually distinct with clear headers and the user can find any setting within 2 taps
+  3. Library playlist list shows shimmer skeleton placeholders while loading instead of a blank screen
+  4. Any view that loads async data shows a skeleton state before content appears
+**Plans**: TBD
+
+### Phase 32: Micro-Interaction Pass
+**Goal**: Every tap, selection, and state change in the app has appropriate haptic feedback and fluid spring animations
+**Depends on**: Phases 28, 29, 30, 31 (all views must be in final form)
+**Requirements**: POL-02
+**Success Criteria** (what must be TRUE):
+  1. All interactive elements (buttons, selectors, toggles) provide haptic feedback using BSHaptics tokens
+  2. View transitions and selection changes use spring animations from BSAnimation tokens
+  3. Conditional view appearances (showing/hiding elements) use explicit transitions instead of abrupt appear/disappear
+  4. Run screen animations are scoped to specific value changes — no jank from rapid cadence updates
+**Plans**: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 27 -> 28 -> 29 -> 30 -> 31 -> 32
+Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only on 27.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -103,3 +185,9 @@
 | 24. Fix Run Tab Start | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 25. Consolidate Run Entry | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 26. Onboarding Analysis Step | v1.5 | 1/1 | Complete | 2026-03-25 |
+| 27. Foundation + Fixes | v1.6 | 0/? | Not started | - |
+| 28. Library Polish | v1.6 | 0/? | Not started | - |
+| 29. Run Menu Rebuild | v1.6 | 0/? | Not started | - |
+| 30. Skip Queue | v1.6 | 0/? | Not started | - |
+| 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
+| 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |
