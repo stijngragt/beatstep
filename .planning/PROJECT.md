@@ -60,7 +60,12 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(None — define next milestone requirements via `/gsd:new-milestone`)
+- [ ] Single run entry point via Run tab — no more duplicate run screens from playlist view
+- [ ] Playlist selection routes to Run tab with playlist pre-loaded, not a separate run screen
+- [ ] Run tab Start Run button works reliably (currently broken)
+- [ ] Inline playlist picker in Run tab (bottom sheet or inline row) for swapping playlists without leaving tab
+- [ ] Onboarding includes first playlist analysis step before completion
+- [ ] Quick start for returning users: last playlist, zone, tolerance pre-loaded on Run tab
 
 ### Out of Scope
 
@@ -144,9 +149,20 @@ BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 202
 
 Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation (cosmetic).
 
+## Current Milestone: v1.5 One Way In
+
+**Goal:** Unify the run flow into a single path — Run tab is the only way to start a run. Kill duplicate screens, fix the broken start button, add playlist picker, extend onboarding with first analysis.
+
+**Target features:**
+- Kill old playlist-initiated run screen, route to Run tab instead
+- Fix Run tab Start Run button (currently non-functional)
+- Inline playlist picker in Run tab
+- Onboarding first-playlist analysis step
+- Quick start for returning users (last settings pre-loaded)
+
 ## Current State
 
-v1.4 shipped. 23 phases complete across 5 milestones. BPM matching algorithm is now observable, testable, and trustworthy. Next milestone TBD.
+v1.4 shipped. 23 phases complete across 5 milestones. Starting v1.5 to consolidate the run flow.
 
 ---
-*Last updated: 2026-03-25 after v1.4 milestone*
+*Last updated: 2026-03-25 after v1.5 milestone start*

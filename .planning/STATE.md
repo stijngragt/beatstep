@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Under The Hood
-status: completed
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-25T14:05:59.353Z"
-last_activity: 2026-03-25 -- Plan 23-01 complete (step count fix wired to CadenceService)
+milestone: v1.5
+milestone_name: One Way In
+status: active
+stopped_at: null
+last_updated: "2026-03-25T15:30:00.000Z"
+last_activity: 2026-03-25 -- Milestone v1.5 started
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 23 - Sensor Lab Step Count Fix
+**Current focus:** Defining requirements for v1.5
 
 ## Current Position
 
-Phase: 23 of 23 (Sensor Lab Step Count Fix) -- sixth of 6 v1.4 phases
-Plan: 1 of 1 complete
-Status: Complete
-Last activity: 2026-03-25 -- Plan 23-01 complete (step count fix wired to CadenceService)
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-25 -- Milestone v1.5 started
 
 ## Performance Metrics
 
