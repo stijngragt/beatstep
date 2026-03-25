@@ -95,6 +95,7 @@
 		D683E7205EB03266D6E402E5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82812B49FA131871ECBA508 /* SettingsView.swift */; };
 		DCE0AF6AB958364A68FFEEB3 /* RunEngineServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8FAB65795D9B7248FDDCC3 /* RunEngineServiceTests.swift */; };
 		DE8DB96B1BA4595CD4CC3121 /* SpotifyAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */; };
+		E07ECF040B0EDE7F34ABE206 /* SensorLabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB64E5F46DBAEB8C11BD228 /* SensorLabView.swift */; };
 		E102A2FCE3D19A19B1FA353D /* OnboardingHealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C661C6F478DBD57A4AE3AC /* OnboardingHealthView.swift */; };
 		E1BAF8ECA423B5FD3BF2E1E5 /* SensorLabService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4C759B3C0A18D302F7CD86 /* SensorLabService.swift */; };
 		E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35322426C60E3601F3E3793 /* PaginatedResponse.swift */; };
@@ -218,6 +219,7 @@
 		E9CFFC1FF6EE943CB3B48020 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSelectionTests.swift; sourceTree = "<group>"; };
 		ECC7DFDB6E911FE4107BCB40 /* SyncBackgroundModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncBackgroundModifier.swift; sourceTree = "<group>"; };
+		EDB64E5F46DBAEB8C11BD228 /* SensorLabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SensorLabView.swift; sourceTree = "<group>"; };
 		EE0D147DC55109AB2F68D3FA /* LastRunPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastRunPlaylist.swift; sourceTree = "<group>"; };
 		F30F9B6F3CAB252555C44A46 /* TempoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempoMode.swift; sourceTree = "<group>"; };
 		F380312A6E3F3F1CBA484FC7 /* RunZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZoneTests.swift; sourceTree = "<group>"; };
@@ -447,6 +449,7 @@
 			children = (
 				A82812B49FA131871ECBA508 /* SettingsView.swift */,
 				1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */,
+				EDB64E5F46DBAEB8C11BD228 /* SensorLabView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -682,6 +685,7 @@
 				AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */,
 				86AA40354A11365CD6B49A7B /* AccelerometerSample.swift in Sources */,
 				E1BAF8ECA423B5FD3BF2E1E5 /* SensorLabService.swift in Sources */,
+				E07ECF040B0EDE7F34ABE206 /* SensorLabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

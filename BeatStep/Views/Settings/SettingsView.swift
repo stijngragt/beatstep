@@ -8,6 +8,8 @@ struct SettingsView: View {
     @State private var zeroBPMFallback: ZeroBPMFallback = .saved
     @AppStorage("hasRequestedHealth") private var hasRequestedHealth = false
     @AppStorage("hasRequestedMotion") private var hasRequestedMotion = false
+    @AppStorage("sensorLabEnabled") private var sensorLabEnabled = false
+    @State private var debugTapCount = 0
 
     var body: some View {
         List {
@@ -96,6 +98,30 @@ struct SettingsView: View {
                         Spacer()
                     }
                 }
+            }
+
+            // Sensor Lab (hidden until activated)
+            if sensorLabEnabled {
+                Section {
+                    NavigationLink("Sensor Lab") {
+                        SensorLabView()
+                    }
+                }
+            }
+
+            // Version footer with hidden debug toggle
+            Section {
+                Text("BeatStep v1.4")
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .onTapGesture {
+                        debugTapCount += 1
+                        if debugTapCount >= 5 {
+                            sensorLabEnabled.toggle()
+                            debugTapCount = 0
+                        }
+                    }
             }
         }
         .navigationTitle("Settings")
