@@ -1,62 +1,54 @@
 # Requirements: BeatStep
 
-**Defined:** 2026-03-24
-**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
+**Defined:** 2026-03-25
+**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
 
-## v1.3 Requirements
+## v1.4 Requirements
 
-Requirements for v1.3 "In The Zone" milestone. Each maps to roadmap phases.
+Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
-### Run Screen
+### BPM Confidence
 
-- [x] **RUN-01**: User sees a full-screen active run view (three-zone layout: status bar, hero cadence, player area) presented via fullScreenCover when cadence is detected
-- [x] **RUN-02**: User can stop a run only via long-press (2-second hold with visual progress ring), preventing accidental mid-run stops
-- [x] **RUN-03**: User sees current zone name and sync quality badge in the status bar during a run
+- [ ] **CONF-01**: BPM source tracked per cached track (verified / approximate / manual)
+- [ ] **CONF-02**: Existing cached BPM records backfilled with default confidence on migration
+- [ ] **CONF-03**: Playlist view shows confidence badge per track (icon-based: checkmark / tilde / hand)
 
-### Cadence Indicators
+### Tap BPM
 
-- [x] **CAD-01**: User sees a color-coded sync state indicator showing whether cadence is in-sync, drifting, or mismatched with the current song BPM
-- [x] **CAD-02**: User sees a signed delta indicator ("+4 SPM" / "-6 SPM") near the cadence number in guided mode, and sync quality text in free mode
-- [x] **CAD-03**: User sees a zone band visualization showing where current cadence sits within the target zone range (guided mode only)
-- [x] **CAD-04**: User perceives a subtle background color shift based on sync state (in-sync vs drifting) as subconscious feedback
-- [x] **CAD-05**: User sees ramp phase progress (warm-up / at-pace / cool-down) during guided mode runs
+- [ ] **TAP-01**: User can tap along with a song to set its BPM via a large tap area
+- [ ] **TAP-02**: Tap BPM uses rolling 8-interval average with 3-second inactivity reset
+- [ ] **TAP-03**: Erratic taps filtered via outlier rejection with stabilization indicator
 
-### Music Player
+### Zero-BPM Fallback
 
-- [x] **PLR-01**: User sees album art (80pt) for the current track in the integrated run screen player
-- [x] **PLR-02**: User sees song name, artist name, and current track BPM in the player area
-- [x] **PLR-03**: User can play/pause and skip tracks with large touch targets (56pt+) during a run
-- [x] **PLR-04**: User can toggle between 1:1 and 1/2 tempo matching mid-run, which changes how songs are matched to cadence and updates the sync/delta display accordingly
+- [ ] **FALL-01**: User can configure zero-BPM behavior in Settings (skip / play regardless / prompt)
+- [ ] **FALL-02**: Run engine respects configured fallback when encountering nil-BPM tracks
 
-## v2 Requirements
+### Sensor Lab
 
-Deferred to future release. Tracked but not in current roadmap.
+- [ ] **SLAB-01**: Debug screen accessible via hidden settings toggle
+- [ ] **SLAB-02**: Sensor Lab displays raw accelerometer output, cadence, step count, algorithm state
+- [ ] **SLAB-03**: Detection interval configurable from 0.5s to 5s in Sensor Lab
+- [ ] **SLAB-04**: Real-time accelerometer waveform chart in Sensor Lab
 
-### Pause & Lifecycle
+## Future Requirements
 
-- **PAUSE-01**: Deliberate pause/idle state UX with dimmed metrics, ghosted last SPM, music continues playing
-- **TIME-01**: Elapsed run time display in status bar
+### Tap BPM Enhancements
 
-### Platform Extensions
+- **TAP-04**: Half/double tempo detection with user correction suggestion
 
-- **HAP-01**: Haptic feedback on sync state changes (vibrate when entering/leaving sync)
-- **LIVE-01**: Live Activities / Dynamic Island showing cadence + sync state
-- **WATCH-01**: Apple Watch companion with cadence + sync on wrist
+### Zero-BPM Enhancements
+
+- **FALL-03**: Circuit breaker to rate-limit skip behavior on sparse playlists
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
-
 | Feature | Reason |
 |---------|--------|
-| Elapsed run timer | No workout-tracking feel -- BeatStep is about music sync, not fitness metrics |
-| Auto-pause music on cadence drop | Music continues during stops; pausing feels broken at traffic lights |
-| Distance / pace / calories | Users have Strava, Apple Fitness -- BeatStep is the music-sync layer |
-| Heart rate display | Requires HealthKit continuous reading, competes for screen real estate |
-| Metronome / audio click | The music beat IS the pacing guide -- that's the whole product |
-| Song queue preview | Adaptive model doesn't know next track until current ends |
-| Real-time tempo stretching | Queue matching preserves audio quality -- deliberate design choice |
-| Complex gesture controls | Sweaty fingers, bouncing phone, gloves -- large tap targets only |
+| Mid-run tap BPM | Disruptive to running flow — BPM should be set in library before the run |
+| Microphone-based BPM detection | Fragile, heavy, unreliable in outdoor environments |
+| Text field BPM input | No confidence signal — tapping gives rhythm-verified data |
+| Sensor data export | Scope creep into analytics — debug screen is for live testing only |
 
 ## Traceability
 
@@ -64,24 +56,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RUN-01 | Phase 16 | Complete |
-| RUN-02 | Phase 16 | Complete |
-| RUN-03 | Phase 14 | Complete |
-| CAD-01 | Phase 13 | Complete |
-| CAD-02 | Phase 13 | Complete |
-| CAD-03 | Phase 14 | Complete |
-| CAD-04 | Phase 14 | Complete |
-| CAD-05 | Phase 14 | Complete |
-| PLR-01 | Phase 15 | Complete |
-| PLR-02 | Phase 15 | Complete |
-| PLR-03 | Phase 15 | Complete |
-| PLR-04 | Phase 17 | Complete |
+| CONF-01 | — | Pending |
+| CONF-02 | — | Pending |
+| CONF-03 | — | Pending |
+| TAP-01 | — | Pending |
+| TAP-02 | — | Pending |
+| TAP-03 | — | Pending |
+| FALL-01 | — | Pending |
+| FALL-02 | — | Pending |
+| SLAB-01 | — | Pending |
+| SLAB-02 | — | Pending |
+| SLAB-03 | — | Pending |
+| SLAB-04 | — | Pending |
 
 **Coverage:**
-- v1.3 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0
+- v1.4 requirements: 12 total
+- Mapped to phases: 0
+- Unmapped: 12 ⚠️
 
 ---
-*Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after roadmap creation*
+*Requirements defined: 2026-03-25*
+*Last updated: 2026-03-25 after initial definition*
