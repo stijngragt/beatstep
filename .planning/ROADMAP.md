@@ -139,4 +139,4 @@ Plans:
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
 | 24. Fix Run Tab Start | 1/1 | Complete    | 2026-03-25 | - |
 | 25. Consolidate Run Entry | 1/1 | Complete    | 2026-03-25 | - |
-| 26. Onboarding Analysis Step | 1/1 | Complete   | 2026-03-25 | - |
+| 26. Onboarding Analysis Step | 1/1 | Complete    | 2026-03-25 | - |
