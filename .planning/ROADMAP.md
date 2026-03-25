@@ -133,6 +133,6 @@ Plans:
 | 21. Zero-BPM Fallback | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 22. Sensor Lab | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
-| 24. Fix Run Tab Start | 1/1 | Complete   | 2026-03-25 | - |
+| 24. Fix Run Tab Start | 1/1 | Complete    | 2026-03-25 | - |
 | 25. Consolidate Run Entry | v1.5 | 0/0 | Not started | - |
 | 26. Onboarding Analysis Step | v1.5 | 0/0 | Not started | - |
