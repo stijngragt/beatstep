@@ -58,6 +58,8 @@
 		9E3E6ED089D66D6923E164F3 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58BE84507EFFB1F8F27EEB2B /* HealthKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		9E8F37C2F5E7B7BEE6189208 /* RunTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37B727349C715B8A72C4C82 /* RunTabView.swift */; };
 		A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFD8006EAEC905C01610361 /* ScannedPlaylist.swift */; };
+		A527020101010101A5270201 /* BSHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527020101010101A5270101 /* BSHaptics.swift */; };
+		A527020101010101A5270202 /* BSAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527020101010101A5270102 /* BSAnimation.swift */; };
 		A54A585BC0B9BD2D7047D90C /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19109252715D2142AD8C1454 /* DesignTokens.swift */; };
 		A68DABD7AFB799E07674AEB4 /* RunStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F954E8A3B5FBA64DE0D89F3 /* RunStatusBar.swift */; };
 		A905FE474653C6DD0C2BF51D /* PlaylistListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */; };
@@ -128,6 +130,8 @@
 		1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneSettingsRow.swift; sourceTree = "<group>"; };
 		15B6030B08CCF44B01BD0A2D /* GetSongBPMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSongBPMService.swift; sourceTree = "<group>"; };
 		19109252715D2142AD8C1454 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		A527020101010101A5270101 /* BSHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BSHaptics.swift; sourceTree = "<group>"; };
+		A527020101010101A5270102 /* BSAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BSAnimation.swift; sourceTree = "<group>"; };
 		1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDisplayTests.swift; sourceTree = "<group>"; };
 		1B463417D83CA9C68F306968 /* RampPhaseIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RampPhaseIndicator.swift; sourceTree = "<group>"; };
 		1DCB7943A6528D4DCF3EF8E8 /* BPMCacheServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheServiceTests.swift; sourceTree = "<group>"; };
@@ -464,6 +468,8 @@
 		EA29CB9BEAD29F976AB3BBB8 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
+				A527020101010101A5270102 /* BSAnimation.swift */,
+				A527020101010101A5270101 /* BSHaptics.swift */,
 				19109252715D2142AD8C1454 /* DesignTokens.swift */,
 			);
 			path = DesignSystem;
@@ -632,6 +638,8 @@
 				2D92B9B9B8CDCDCA222FD14A /* CadenceDisplayView.swift in Sources */,
 				C7473BF2D1FC10DA16C41CF4 /* CadenceService.swift in Sources */,
 				2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */,
+				A527020101010101A5270202 /* BSAnimation.swift in Sources */,
+				A527020101010101A5270201 /* BSHaptics.swift in Sources */,
 				A54A585BC0B9BD2D7047D90C /* DesignTokens.swift in Sources */,
 				1B9FE1F5B9EA81A1566F6282 /* GetSongBPMResponse.swift in Sources */,
 				5AF731B4891A953BB440EA69 /* GetSongBPMService.swift in Sources */,
