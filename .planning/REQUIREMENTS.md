@@ -17,7 +17,7 @@ Requirements for v1.5 "One Way In". Each maps to roadmap phases.
 
 ### Onboarding
 
-- [ ] **ONBD-01**: After Spotify and Health permissions, onboarding includes a step to analyze a first playlist before completion
+- [x] **ONBD-01**: After Spotify and Health permissions, onboarding includes a step to analyze a first playlist before completion
 
 ## Future Requirements
 
@@ -45,7 +45,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FLOW-03 | Phase 25 | Complete |
 | FLOW-04 | Phase 25 | Complete |
 | FLOW-05 | Phase 24 | Complete |
-| ONBD-01 | Phase 26 | Pending |
+| ONBD-01 | Phase 26 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 6 total

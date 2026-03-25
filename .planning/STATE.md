@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: One Way In
 status: completed
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-03-25T20:05:07.297Z"
-last_activity: 2026-03-25 -- Phase 25 Plan 01 complete (consolidate run entry to Run tab)
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-03-25T20:26:52.834Z"
+last_activity: 2026-03-25 -- Phase 26 Plan 01 complete (onboarding playlist analysis step)
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 67
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 25 - Consolidate Run Entry
+**Current focus:** Phase 26 - Onboarding Analysis Step
 
 ## Current Position
 
-Phase: 25 of 26 (Consolidate Run Entry)
+Phase: 26 of 26 (Onboarding Analysis Step)
 Plan: 1 of 1 in current phase (COMPLETE)
-Status: Phase 25 complete
-Last activity: 2026-03-25 -- Phase 25 Plan 01 complete (consolidate run entry to Run tab)
+Status: Phase 26 complete
+Last activity: 2026-03-25 -- Phase 26 Plan 01 complete (onboarding playlist analysis step)
 
-Progress: [██████....] 67% (2/3 v1.5 phases)
+Progress: [██████████] 100% (3/3 v1.5 phases)
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████....] 67% (2/3 v1.5 phases)
 |-------|------|----------|
 | 24-01 | fix-run-tab-start | 24min |
 | 25-01 | consolidate-run-entry | 18min |
+| 26-01 | onboarding-analysis-step | 2min |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [v1.5]: Present ActiveRunView immediately on tap, not on cadence state change (Spotify bounce causes missed .onChange)
 - [v1.5]: Tab enum with selection binding for programmatic tab switching
 - [v1.5]: SelectedTabKey EnvironmentKey over deep binding chains for cross-tab navigation
+- [v1.5]: No skip button on onboarding playlist step -- first run requires analyzed playlist
+- [v1.5]: Fetch only 20 playlists for onboarding picker to avoid pagination complexity
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T20:00:08Z
-Stopped at: Completed 25-01-PLAN.md
-Resume file: .planning/phases/25-consolidate-run-entry/25-01-SUMMARY.md
+Last session: 2026-03-25T20:26:52.830Z
+Stopped at: Completed 26-01-PLAN.md
+Resume file: .planning/phases/26-onboarding-analysis-step/26-01-SUMMARY.md

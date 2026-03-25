@@ -70,7 +70,7 @@
 
 - [x] **Phase 24: Fix Run Tab Start** - Make the Run tab Start Run button work reliably with last-used settings pre-loaded (completed 2026-03-25)
 - [x] **Phase 25: Consolidate Run Entry** - Kill the old run screen, route all run initiation through Run tab (completed 2026-03-25)
-- [ ] **Phase 26: Onboarding Analysis Step** - Add first-playlist analysis to onboarding flow before completion
+- [x] **Phase 26: Onboarding Analysis Step** - Add first-playlist analysis to onboarding flow before completion (completed 2026-03-25)
 
 ## Phase Details
 
@@ -139,4 +139,4 @@ Plans:
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
 | 24. Fix Run Tab Start | 1/1 | Complete    | 2026-03-25 | - |
 | 25. Consolidate Run Entry | 1/1 | Complete    | 2026-03-25 | - |
-| 26. Onboarding Analysis Step | v1.5 | 0/1 | Not started | - |
+| 26. Onboarding Analysis Step | 1/1 | Complete   | 2026-03-25 | - |
