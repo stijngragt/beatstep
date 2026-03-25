@@ -16,8 +16,12 @@ struct OnboardingFlow: View {
                         .id(1)
                         .containerRelativeFrame([.horizontal])
 
-                    OnboardingZonesView(onComplete: complete)
+                    OnboardingPlaylistView(onContinue: { advanceTo(3, proxy: proxy) })
                         .id(2)
+                        .containerRelativeFrame([.horizontal])
+
+                    OnboardingZonesView(onComplete: complete)
+                        .id(3)
                         .containerRelativeFrame([.horizontal])
                 }
                 .scrollTargetLayout()
