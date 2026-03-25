@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: active
-stopped_at: Roadmap created
-last_updated: "2026-03-25T10:00:00.000Z"
+status: planning
+stopped_at: Phase 18 context gathered
+last_updated: "2026-03-25T08:43:40.822Z"
 last_activity: 2026-03-25 -- Roadmap created for v1.4
 progress:
   total_phases: 5
@@ -59,6 +59,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: Roadmap created, ready to plan Phase 18
-Resume file: None
+Last session: 2026-03-25T08:43:40.818Z
+Stopped at: Phase 18 context gathered
+Resume file: .planning/phases/18-bpm-confidence-model/18-CONTEXT.md
