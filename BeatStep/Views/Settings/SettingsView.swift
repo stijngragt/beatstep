@@ -5,6 +5,7 @@ import SwiftUI
 struct SettingsView: View {
     private var authService: SpotifyAuthService { .shared }
     @State private var zones: [RunZone] = RunZone.saved
+    @State private var zeroBPMFallback: ZeroBPMFallback = .saved
     @AppStorage("hasRequestedHealth") private var hasRequestedHealth = false
     @AppStorage("hasRequestedMotion") private var hasRequestedMotion = false
 
@@ -42,6 +43,15 @@ struct SettingsView: View {
                     RunZone.resetToDefaults()
                 }
                 .foregroundStyle(Color.accent)
+            }
+
+            // Playback section
+            Section("Playback") {
+                Picker("No-BPM Tracks", selection: $zeroBPMFallback) {
+                    ForEach(ZeroBPMFallback.allCases, id: \.self) { option in
+                        Text(option.displayName).tag(option)
+                    }
+                }
             }
 
             // Permissions section
@@ -92,6 +102,9 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: zones) { _, newValue in
             RunZone.saveAll(newValue)
+        }
+        .onChange(of: zeroBPMFallback) { _, newValue in
+            newValue.save()
         }
     }
 }
