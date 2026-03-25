@@ -99,10 +99,11 @@ Plans:
   2. BPM calculation stabilizes after 8 taps using a rolling average, with a visual stability indicator
   3. Erratic taps (outliers) are rejected without corrupting the calculated BPM
   4. After saving a tapped BPM, the track immediately shows a manual confidence badge in the playlist
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 20-01: TBD
+- [ ] 20-01-PLAN.md -- TDD: TapBPMEngine pure-logic class (rolling average, outlier rejection, inactivity reset)
+- [ ] 20-02-PLAN.md -- TapBPMView half-sheet UI + TrackRow badge tap wiring + visual checkpoint
 
 ### Phase 21: Zero-BPM Fallback
 **Goal**: Users control what happens when the run engine encounters tracks without BPM data
@@ -159,6 +160,6 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 18. BPM Confidence Model | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 19. Confidence Badges | 2/2 | Complete    | 2026-03-25 | - |
-| 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
+| 20. Tap BPM Input | v1.4 | 0/2 | Not started | - |
 | 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
 | 22. Sensor Lab | v1.4 | 0/? | Not started | - |
