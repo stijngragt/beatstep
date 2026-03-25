@@ -106,7 +106,9 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. After granting Spotify and Health permissions, user sees a step to pick and analyze their first playlist
   2. User completes onboarding with at least one analyzed playlist available for their first run
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 26-01-PLAN.md -- Add playlist picker and BPM analysis step to onboarding flow
 
 ## Progress
 
@@ -137,4 +139,4 @@ Plans:
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
 | 24. Fix Run Tab Start | 1/1 | Complete    | 2026-03-25 | - |
 | 25. Consolidate Run Entry | 1/1 | Complete    | 2026-03-25 | - |
-| 26. Onboarding Analysis Step | v1.5 | 0/0 | Not started | - |
+| 26. Onboarding Analysis Step | v1.5 | 0/1 | Not started | - |
