@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: planning
-stopped_at: Phase 18 context gathered
-last_updated: "2026-03-25T08:43:40.822Z"
-last_activity: 2026-03-25 -- Roadmap created for v1.4
+status: executing
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-25T09:16:31Z"
+last_activity: 2026-03-25 -- Phase 18 Plan 01 complete
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 10
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 18 of 22 (BPM Confidence Model) -- first of 5 v1.4 phases
-Plan: --
-Status: Ready to plan
-Last activity: 2026-03-25 -- Roadmap created for v1.4
+Plan: 1 of 2 complete
+Status: Executing
+Last activity: 2026-03-25 -- Phase 18 Plan 01 complete
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -47,6 +47,10 @@ Progress: [░░░░░░░░░░] 0%
 
 Full decision log in PROJECT.md Key Decisions table.
 
+- [18-01] Lazy backfill pattern: nil raw + non-nil bpm returns .verified/.api without migration
+- [18-01] Write paths use confidenceRaw (String?) directly, never computed property
+- [18-01] Updated existing test files in 18-01 (originally 18-02 scope) since removing cache() broke compilation
+
 ### Pending Todos
 
 None.
@@ -59,6 +63,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T08:43:40.818Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-bpm-confidence-model/18-CONTEXT.md
+Last session: 2026-03-25T09:16:31Z
+Stopped at: Completed 18-01-PLAN.md
+Resume file: .planning/phases/18-bpm-confidence-model/18-01-SUMMARY.md

@@ -9,8 +9,8 @@ Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
 ### BPM Confidence
 
-- [ ] **CONF-01**: BPM source tracked per cached track (verified / approximate / manual)
-- [ ] **CONF-02**: Existing cached BPM records backfilled with default confidence on migration
+- [x] **CONF-01**: BPM source tracked per cached track (verified / approximate / manual)
+- [x] **CONF-02**: Existing cached BPM records backfilled with default confidence on migration
 - [ ] **CONF-03**: Playlist view shows confidence badge per track (icon-based: checkmark / tilde / hand)
 
 ### Tap BPM
@@ -56,8 +56,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONF-01 | Phase 18 | Pending |
-| CONF-02 | Phase 18 | Pending |
+| CONF-01 | Phase 18 | Complete |
+| CONF-02 | Phase 18 | Complete |
 | CONF-03 | Phase 19 | Pending |
 | TAP-01 | Phase 20 | Pending |
 | TAP-02 | Phase 20 | Pending |
