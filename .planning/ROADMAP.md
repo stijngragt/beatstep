@@ -95,7 +95,9 @@ Plans:
   2. The old playlist-initiated run screen (green button menu) no longer exists in the codebase
   3. There is no way to start a run from any screen other than the Run tab
   4. After navigating from Library to Run tab, user sees the selected playlist and can start immediately
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 25-01-PLAN.md -- Add CTA button to PlaylistDetailView, delete RunView.swift, consolidate run entry
 
 ### Phase 26: Onboarding Analysis Step
 **Goal**: New users have an analyzed playlist ready before they finish onboarding
@@ -134,5 +136,5 @@ Plans:
 | 22. Sensor Lab | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
 | 24. Fix Run Tab Start | 1/1 | Complete    | 2026-03-25 | - |
-| 25. Consolidate Run Entry | v1.5 | 0/0 | Not started | - |
+| 25. Consolidate Run Entry | v1.5 | 0/1 | Not started | - |
 | 26. Onboarding Analysis Step | v1.5 | 0/0 | Not started | - |
