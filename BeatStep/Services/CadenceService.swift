@@ -8,6 +8,7 @@ final class CadenceService {
     // MARK: - Observable State
 
     var currentSPM: Int = 0
+    var stepCount: Int = 0
     var trend: CadenceTrend = .steady
     var state: CadenceState = .idle
     var permissionDenied: Bool = false
@@ -76,6 +77,7 @@ final class CadenceService {
         previousStepTime = nil
         state = .idle
         currentSPM = 0
+        stepCount = 0
         trend = .steady
     }
 
@@ -113,6 +115,7 @@ final class CadenceService {
     // MARK: - Private
 
     private func handlePedometerData(_ data: CMPedometerData) {
+        stepCount = data.numberOfSteps.intValue
         let now = Date()
         lastStepTime = now
 
