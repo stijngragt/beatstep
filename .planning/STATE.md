@@ -4,13 +4,13 @@ milestone: v1.5
 milestone_name: One Way In
 status: completed
 stopped_at: Phase 25 context gathered
-last_updated: "2026-03-25T19:02:39.275Z"
-last_activity: 2026-03-25 -- Phase 24 Plan 01 complete (Run tab Start Run wiring)
+last_updated: "2026-03-25T20:00:56.717Z"
+last_activity: 2026-03-25 -- Phase 25 Plan 01 complete (consolidate run entry to Run tab)
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
   percent: 33
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 24 - Fix Run Tab Start
+**Current focus:** Phase 25 - Consolidate Run Entry
 
 ## Current Position
 
-Phase: 24 of 26 (Fix Run Tab Start)
+Phase: 25 of 26 (Consolidate Run Entry)
 Plan: 1 of 1 in current phase (COMPLETE)
-Status: Phase 24 complete
-Last activity: 2026-03-25 -- Phase 24 Plan 01 complete (Run tab Start Run wiring)
+Status: Phase 25 complete
+Last activity: 2026-03-25 -- Phase 25 Plan 01 complete (consolidate run entry to Run tab)
 
-Progress: [███.......] 33% (1/3 v1.5 phases)
+Progress: [██████....] 67% (2/3 v1.5 phases)
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [███.......] 33% (1/3 v1.5 phases)
 | Phase | Plan | Duration |
 |-------|------|----------|
 | 24-01 | fix-run-tab-start | 24min |
+| 25-01 | consolidate-run-entry | 18min |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - [v1.2]: AppState enum with static resolve() for routing
 - [v1.5]: Present ActiveRunView immediately on tap, not on cadence state change (Spotify bounce causes missed .onChange)
 - [v1.5]: Tab enum with selection binding for programmatic tab switching
+- [v1.5]: SelectedTabKey EnvironmentKey over deep binding chains for cross-tab navigation
 
 ### Pending Todos
 
@@ -81,11 +83,10 @@ None.
 
 ### Blockers/Concerns
 
-- Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
 
 ## Session Continuity
 
-Last session: 2026-03-25T19:02:39.272Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-consolidate-run-entry/25-CONTEXT.md
+Last session: 2026-03-25T20:00:08Z
+Stopped at: Completed 25-01-PLAN.md
+Resume file: .planning/phases/25-consolidate-run-entry/25-01-SUMMARY.md
