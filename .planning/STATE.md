@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: in_progress
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-25T11:11:16Z"
-last_activity: 2026-03-25 -- Plan 20-01 complete (TapBPMEngine with TDD)
+status: executing
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-03-25T11:42:28Z"
+last_activity: 2026-03-25 -- Plan 20-02 complete (TapBPMView UI + badge wiring)
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 50
 ---
 
 # Project State
@@ -26,27 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 20 of 22 (Tap BPM Input) -- third of 5 v1.4 phases
-Plan: 1 of 2 complete
-Status: In Progress
-Last activity: 2026-03-25 -- Plan 20-01 complete (TapBPMEngine with TDD)
+Plan: 2 of 2 complete
+Status: Phase Complete
+Last activity: 2026-03-25 -- Plan 20-02 complete (TapBPMView UI + badge wiring)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 3 v1.4)
+- Total plans completed: 36 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 4 v1.4)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
 - v1.3: 2 days, 8 plans
-- v1.4: in progress, 3 plans
+- v1.4: in progress, 4 plans
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 19-01 | confidence-badge-data | 6min | 2 | 6 |
 | 19-02 | confidence-badges-view | 7min | 2 | 1 |
 | 20-01 | tap-bpm-engine | 7min | 2 | 3 |
+| 20-02 | tap-bpm-view | 28min | 2 | 3 |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Full decision log in PROJECT.md Key Decisions table.
 - [20-01] 40% median-deviation threshold for outlier rejection (tunable constant)
 - [20-01] Boundary rejection at <0.2s and >2.0s before median check
 - [20-01] tapCount tracks tap events (1-indexed), not intervals
+- [20-02] Button wrapping on badge for gesture separation -- badge tap opens sheet, row tap plays track
+- [20-02] ShakeModifier with offset-based animation for outlier rejection visual feedback
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T11:11:16Z
-Stopped at: Completed 20-01-PLAN.md
-Resume file: .planning/phases/20-tap-bpm-input/20-02-PLAN.md
+Last session: 2026-03-25T11:42:28Z
+Stopped at: Completed 20-02-PLAN.md (Phase 20 complete)
+Resume file: Next phase (21)
