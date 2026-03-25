@@ -164,4 +164,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 19. Confidence Badges | 2/2 | Complete    | 2026-03-25 | - |
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
-| 22. Sensor Lab | v1.4 | 0/2 | Not started | - |
+| 22. Sensor Lab | 1/2 | In Progress|  | - |

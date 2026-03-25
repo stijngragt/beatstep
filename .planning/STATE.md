@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: completed
-stopped_at: Completed 21-02-PLAN.md (Phase 21 complete)
-last_updated: "2026-03-25T12:35:39.340Z"
-last_activity: 2026-03-25 -- Plan 21-02 complete (ZeroBPMFallback wired into RunEngineService)
+status: executing
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-03-25T12:55:59.791Z"
+last_activity: 2026-03-25 -- Plan 22-01 complete (SensorLabService + AccelerometerSample model)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 10
+  completed_plans: 9
+  percent: 94
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 21 - Zero-BPM Fallback
+**Current focus:** Phase 22 - Sensor Lab
 
 ## Current Position
 
-Phase: 21 of 22 (Zero-BPM Fallback) -- fourth of 5 v1.4 phases
-Plan: 2 of 2 complete
-Status: Complete
-Last activity: 2026-03-25 -- Plan 21-02 complete (ZeroBPMFallback wired into RunEngineService)
+Phase: 22 of 22 (Sensor Lab) -- fifth of 5 v1.4 phases
+Plan: 1 of 2 complete
+Status: In Progress
+Last activity: 2026-03-25 -- Plan 22-01 complete (SensorLabService + AccelerometerSample model)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [██████████] 100%
 | 20-02 | tap-bpm-view | 28min | 2 | 3 |
 | 21-01 | zero-bpm-fallback-model | 9min | 2 | 4 |
 | 21-02 | zero-bpm-fallback-engine | 6min | 1 | 2 |
+| 22-01 | sensor-lab-service | 4min | 1 | 4 |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Full decision log in PROJECT.md Key Decisions table.
 - [21-01] Default fallback is .skip preserving current behavior for existing users
 - [21-02] Separate playedNilBPMIDs set for independent nil-BPM pool cycling
 - [21-02] Prompt fallback shares playRegardless code path (plays track) -- future phase adds UI overlay
+- [22-01] Internal init + internal appendSample for testability without hardware
+- [22-01] Dual appendSample overloads: CMAccelerometerData for production, AccelerometerSample for tests
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T12:29:30Z
-Stopped at: Completed 21-02-PLAN.md (Phase 21 complete)
-Resume file: Next milestone phase
+Last session: 2026-03-25T12:55:59.789Z
+Stopped at: Completed 22-01-PLAN.md
+Resume file: .planning/phases/22-sensor-lab/22-02-PLAN.md
