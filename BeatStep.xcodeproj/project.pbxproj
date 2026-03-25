@@ -54,7 +54,6 @@
 		8759BAC4EDE9798BF8F2A1A3 /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */; };
 		8866DBCB44FCC7BFDAA6861C /* CadenceDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */; };
 		9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */; };
-		96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51071A444A70CF8FE4921C0E /* RunView.swift */; };
 		9B31ABED93B30F2521BD3FFB /* RunEngineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */; };
 		9E3E6ED089D66D6923E164F3 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58BE84507EFFB1F8F27EEB2B /* HealthKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		9E8F37C2F5E7B7BEE6189208 /* RunTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37B727349C715B8A72C4C82 /* RunTabView.swift */; };
@@ -149,7 +148,6 @@
 		4A5B70810916CFBD9793F505 /* MockSpotifyResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSpotifyResponses.swift; sourceTree = "<group>"; };
 		4F954E8A3B5FBA64DE0D89F3 /* RunStatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunStatusBar.swift; sourceTree = "<group>"; };
 		50AD42E658902F242BCCC303 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		51071A444A70CF8FE4921C0E /* RunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
 		5818164758316FF4BD59C44C /* RunSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSession.swift; sourceTree = "<group>"; };
 		58BE84507EFFB1F8F27EEB2B /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		5B62BEAC6E25BB5FF9AC45F2 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -435,7 +433,6 @@
 				1B463417D83CA9C68F306968 /* RampPhaseIndicator.swift */,
 				4F954E8A3B5FBA64DE0D89F3 /* RunStatusBar.swift */,
 				E37B727349C715B8A72C4C82 /* RunTabView.swift */,
-				51071A444A70CF8FE4921C0E /* RunView.swift */,
 				ECC7DFDB6E911FE4107BCB40 /* SyncBackgroundModifier.swift */,
 				9F53B43A668691E6914501E3 /* TolerancePicker.swift */,
 				C612EE6690EA5303C11C2A3B /* ZoneBandView.swift */,
@@ -659,7 +656,6 @@
 				B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */,
 				A68DABD7AFB799E07674AEB4 /* RunStatusBar.swift in Sources */,
 				9E8F37C2F5E7B7BEE6189208 /* RunTabView.swift in Sources */,
-				96335669F0A8AD75E3EB5206 /* RunView.swift in Sources */,
 				5611DC72ADDF5069C97F3B38 /* RunZone.swift in Sources */,
 				A2362D6DF545D10B9C1A823C /* ScannedPlaylist.swift in Sources */,
 				6BEDB7282D5E48187B944D80 /* Secrets.swift in Sources */,
