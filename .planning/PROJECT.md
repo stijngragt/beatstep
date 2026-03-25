@@ -37,19 +37,22 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Zone BPM defaults with user-configurable overrides in Settings — v1.2
 - ✓ Full-width Run CTA at bottom of Run tab — v1.2
 - ✓ BPM tolerance as segmented control showing ±BPM deltas (±3, ±7, ±12) — v1.2
+- ✓ Full-screen active run view with three-zone layout via fullScreenCover — v1.3
+- ✓ Long-press stop with 2-second progress ring preventing accidental stops — v1.3
+- ✓ Zone name and sync quality badge in status bar — v1.3
+- ✓ Color-coded sync state indicator (in-sync/drifting/mismatched) — v1.3
+- ✓ Signed cadence delta indicator (+N/-N SPM) — v1.3
+- ✓ Zone band visualization showing cadence position within target range — v1.3
+- ✓ Subtle background color shift based on sync state — v1.3
+- ✓ Ramp phase progress indicator (warm-up/at-pace/cool-down) — v1.3
+- ✓ 80pt album art in run screen player — v1.3
+- ✓ Song name, artist, BPM display in player area — v1.3
+- ✓ Play/pause and skip with 56pt+ touch targets — v1.3
+- ✓ Toggle 1:1/1:2 tempo matching mid-run with persistence — v1.3
 
 ### Active
 
-## Current Milestone: v1.3 In The Zone
-
-**Goal:** Build the core running experience — a focused run screen with integrated music player, nuanced cadence feedback, half-tempo matching, and deliberate pause state.
-
-**Target features:**
-- Rebuilt active run screen (big cadence center-stage, status bar with zone/BPM match/time)
-- Integrated music player with album art, song/artist, playback controls, visible BPM
-- Nuanced cadence indicators (zone band, delta "+4 spm", color shift for sync state)
-- Half-tempo matching mode (1:1 vs ½ toggle, switchable mid-run)
-- Pause/idle state UX when cadence stops (deliberate design, not broken-looking)
+(None — next milestone requirements TBD)
 
 ### Out of Scope
 
@@ -63,13 +66,13 @@ When you run, your music should move with you — every footstrike landing on th
 
 ## Context
 
-Shipped v1.2 with 6,376 LOC Swift across 12 phases (5 MVP + 4 design + 3 flow).
+Shipped v1.3 with 7,725 LOC Swift across 17 phases (5 MVP + 4 design + 3 flow + 5 run experience).
 Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache.
 
 Key architecture:
 - `AppState` — enum with `resolve()` gating onboarding → login → authenticated
 - `OnboardingFlow` — 3-screen forward-only ScrollView (Spotify, Health/Motion, Zones)
-- `RunEngineService` — orchestrator: cadence monitor, song-end monitor, BPM matching, ramp state machine
+- `RunEngineService` — orchestrator: cadence monitor, song-end monitor, BPM matching, ramp state machine, syncQuality/cadenceDelta/tempoMode reactive chain
 - `RunZone` — struct with UserDefaults persistence, Z1-Z5 defaults + user-configurable BPM
 - `ZonePickerView` — horizontal capsule picker replacing PacePresetPicker + ModePicker
 - `BPMCacheService` — SwiftData-backed local BPM + danceability cache
@@ -77,12 +80,17 @@ Key architecture:
 - `BPMDiscoveryService` — on-demand Spotify catalog search when pool runs low
 - `CadenceService` — CMPedometer wrapper with rolling average smoothing
 - `LibraryScanService` — playlist BPM scanning with per-playlist progress tracking
-- `DesignTokens.swift` — centralized Color, Font, Spacing, Radius, ComponentSize tokens
-- `ContentView` — AppState-gated TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset
+- `DesignTokens.swift` — centralized Color, Font, Spacing, Radius, ComponentSize tokens + sync-state color aliases
+- `ContentView` — AppState-gated TabView with Library/Run/Settings tabs, global MiniPlayer safeAreaInset (hidden during active run)
+- `ActiveRunView` — full-screen three-zone composition (status bar, hero cadence, player) via fullScreenCover
+- `LongPressStopButton` — 2-second timer-based progress ring with DragGesture cancel
+- `RunPlayerView` — 80pt album art, track info, BPM, 56pt+ playback controls
+- `SyncQuality` — enum with threshold computation from cadence delta and tolerance
+- `TempoMode` — 1:1/1:2 enum with UserDefaults persistence
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
 
-Known tech debt from v1.1 (carried): 5 unused ComponentSize tokens, LastRunPlaylist.id written but unread.
+Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation (cosmetic).
 
 ## Constraints
 
@@ -120,10 +128,16 @@ Known tech debt from v1.1 (carried): 5 unused ComponentSize tokens, LastRunPlayl
 | ScrollViewReader over ScrollPosition | iOS 17 compat — ScrollPosition requires iOS 18+ | ✓ Good — forward-only pattern still works |
 | HealthKit read-only permission check via AppStorage flag | HKAuthorizationStatus always returns .notDetermined for read types | ✓ Good — avoids misleading "Denied" display |
 | Onboarding last (after features built) | Gate built after features behind it work — safer sequencing | ✓ Good — all gated features verified before gate added |
+| Timer-based progress over GestureState | DragGesture.onEnded gives reliable cancel; GestureState resets too eagerly | ✓ Good — progress ring cancel works cleanly |
+| Static progress functions for testability | Same pattern as ZoneBandView.position() and RampPhaseIndicator.progress() | ✓ Good — 5 TDD tests for LongPressStopButton |
+| Direct service reads over @State copies | ActiveRunView reads RunEngineService directly via @Observable — no stale state | ✓ Good — all sync data always current |
+| Tempo toggle always visible | Not gated by guided mode or track presence — user can set preference before first match | ✓ Good — reduces confusion |
+| fullScreenCover over NavigationLink | Prevents swipe-back dismiss, hides tab bar automatically, supports interactiveDismissDisabled | ✓ Good — run screen feels focused |
+| MiniPlayer hidden via isRunActive check | ContentView gates MiniPlayer on !RunEngineService.shared.isRunActive | ✓ Good — no visual clutter during run |
 
 ## Current State
 
-v1.2 shipped. 12 phases complete across 3 milestones. Starting v1.3 In The Zone.
+v1.3 shipped. 17 phases complete across 4 milestones. All 12 v1.3 requirements satisfied. Ready for next milestone.
 
 ---
-*Last updated: 2026-03-24 after v1.3 milestone start*
+*Last updated: 2026-03-25 after v1.3 milestone*

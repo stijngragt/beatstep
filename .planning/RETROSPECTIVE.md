@@ -135,6 +135,52 @@
 
 ---
 
+## Milestone: v1.3 — In The Zone
+
+**Shipped:** 2026-03-25
+**Phases:** 5 | **Plans:** 8 | **Sessions:** ~3
+
+### What Was Built
+- Reactive sync quality engine: SyncQuality/TempoMode models with cadenceDelta → syncQuality → color token reactive chain
+- Color-coded cadence display with signed delta indicator, zone band visualization, ramp phase progress
+- Subtle sync-state background color shift as subconscious feedback
+- Integrated run player: 80pt album art, track info, BPM, 56pt+ playback controls
+- Full-screen ActiveRunView via fullScreenCover with three-zone composition
+- Long-press stop button with 2-second timer-based progress ring
+- Tempo mode toggle (1:1/1:2) with reactive chain and UserDefaults persistence
+
+### What Worked
+- **Component-first architecture** — Building standalone previewable components (Phases 14-15) before assembling them (Phase 16) meant each component was verified independently. Assembly was just wiring, not debugging.
+- **Static functions for testability** — LongPressStopButton.progress(), ZoneBandView.position(), RampPhaseIndicator.progress() all use the same pattern: pure static function → TDD → view calls function. Clean separation.
+- **Direct @Observable reads** — ActiveRunView reads RunEngineService directly instead of passing @State copies. No stale data, no binding plumbing, fewer re-render bugs.
+- **Gap closure workflow** — Audit caught PLR-04 missing UI toggle. Phase 17 added the one button needed. Clean cycle: audit → gap plan → execute → re-audit → pass.
+
+### What Was Inefficient
+- **SUMMARY one-liner fields still not populated** — Fourth milestone in a row. Should accept this won't be fixed and stop checking.
+- **Nyquist VALIDATION.md files remain draft** — All 5 phases have draft validation strategies but none completed. Persistent pattern across all milestones.
+- **PLR-04 gap** — Phase 13 claimed PLR-04 complete based on engine backend alone, but the requirement says "user can toggle." Should verify user-facing requirements against actual UI, not just API presence.
+- **RunView.activeView hardcoded defaults** — Lines 138-143 use .inSync defaults during ~0.3s fullScreenCover animation. Documented and accepted as cosmetic, but could have been wired to live data for correctness.
+
+### Patterns Established
+- fullScreenCover with interactiveDismissDisabled for focused full-screen experiences
+- MiniPlayer hidden via service state check (isRunActive) in ContentView
+- Timer-based long-press with DragGesture.onEnded for reliable cancel detection
+- Cool Down button pattern (full-width capsule, design tokens) reused for tempo toggle
+- Three-zone VStack layout for run screens (status bar, hero content, controls)
+
+### Key Lessons
+1. **Verify user-facing requirements against UI, not just API** — PLR-04 "user can toggle" requires a visible control, not just a mutable property on a service
+2. **Component-first → assembly is the right sequencing** — Build and verify each piece standalone, then compose. Assembly phase is fast and confident.
+3. **Static pure functions are the best testability pattern in SwiftUI** — Extract computation into `static func`, test it, call from view. No view testing frameworks needed.
+4. **Gap closure is a clean, fast cycle** — Audit → plan → execute → re-audit took one small phase. Don't fear gaps; just close them.
+
+### Cost Observations
+- Model mix: ~60% opus (execution), ~30% sonnet (verification/integration), ~10% haiku
+- Sessions: ~3 across 2 days
+- Notable: Phase 17 gap closure (1 plan, 1 file change) completed in ~12 minutes including human verification
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -144,6 +190,7 @@
 | v1.0 | ~8 | 5 | First milestone — established GSD workflow patterns |
 | v1.1 | ~3 | 4 | Parallel execution, faster phases, approval gates |
 | v1.2 | ~2 | 3 | Single-day milestone, features-before-gate sequencing |
+| v1.3 | ~3 | 5 | Component-first assembly, gap closure cycle, reactive chain |
 
 ### Cumulative Quality
 
@@ -152,6 +199,7 @@
 | v1.0 | 28+ | Services layer | 0 (all deps justified) |
 | v1.1 | 35+ | Services + design tokens | 0 (zero new deps) |
 | v1.2 | 50+ | Services + models + onboarding | 0 (HealthKit is first-party) |
+| v1.3 | 70+ | Services + models + views + run screen | 0 (all SwiftUI native) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -162,3 +210,6 @@
 5. Update docs when decisions are locked, not at audit time (v1.1, v1.2)
 6. Thin UI wrappers over existing services beat new infrastructure (v1.2 — zones needed zero RunEngine changes)
 7. Check deployment target during research, not during execution (v1.2 — ScrollPosition/iOS 17 mismatch)
+8. Component-first → assembly sequencing makes composition phases fast and confident (v1.3 — Phase 16 was pure wiring)
+9. Verify user-facing requirements against actual UI, not just backend APIs (v1.3 — PLR-04 gap)
+10. Static pure functions are the best SwiftUI testability pattern — extract, test, call (v1.3 — 3 components used this)

@@ -1,5 +1,27 @@
 # Milestones
 
+## v1.3 In The Zone (Shipped: 2026-03-25)
+
+**Phases completed:** 5 phases, 8 plans
+**Timeline:** 2026-03-24 → 2026-03-25 (2 days)
+**Swift LOC:** 7,725
+**Commits:** 26 feature commits
+
+**Delivered:** Full active run experience — a focused full-screen view composing cadence feedback, zone indicators, music player, and long-press stop, all driven by a reactive sync quality engine.
+
+**Key accomplishments:**
+- Reactive sync quality engine: SyncQuality/TempoMode models with cadenceDelta → syncQuality → color token chain
+- Color-coded cadence display with signed delta indicator, zone band visualization, and ramp phase progress
+- Subtle sync-state background color shift as subconscious feedback during runs
+- Integrated run player with 80pt album art, track info, BPM display, and 56pt+ playback controls
+- Full-screen ActiveRunView via fullScreenCover with three-zone composition and MiniPlayer hiding
+- Long-press stop button with 2-second progress ring preventing accidental mid-run stops
+- 1:1/1:2 tempo mode toggle with reactive chain and UserDefaults persistence
+
+**Git range:** b6c9dd8 → ea48487
+
+---
+
 ## v1.2 The Right Flow (Shipped: 2026-03-24)
 
 **Phases completed:** 3 phases, 6 plans
