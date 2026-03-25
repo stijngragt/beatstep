@@ -9,20 +9,10 @@
 /* Begin PBXBuildFile section */
 		004D1293FB22774C11392D96 /* SpotifyUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EE4DF865E617B08EB3B0741 /* SpotifyUser.swift */; };
 		0C8DBBA9E3C621E23F389E6C /* CachedBPM.swift in Sources */ = {isa = PBXBuildFile; fileRef = E443905E08D5A456779B4A8E /* CachedBPM.swift */; };
-		AA18010101010101AA010202 /* BPMConfidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010201 /* BPMConfidence.swift */; };
-		AA18010101010101AA010204 /* BPMSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010203 /* BPMSource.swift */; };
-		AA18010101010101AA010206 /* BPMConfidenceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */; };
-		AA18010101010101AA010208 /* BPMCacheWritePathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */; };
-		AA19010101010101AA010102 /* BPMInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010101 /* BPMInfo.swift */; };
-		AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */; };
-		AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010101 /* TapBPMEngine.swift */; };
-		AA20020101010101AA010102 /* TapBPMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20020101010101AA010101 /* TapBPMView.swift */; };
-		AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010103 /* TapBPMEngineTests.swift */; };
-		AA21010101010101AA010102 /* ZeroBPMFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21010101010101AA010101 /* ZeroBPMFallback.swift */; };
-		AA21010101010101AA010104 /* ZeroBPMFallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21010101010101AA010103 /* ZeroBPMFallbackTests.swift */; };
 		126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6274DEE660A35399701FA544 /* BeatStepTests.swift */; };
 		1B9FE1F5B9EA81A1566F6282 /* GetSongBPMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D166178F00CF25146611C6FB /* GetSongBPMResponse.swift */; };
 		1D5883183D461FAA314B3D3B /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 1D645A47023EFFA3D0BA0FD8 /* SpotifyiOS */; };
+		219D466C7F9D7A3385E66C4D /* SensorLabServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A69F3C907AA4DCD18E73FB /* SensorLabServiceTests.swift */; };
 		25024A5C45AB2EE524CE7FEF /* GetSongBPMServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C175DDFE0853F22B85082A2F /* GetSongBPMServiceTests.swift */; };
 		273DBBD1724C49CD902EACA8 /* LibraryScanServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACACB0CB17A1CB562DE23B57 /* LibraryScanServiceTests.swift */; };
 		280FE96EC7CE420EBABD5DB8 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35908E9591D37AF34E26E975 /* PlaylistDetailView.swift */; };
@@ -60,6 +50,7 @@
 		75F028DE1CD6EA1E54BF7CDF /* SpotifyPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */; };
 		7DB8106A70167775807F7587 /* SpotifyAPIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */; };
 		7F4BF1B63B24CFBFB608DB82 /* BPMDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC3F32F251BB6DCD836C9C8 /* BPMDiscoveryService.swift */; };
+		86AA40354A11365CD6B49A7B /* AccelerometerSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90286678C1ACD3B0FB816DB5 /* AccelerometerSample.swift */; };
 		8759BAC4EDE9798BF8F2A1A3 /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */; };
 		8866DBCB44FCC7BFDAA6861C /* CadenceDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1928DFA06664B8F820777636 /* CadenceDisplayTests.swift */; };
 		9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1485D4CA5D5D368744A7AB7F /* ZoneSettingsRow.swift */; };
@@ -76,6 +67,17 @@
 		AA16010101010101AA010106 /* ActiveRunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA16010101010101AA010105 /* ActiveRunView.swift */; };
 		AA16010101010101AA010108 /* ActiveRunViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA16010101010101AA010107 /* ActiveRunViewTests.swift */; };
 		AA1715CB53A13EA398630CA5 /* TolerancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F53B43A668691E6914501E3 /* TolerancePicker.swift */; };
+		AA18010101010101AA010202 /* BPMConfidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010201 /* BPMConfidence.swift */; };
+		AA18010101010101AA010204 /* BPMSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010203 /* BPMSource.swift */; };
+		AA18010101010101AA010206 /* BPMConfidenceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */; };
+		AA18010101010101AA010208 /* BPMCacheWritePathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */; };
+		AA19010101010101AA010102 /* BPMInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010101 /* BPMInfo.swift */; };
+		AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */; };
+		AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010101 /* TapBPMEngine.swift */; };
+		AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010103 /* TapBPMEngineTests.swift */; };
+		AA20020101010101AA010102 /* TapBPMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20020101010101AA010101 /* TapBPMView.swift */; };
+		AA21010101010101AA010102 /* ZeroBPMFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21010101010101AA010101 /* ZeroBPMFallback.swift */; };
+		AA21010101010101AA010104 /* ZeroBPMFallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21010101010101AA010103 /* ZeroBPMFallbackTests.swift */; };
 		AB560042A7F124F1EAEA6BCD /* RunMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6A7E5FF989282D490A4C66 /* RunMode.swift */; };
 		B0F8CD7F194C49276D8311DB /* ZoneBandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C612EE6690EA5303C11C2A3B /* ZoneBandView.swift */; };
 		B39834F33F3D1A2801354ECC /* RunSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5818164758316FF4BD59C44C /* RunSession.swift */; };
@@ -94,6 +96,7 @@
 		DCE0AF6AB958364A68FFEEB3 /* RunEngineServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8FAB65795D9B7248FDDCC3 /* RunEngineServiceTests.swift */; };
 		DE8DB96B1BA4595CD4CC3121 /* SpotifyAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */; };
 		E102A2FCE3D19A19B1FA353D /* OnboardingHealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C661C6F478DBD57A4AE3AC /* OnboardingHealthView.swift */; };
+		E1BAF8ECA423B5FD3BF2E1E5 /* SensorLabService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4C759B3C0A18D302F7CD86 /* SensorLabService.swift */; };
 		E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35322426C60E3601F3E3793 /* PaginatedResponse.swift */; };
 		E5A89A415DA8BF17A21F630B /* LastRunPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0D147DC55109AB2F68D3FA /* LastRunPlaylist.swift */; };
 		E9426F5B6C7BC33EC9884D08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42650AD8D9D2C4B7B7328432 /* Assets.xcassets */; };
@@ -136,6 +139,7 @@
 		35908E9591D37AF34E26E975 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
 		37AD5391E7BD4E7DC62371C7 /* SyncQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQualityTests.swift; sourceTree = "<group>"; };
 		39CB3E5849922042AF3236E5 /* RunZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunZone.swift; sourceTree = "<group>"; };
+		3A4C759B3C0A18D302F7CD86 /* SensorLabService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SensorLabService.swift; sourceTree = "<group>"; };
 		3AFD9FA2CFE9DA4FBDF7AF11 /* MiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayerView.swift; sourceTree = "<group>"; };
 		3BC4B4C4C04970C1DC048EF6 /* SpotifyTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyTrack.swift; sourceTree = "<group>"; };
 		40D44E12D78D4C936AFB8784 /* CadenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceServiceTests.swift; sourceTree = "<group>"; };
@@ -154,23 +158,13 @@
 		628426AC68C273B86DFB3E70 /* OnboardingSpotifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSpotifyView.swift; sourceTree = "<group>"; };
 		6E6A871BD7A4D4FD3B2608FA /* PlaylistListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistListView.swift; sourceTree = "<group>"; };
 		70F275CA676707F7D92D5DFD /* BPMTolerance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMTolerance.swift; sourceTree = "<group>"; };
-		AA18010101010101AA010201 /* BPMConfidence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidence.swift; sourceTree = "<group>"; };
-		AA18010101010101AA010203 /* BPMSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMSource.swift; sourceTree = "<group>"; };
-		AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceModelTests.swift; sourceTree = "<group>"; };
-		AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheWritePathTests.swift; sourceTree = "<group>"; };
-		AA19010101010101AA010101 /* BPMInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMInfo.swift; sourceTree = "<group>"; };
-		AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceBadgeTests.swift; sourceTree = "<group>"; };
-		AA20010101010101AA010101 /* TapBPMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngine.swift; sourceTree = "<group>"; };
-		AA20020101010101AA010101 /* TapBPMView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMView.swift; sourceTree = "<group>"; };
-		AA20010101010101AA010103 /* TapBPMEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngineTests.swift; sourceTree = "<group>"; };
-		AA21010101010101AA010101 /* ZeroBPMFallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZeroBPMFallback.swift; sourceTree = "<group>"; };
-		AA21010101010101AA010103 /* ZeroBPMFallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZeroBPMFallbackTests.swift; sourceTree = "<group>"; };
 		78164965B7403F7D8CB49EC3 /* CadenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceService.swift; sourceTree = "<group>"; };
 		813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		82BA911E66F47778D3963B1D /* DesignTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
 		8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDisplayView.swift; sourceTree = "<group>"; };
 		891C60D8560980C95D3F6E61 /* BeatStepApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatStepApp.swift; sourceTree = "<group>"; };
 		8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BeatStepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		90286678C1ACD3B0FB816DB5 /* AccelerometerSample.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccelerometerSample.swift; sourceTree = "<group>"; };
 		921DA572AE78734B11336F42 /* OnboardingZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingZonesView.swift; sourceTree = "<group>"; };
 		9C2C763D25E2D3570F632D0A /* LastRunPlaylistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastRunPlaylistTests.swift; sourceTree = "<group>"; };
 		9F53B43A668691E6914501E3 /* TolerancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TolerancePicker.swift; sourceTree = "<group>"; };
@@ -181,6 +175,17 @@
 		AA16010101010101AA010103 /* LongPressStopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressStopTests.swift; sourceTree = "<group>"; };
 		AA16010101010101AA010105 /* ActiveRunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveRunView.swift; sourceTree = "<group>"; };
 		AA16010101010101AA010107 /* ActiveRunViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveRunViewTests.swift; sourceTree = "<group>"; };
+		AA18010101010101AA010201 /* BPMConfidence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidence.swift; sourceTree = "<group>"; };
+		AA18010101010101AA010203 /* BPMSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMSource.swift; sourceTree = "<group>"; };
+		AA18010101010101AA010205 /* BPMConfidenceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceModelTests.swift; sourceTree = "<group>"; };
+		AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheWritePathTests.swift; sourceTree = "<group>"; };
+		AA19010101010101AA010101 /* BPMInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMInfo.swift; sourceTree = "<group>"; };
+		AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceBadgeTests.swift; sourceTree = "<group>"; };
+		AA20010101010101AA010101 /* TapBPMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngine.swift; sourceTree = "<group>"; };
+		AA20010101010101AA010103 /* TapBPMEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngineTests.swift; sourceTree = "<group>"; };
+		AA20020101010101AA010101 /* TapBPMView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMView.swift; sourceTree = "<group>"; };
+		AA21010101010101AA010101 /* ZeroBPMFallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZeroBPMFallback.swift; sourceTree = "<group>"; };
+		AA21010101010101AA010103 /* ZeroBPMFallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZeroBPMFallbackTests.swift; sourceTree = "<group>"; };
 		AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIService.swift; sourceTree = "<group>"; };
 		ACACB0CB17A1CB562DE23B57 /* LibraryScanServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryScanServiceTests.swift; sourceTree = "<group>"; };
 		AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIServiceTests.swift; sourceTree = "<group>"; };
@@ -204,6 +209,7 @@
 		D5E4FA724FA05CFDAEC22CFC /* SyncQuality+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SyncQuality+Color.swift"; sourceTree = "<group>"; };
 		D6EDD84535C8229D0F349FB0 /* RunEngineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunEngineService.swift; sourceTree = "<group>"; };
 		DDE56539C5B7C96F590519D1 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		E0A69F3C907AA4DCD18E73FB /* SensorLabServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SensorLabServiceTests.swift; sourceTree = "<group>"; };
 		E0F7B31F8718FAA1C5A45EE9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E37B727349C715B8A72C4C82 /* RunTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunTabView.swift; sourceTree = "<group>"; };
 		E3C0C2D8AB5CCAD300237AD7 /* TrackCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackCountTests.swift; sourceTree = "<group>"; };
@@ -280,6 +286,7 @@
 				AA21010101010101AA010103 /* ZeroBPMFallbackTests.swift */,
 				EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */,
 				F927185F0FC2EA44EC85146D /* Mocks */,
+				E0A69F3C907AA4DCD18E73FB /* SensorLabServiceTests.swift */,
 			);
 			path = BeatStepTests;
 			sourceTree = "<group>";
@@ -333,6 +340,7 @@
 				D5E4FA724FA05CFDAEC22CFC /* SyncQuality+Color.swift */,
 				F30F9B6F3CAB252555C44A46 /* TempoMode.swift */,
 				AA21010101010101AA010101 /* ZeroBPMFallback.swift */,
+				90286678C1ACD3B0FB816DB5 /* AccelerometerSample.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -351,6 +359,7 @@
 				F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */,
 				0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */,
 				AA20010101010101AA010101 /* TapBPMEngine.swift */,
+				3A4C759B3C0A18D302F7CD86 /* SensorLabService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -497,8 +506,6 @@
 				9847A7220AF4742C165CA2BE /* PBXTargetDependency */,
 			);
 			name = BeatStepTests;
-			packageProductDependencies = (
-			);
 			productName = BeatStepTests;
 			productReference = 8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -604,6 +611,7 @@
 				AA16010101010101AA010108 /* ActiveRunViewTests.swift in Sources */,
 				AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */,
 				AA21010101010101AA010104 /* ZeroBPMFallbackTests.swift in Sources */,
+				219D466C7F9D7A3385E66C4D /* SensorLabServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,6 +680,8 @@
 				AA16010101010101AA010102 /* LongPressStopButton.swift in Sources */,
 				AA16010101010101AA010106 /* ActiveRunView.swift in Sources */,
 				AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */,
+				86AA40354A11365CD6B49A7B /* AccelerometerSample.swift in Sources */,
+				E1BAF8ECA423B5FD3BF2E1E5 /* SensorLabService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
