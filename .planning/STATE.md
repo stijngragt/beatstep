@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: in-progress
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-03-25T12:20:21.000Z"
-last_activity: 2026-03-25 -- Plan 21-01 complete (ZeroBPMFallback enum + Settings picker)
+status: completed
+stopped_at: Completed 21-02-PLAN.md (Phase 21 complete)
+last_updated: "2026-03-25T12:35:39.340Z"
+last_activity: 2026-03-25 -- Plan 21-02 complete (ZeroBPMFallback wired into RunEngineService)
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
   completed_plans: 8
   percent: 100
