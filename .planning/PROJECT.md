@@ -66,7 +66,17 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(None — defining next milestone)
+<!-- v1.6 Little Big Things -->
+
+- [ ] Contextual scan actions replacing floating scan bar
+- [ ] Library search and filter (All / Analyzed / Unanalyzed)
+- [ ] Run menu redesign with cohesive custom components
+- [ ] Multi-zone selection with merged BPM range
+- [ ] Playlist card redesign with scan quality visibility
+- [ ] Micro-interaction pass (haptics, transitions, loading states)
+- [ ] Settings screen structure (account, defaults, debug, about)
+- [ ] Pre-built skip queue for instant song skipping
+- [ ] Fix library analysis status display bug
 
 ### Out of Scope
 
@@ -153,9 +163,23 @@ BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 202
 Known issues:
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
 
+## Current Milestone: v1.6 Little Big Things
+
+**Goal:** Polish the UI, fix interaction pain points, and make every screen feel intentionally designed.
+
+**Target features:**
+- Contextual scan actions (replace floating bar)
+- Library search + filter
+- Run menu rebuild (custom components, haptics, multi-zone)
+- Playlist card redesign
+- Micro-interaction pass
+- Settings screen structure
+- Instant skip queue
+- Analysis status bug fix
+
 ## Current State
 
-v1.5 shipped. 26 phases complete across 6 milestones. Ready for next milestone.
+v1.6 in progress. 26 phases complete across 6 milestones. 9,482 LOC Swift.
 
 ---
-*Last updated: 2026-03-25 after v1.5 milestone*
+*Last updated: 2026-03-25 after v1.6 milestone start*

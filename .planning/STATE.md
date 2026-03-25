@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between_milestones
-stopped_at: v1.5 milestone complete
-last_updated: "2026-03-25T21:00:00.000Z"
-last_activity: 2026-03-25 -- v1.5 One Way In shipped
+milestone: v1.6
+milestone_name: Little Big Things
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-25T22:00:00.000Z"
+last_activity: 2026-03-25 -- Milestone v1.6 started
 progress:
   total_phases: 0
   completed_phases: 0
@@ -21,13 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Planning next milestone
+**Current focus:** v1.6 Little Big Things — defining requirements
 
 ## Current Position
 
-Milestone: v1.5 One Way In shipped 2026-03-25
-Status: Between milestones — ready for /gsd:new-milestone
-Last activity: 2026-03-25 -- v1.5 One Way In shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-25 — Milestone v1.6 started
 
 ## Performance Metrics
 
