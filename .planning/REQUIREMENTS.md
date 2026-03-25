@@ -15,9 +15,9 @@ Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
 ### Tap BPM
 
-- [ ] **TAP-01**: User can tap along with a song to set its BPM via a large tap area
-- [ ] **TAP-02**: Tap BPM uses rolling 8-interval average with 3-second inactivity reset
-- [ ] **TAP-03**: Erratic taps filtered via outlier rejection with stabilization indicator
+- [x] **TAP-01**: User can tap along with a song to set its BPM via a large tap area
+- [x] **TAP-02**: Tap BPM uses rolling 8-interval average with 3-second inactivity reset
+- [x] **TAP-03**: Erratic taps filtered via outlier rejection with stabilization indicator
 
 ### Zero-BPM Fallback
 
@@ -59,9 +59,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONF-01 | Phase 18 | Complete |
 | CONF-02 | Phase 18 | Complete |
 | CONF-03 | Phase 19 | Complete |
-| TAP-01 | Phase 20 | Pending |
-| TAP-02 | Phase 20 | Pending |
-| TAP-03 | Phase 20 | Pending |
+| TAP-01 | Phase 20 | Complete |
+| TAP-02 | Phase 20 | Complete |
+| TAP-03 | Phase 20 | Complete |
 | FALL-01 | Phase 21 | Pending |
 | FALL-02 | Phase 21 | Pending |
 | SLAB-01 | Phase 22 | Pending |
