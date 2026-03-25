@@ -8,7 +8,7 @@ struct PlaylistDetailView: View {
     @State private var hasMore = true
     @State private var offset = 0
     @State private var error: String?
-    @State private var bpmCache: [String: Int?] = [:]
+    @State private var bpmCache: [String: BPMInfo] = [:]
     @State private var isScanning = false
 
     private let limit = 100
@@ -72,7 +72,7 @@ struct PlaylistDetailView: View {
                     track: track,
                     index: index + 1,
                     isPlaying: playerService.currentTrack?.uri == track.uri,
-                    bpm: bpmCache[track.id].flatMap { $0 }
+                    bpmInfo: bpmCache[track.id] ?? .empty
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -183,7 +183,7 @@ struct PlaylistDetailView: View {
 
             // Load BPMs for new tracks from cache
             for track in newTracks {
-                bpmCache[track.id] = BPMCacheService.shared.getBPM(forTrackID: track.id)
+                bpmCache[track.id] = BPMCacheService.shared.getBPMInfo(forTrackID: track.id)
             }
         } catch {
             self.error = error.localizedDescription
@@ -198,7 +198,7 @@ struct PlaylistDetailView: View {
         await LibraryScanService.shared.scanPlaylist(playlist, tracks: tracks)
         // Reload cache
         for track in tracks {
-            bpmCache[track.id] = BPMCacheService.shared.getBPM(forTrackID: track.id)
+            bpmCache[track.id] = BPMCacheService.shared.getBPMInfo(forTrackID: track.id)
         }
         isScanning = false
     }
@@ -206,7 +206,7 @@ struct PlaylistDetailView: View {
     private func clearBPM() {
         for track in tracks {
             BPMCacheService.shared.clearCache(forTrackID: track.id)
-            bpmCache[track.id] = nil
+            bpmCache[track.id] = .empty
         }
     }
 }
@@ -217,7 +217,7 @@ private struct TrackRow: View {
     let track: SpotifyTrack
     let index: Int
     let isPlaying: Bool
-    let bpm: Int?
+    let bpmInfo: BPMInfo
 
     var body: some View {
         HStack(spacing: Spacing.md) {
@@ -251,18 +251,25 @@ private struct TrackRow: View {
             Spacer()
 
             // BPM badge
-            if let bpm {
-                Text("\(bpm) BPM")
+            if let bpm = bpmInfo.bpm, let confidence = bpmInfo.confidence {
+                HStack(spacing: Spacing.xxs) {
+                    Image(systemName: confidence.iconName)
+                    Text("\(bpm) BPM")
+                }
+                .font(.labelText)
+                .fontWeight(.bold)
+                .foregroundStyle(confidence.color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, Spacing.xxs)
+                .background(Capsule().fill(confidence.color.opacity(0.15)))
+            } else {
+                Text("-- BPM")
                     .font(.labelText)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.stateWarning)
+                    .foregroundStyle(Color.textTertiary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, Spacing.xxs)
-                    .background(Capsule().fill(Color.stateWarning.opacity(0.15)))
-            } else {
-                Text("--")
-                    .font(.labelText)
-                    .foregroundStyle(Color.textSecondary)
+                    .background(Capsule().fill(Color.textTertiary.opacity(0.15)))
             }
 
             // Duration
