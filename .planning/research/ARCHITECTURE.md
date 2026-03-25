@@ -1,448 +1,407 @@
-# Architecture Research
+# Architecture Research: v1.6 Little Big Things Integration
 
-**Domain:** iOS running music app -- v1.4 debug tooling, tap BPM, confidence tracking, zero-BPM fallback
+**Domain:** iOS running music app -- UI polish milestone
 **Researched:** 2026-03-25
-**Confidence:** HIGH
+**Confidence:** HIGH (full codebase read, all integration points verified against source)
 
-## System Overview
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Views Layer                             │
-├─────────────┬──────────────┬──────────────┬─────────────────────┤
-│  Settings   │  Library     │  Run Tab     │  Debug              │
-│  Tab        │  Tab         │              │  (Sensor Lab)       │
-│             │              │              │                     │
-│ [+Debug     │ [+Confidence │ [+Zero-BPM   │ [NEW: full          │
-│  toggle]    │  badges]     │  fallback    │  debug screen]      │
-│ [+Fallback  │ [+Tap BPM   │  handling]   │                     │
-│  picker]    │  sheet]      │              │                     │
-├─────────────┴──────────────┴──────────────┴─────────────────────┤
-│                      Services Layer                             │
-├────────────────┬───────────────┬─────────────────────────────────┤
-│ CadenceService │ RunEngine     │ BPMCacheService                 │
-│                │ Service       │                                 │
-│ [+debug        │ [+zero-BPM    │ [+confidence   [+manual BPM     │
-│  interval]     │  fallback     │  field]         write]           │
-│ [+raw data     │  policy]      │                                 │
-│  exposure]     │               │                                 │
-├────────────────┴───────────────┴─────────────────────────────────┤
-│                      Data Layer                                  │
-│  ┌──────────────┐  ┌──────────────┐                              │
-│  │ CachedBPM    │  │ UserDefaults │                              │
-│  │ (SwiftData)  │  │              │                              │
-│  │ [+confidence │  │ [+debug      │                              │
-│  │  +source]    │  │  settings]   │                              │
-│  └──────────────┘  └──────────────┘                              │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## New vs Modified Components
-
-### New Components
-
-| Component | Type | Responsibility |
-|-----------|------|----------------|
-| `SensorLabView` | View | Full debug screen: raw cadence samples, step count, detection interval slider, algorithm state, cadence window contents |
-| `TapBPMView` | View | Tap-along interface for manual BPM entry, presented as sheet from playlist detail |
-| `BPMConfidenceBadge` | View | Small color-coded capsule showing verified/approximate/manual/none confidence tier |
-| `BPMConfidence` | Model (enum) | Confidence tiers: `.verified`, `.approximate`, `.manual`, `.none` with display properties |
-| `ZeroBPMFallback` | Model (enum) | Fallback behavior: `.skip`, `.playRegardless`, `.prompt` with UserDefaults persistence |
-
-### Modified Components
-
-| Component | Modification | Why |
-|-----------|-------------|-----|
-| `CachedBPM` | Add `confidence: String?` and `source: String?` fields | Track how BPM was obtained (API verified, manual tap, etc). Foundation for all confidence features. |
-| `BPMCacheService` | Add `cacheManualBPM(trackID:bpm:)` method. Update `cache()` to accept confidence/source params. | Support manual BPM entries from tap input and confidence tracking from API lookups. |
-| `CadenceService` | Add configurable `windowDuration` (0.5-5.0s), expose `rawCadenceSample`, `sampleCount`, `stepCount`. | Sensor Lab needs raw data and faster-reacting averages for desk testing. |
-| `LibraryScanService` | Pass confidence when caching: `"verified"` when BPM found, `"approximate"` when artist mismatch, `"none"` when nil. | Populate confidence data during the existing scan flow. |
-| `RunEngineService` | Add `ZeroBPMFallback` policy to `selectNextMatch()`. Add `pendingFallbackTrack` for prompt mode. | Handle tracks with nil BPM according to user preference. |
-| `SettingsView` | Add Debug Mode toggle + Sensor Lab NavigationLink. Add zero-BPM fallback Picker. | Entry points for new features. |
-| `PlaylistDetailView` | Replace plain BPM badge in TrackRow with `BPMConfidenceBadge`. Add tap-BPM action for nil-BPM tracks. | Show confidence state and provide manual BPM entry point. |
-| `ActiveRunView` | Observe `pendingFallbackTrack` for prompt-mode alert. | Handle the `.prompt` fallback when RunEngine encounters a zero-BPM track. |
-
-## Recommended Project Structure
-
-New files only -- existing folder structure is well-organized:
+## Current Architecture Snapshot
 
 ```
-BeatStep/
-├── Models/
-│   ├── BPMConfidence.swift        # NEW: enum + computed property extension on CachedBPM
-│   └── ZeroBPMFallback.swift      # NEW: fallback behavior enum with UserDefaults persistence
-├── Services/
-│   (CadenceService.swift)         # MODIFIED: debug interval, raw data exposure
-│   (BPMCacheService.swift)        # MODIFIED: confidence-aware caching + manual BPM
-│   (RunEngineService.swift)       # MODIFIED: zero-BPM fallback in selection
-│   (LibraryScanService.swift)     # MODIFIED: write confidence on scan
-├── Views/
-│   ├── Debug/
-│   │   └── SensorLabView.swift    # NEW: full debug/sensor lab screen
-│   ├── Library/
-│   │   ├── TapBPMView.swift       # NEW: tap-along BPM input sheet
-│   │   └── BPMConfidenceBadge.swift  # NEW: confidence indicator capsule
-│   │   (PlaylistDetailView.swift) # MODIFIED: confidence badges + tap BPM entry
-│   └── Settings/
-│       (SettingsView.swift)       # MODIFIED: debug toggle + fallback picker
++---------------------------------------------------------------+
+|                         ContentView                            |
+|  AppState.resolve() -> .onboarding | .login | .authenticated  |
++---------------------------------------------------------------+
+|                                                                |
+|  TabView (Library | Run | Settings)                            |
+|  +-------------------+  +----------------+  +---------------+  |
+|  | NavigationStack   |  | NavigationStack|  | NavigationStack| |
+|  | PlaylistListView  |  | RunTabView     |  | SettingsView  |  |
+|  |  -> PlaylistDetail|  |  -> ActiveRun  |  |  -> SensorLab |  |
+|  +-------------------+  +----------------+  +---------------+  |
+|                                                                |
+|  safeAreaInset: MiniPlayerView (when !isRunActive)             |
++---------------------------------------------------------------+
+|                     Services (Singletons, @Observable)         |
+|  RunEngineService | SpotifyAPIService | SpotifyPlayerService   |
+|  CadenceService   | BPMCacheService   | LibraryScanService     |
+|  SpotifyAuthService | GetSongBPMService | BPMDiscoveryService  |
++---------------------------------------------------------------+
+|                     Data Layer                                 |
+|  SwiftData: CachedBPM, ScannedPlaylist                         |
+|  UserDefaults: RunZone, BPMTolerance, ZeroBPMFallback, etc.   |
+|  Keychain: Spotify auth tokens                                 |
++---------------------------------------------------------------+
 ```
 
-### Structure Rationale
+**Key patterns already established:**
+- Singletons with `@Observable` for reactive state (RunEngineService, LibraryScanService, etc.)
+- `SelectedTabKey` EnvironmentKey for cross-tab navigation
+- Design tokens in `DesignTokens.swift` (BSColors, BSFonts, BSSpacing, BSRadius, BSComponents)
+- `fullScreenCover` for ActiveRunView (prevents swipe-back, hides tab bar)
+- Private row structs inside list views (PlaylistRow, TrackRow)
 
-- **Debug/ folder:** Isolates debug tooling from production views. Only SensorLabView now but establishes the pattern.
-- **BPMConfidenceBadge in Library/:** Displayed inline with tracks in playlist context, not a reusable design system primitive.
-- **TapBPMView in Library/:** Invoked from playlist detail, writes to BPMCacheService -- it is a library workflow.
-- **Models stay flat:** Two small enums do not warrant a subfolder. Matches the existing pattern (SyncQuality.swift, TempoMode.swift, etc).
+## v1.6 Feature Integration Map
 
-## Architectural Patterns
+### Feature 1: Contextual Scan Actions (replaces floating scan bar)
 
-### Pattern 1: SwiftData Lightweight Migration for Confidence Fields
+**What changes:** The global scan progress banner in `PlaylistListView` (lines 44-54) becomes per-row contextual actions with richer feedback.
 
-**What:** Add `confidence: String?` and `source: String?` fields to the existing `CachedBPM` @Model.
-**When to use:** Extending SwiftData models with new optional fields.
-**Trade-offs:** SwiftData handles adding nullable fields as lightweight migration automatically -- no VersionedSchema needed. Existing records get `nil`, which maps cleanly to `BPMConfidence.none`.
+**Existing touchpoints:**
+- `PlaylistListView` -- global `scanProgress` banner at top of list, `.swipeActions` on each row calling `scanService.scanPlaylistByID()`
+- `LibraryScanService` -- `scanningPlaylistID: String?` tracks active scan, `scanProgress: ScanProgress?` is observable
+- `PlaylistRow` -- already shows per-row scan progress when `isScanning` matches
 
-**Implementation:**
+**Integration:**
+- **Modify** `PlaylistListView`: Remove global scan banner (the `if let progress` HStack at lines 44-54). Row-level scan state already works via `scanService.scanningPlaylistID == playlist.id` comparison.
+- **Modify** `PlaylistRow`: Add visible scan button (not just swipe) as trailing content. Show inline progress indicator when scanning. The data hooks already exist -- `isScanning` and `scanProgress` params are already passed.
+- **No service changes.** `LibraryScanService` already exposes exactly the right observable state per-playlist.
+
+**New components:** None. View-layer reshuffling of existing scan UI.
+
+**Risk:** LOW.
+
+---
+
+### Feature 2: Library Search and Filter
+
+**What changes:** Search bar and filter chips (All / Analyzed / Unanalyzed) on `PlaylistListView`.
+
+**Existing touchpoints:**
+- `PlaylistListView` -- `@State playlists: [SpotifyPlaylist]`, `coverageMap: [String: String]`, `coverageLoaded: Bool`
+- `.navigationTitle("Your Library")` on the List -- `.searchable` attaches here
+
+**Integration:**
+- **Modify** `PlaylistListView`: Add `@State private var searchText = ""` and `@State private var filter: LibraryFilter = .all`. Add `.searchable(text: $searchText)` modifier. Replace `ForEach(playlists)` with `ForEach(filteredPlaylists)`.
+- **New** `LibraryFilter` enum (3 cases: `.all`, `.analyzed`, `.unanalyzed`). Filter logic uses `coverageMap` presence: key exists = analyzed, absent = unanalyzed.
+- **New** `LibraryFilterBar` view: Horizontal capsule row, same visual pattern as `ZonePickerView`. Placed above the list or as a list header.
+
+**Computed filtering:**
 ```swift
-// CachedBPM.swift -- add fields
-@Model
-final class CachedBPM {
-    // ... existing fields ...
-    var confidence: String?  // "verified", "approximate", "manual"
-    var source: String?      // "getsongbpm", "manual_tap"
+private var filteredPlaylists: [SpotifyPlaylist] {
+    playlists
+        .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+        .filter { filter.matches(hasAnalysis: coverageMap[$0.id] != nil) }
 }
+```
 
-// BPMConfidence.swift -- enum + computed property
-enum BPMConfidence: String, CaseIterable {
-    case verified     // API returned exact match (artist matched)
-    case approximate  // API returned result (artist did not match)
-    case manual       // User tapped BPM manually
-    case none         // No BPM data / legacy record
+**Risk:** LOW. `.searchable` is stable iOS 15+. Filter is client-side on loaded data.
 
-    init(from cached: CachedBPM) {
-        if let conf = cached.confidence, let value = BPMConfidence(rawValue: conf) {
-            self = value
-        } else if cached.bpm != nil {
-            self = .approximate  // Legacy records with BPM but no confidence field
-        } else {
-            self = .none
-        }
+---
+
+### Feature 3: Run Menu Redesign with Custom Components
+
+**What changes:** `RunTabView` (323 lines) gets decomposed into cohesive sub-components. Multi-zone selection replaces single-zone.
+
+**Existing touchpoints:**
+- `RunTabView` -- inline playlist display (cover art + name), `ZonePickerView` binding `selectedZoneId: Int?`, `TolerancePicker`, start button
+- `ZonePickerView` -- single-select via `@Binding var selectedZoneId: Int?`
+- `ActiveRunView` -- receives `selectedZoneId: Int?`
+- `RunEngineService` -- works with single `targetBPM: Int` + `tolerance: BPMTolerance`
+
+**Integration:**
+- **New** `RunPlaylistCard` view: Extract the playlist display (cover art, name, "Your last playlist" subtitle, tap-to-library) from `RunTabView.loadedContent()` lines 158-199. Standalone reusable component.
+- **Modify** `ZonePickerView`: Change binding from `Int?` to `Set<Int>`. Allow multiple capsule selections. Tapping a selected zone deselects it. Empty set = Free mode.
+- **Modify** `RunTabView`: Replace `@State private var selectedZoneId: Int?` with `@State private var selectedZoneIds: Set<Int> = ...`. Compute merged BPM from selected zones. Pass resolved single BPM + expanded tolerance to engine.
+- **Modify** `ActiveRunView`: Accept `selectedZoneIds: Set<Int>` instead of `Int?`. Display zone range label.
+
+**Multi-zone resolution strategy:**
+```
+Selected zones: Z2 (165), Z3 (174), Z4 (178)
+  -> targetBPM = midpoint = (165 + 178) / 2 = 171
+  -> tolerance covers full range: (178 - 165) / 2 + base_tolerance
+```
+RunEngineService needs zero changes -- it already works with `targetBPM` + `tolerance`. Multi-zone is purely a view-layer concept that resolves to these two values.
+
+**UserDefaults persistence:** Change `RunZone.selectedZoneId` (single Int?) to `RunZone.selectedZoneIds` (Set<Int>). Store as `[Int]` array in UserDefaults.
+
+**Risk:** MEDIUM. Multi-zone changes the `ZonePickerView` API contract and touches `RunTabView`, `ActiveRunView`, and `RunZone` persistence. Needs careful testing of BPM range resolution.
+
+---
+
+### Feature 4: Playlist Card Redesign with Scan Quality Visibility
+
+**What changes:** `PlaylistRow` gets richer coverage visualization.
+
+**Existing touchpoints:**
+- `PlaylistRow` (private struct in `PlaylistListView`) -- shows `coverageText: String?` as "15/20 BPM"
+- `coverageMap: [String: String]` in `PlaylistListView`
+
+**Integration:**
+- **New** `CoverageInfo` struct: Replaces the string-based coverage. Contains `withBPM: Int, total: Int`, computed `ratio: Double`, computed `qualityColor: Color` (green >80%, yellow 40-80%, red <40%).
+- **New** `ScanQualityBadge` view: Small visual indicator (progress ring or filled capsule) showing coverage ratio with color coding. Used in both `PlaylistRow` and potentially `RunPlaylistCard`.
+- **Modify** `PlaylistListView`: Change `coverageMap: [String: String]` to `[String: CoverageInfo]`. Update `loadCoverageData()` to build richer data.
+- **Modify** `PlaylistRow`: Replace text coverage with `ScanQualityBadge`. Make it an internal (not private) struct for reuse.
+
+**Risk:** LOW. Visual redesign with slightly richer data model.
+
+---
+
+### Feature 5: Haptic System
+
+**What changes:** Centralized haptic feedback definitions, applied across the app.
+
+**No existing haptics anywhere in the codebase.**
+
+**Integration:**
+- **New** `BSHaptics` enum in `DesignSystem/BSHaptics.swift`: Static methods wrapping `UIImpactFeedbackGenerator`, `UISelectionFeedbackGenerator`, `UINotificationFeedbackGenerator`.
+
+```swift
+enum BSHaptics {
+    static func selection() {
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+    static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+    static func success() {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+    static func warning() {
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
     }
 }
 ```
 
-**Why String storage over enum raw value:** SwiftData predicate queries work more reliably with String fields than enum raw values. The `BPMConfidence` enum provides type safety at the Swift layer while the model stores plain strings.
+- **Modify** views to call BSHaptics at interaction points:
+  - `ZonePickerView` capsule tap -> `BSHaptics.selection()`
+  - `RunTabView.startRun()` -> `BSHaptics.impact(.heavy)`
+  - `LongPressStopButton` progress milestones -> `BSHaptics.impact(.light)`
+  - `LongPressStopButton` completion -> `BSHaptics.success()`
+  - Scan completion -> `BSHaptics.success()`
+  - Filter/search interactions -> `BSHaptics.selection()`
 
-### Pattern 2: Debug Mode via UserDefaults Gate
+**Risk:** LOW. Purely additive. No architectural changes.
 
-**What:** A single `@AppStorage("debugModeEnabled")` bool gates visibility of the Sensor Lab NavigationLink in SettingsView. CadenceService reads the same flag to determine whether to use a shorter detection window.
-**When to use:** User-togglable feature flags that persist across sessions.
-**Trade-offs:** Simple, no build configuration needed. UserDefaults is appropriate because the requirement specifies "behind settings toggle" -- not a compile-time flag.
+---
 
-**Data flow:**
-```
-SettingsView toggle --> @AppStorage("debugModeEnabled")
-                                |
-              +-----------------+------------------+
-              |                                    |
-    SensorLabView visible              CadenceService reads flag
-    in Settings nav                    to set windowDuration
-```
+### Feature 6: Animation System
 
-### Pattern 3: Tap BPM as Modal Sheet with Cache Writeback
+**What changes:** Standardized animation tokens and transitions.
 
-**What:** TapBPMView presented as `.sheet` from PlaylistDetailView. User taps a surface rhythmically, view computes BPM from tap intervals, on confirm it writes to BPMCacheService with `.manual` confidence.
-**When to use:** Isolated input workflows that produce a single result value.
-**Trade-offs:** Sheet keeps playlist context visible. Callback via dismiss + cache refresh avoids tight coupling.
+**Existing animations (ad-hoc):**
+- `RunTabView`: `.animation(.easeInOut(duration: 0.2), value: selectedZoneId)`
+- `SyncBackgroundModifier`: color shift animation
+- `LongPressStopButton`: progress ring animation
 
-**BPM calculation approach:**
+**Integration:**
+- **New** `BSAnimation` enum in `DesignSystem/BSAnimation.swift`:
 ```swift
-// Track last N tap timestamps, compute average interval
-// Minimum 4 taps required for reliable BPM
-// Rolling window of last 8 taps for stability
-// BPM = 60.0 / averageInterval
-
-private func computeBPM() -> Int? {
-    guard tapTimestamps.count >= 4 else { return nil }
-    let recent = tapTimestamps.suffix(8)
-    let intervals = zip(recent, recent.dropFirst()).map { $1.timeIntervalSince($0) }
-    let avgInterval = intervals.reduce(0, +) / Double(intervals.count)
-    guard avgInterval > 0 else { return nil }
-    return Int((60.0 / avgInterval).rounded())
-}
-```
-
-### Pattern 4: Zero-BPM Fallback as RunEngine Policy
-
-**What:** A `ZeroBPMFallback` enum stored in UserDefaults, read by RunEngineService during song selection.
-**When to use:** Configurable behavior that affects core engine logic.
-
-**Implementation detail for each mode:**
-
-```swift
-enum ZeroBPMFallback: String, CaseIterable {
-    case skip            // Current behavior -- tracks without BPM excluded from matching
-    case playRegardless  // Include nil-BPM tracks at end of candidate list
-    case prompt          // Ask user before playing a nil-BPM track
-}
-```
-
-**How each mode integrates with selectNextMatch:**
-
-- **`.skip`** -- No change. Current `guard let bpm = bpmMap[track.id]` already excludes nil-BPM tracks.
-- **`.playRegardless`** -- After finding BPM-matched candidates, append nil-BPM tracks as fallback pool. They sort to end, only played when no BPM-matched tracks remain.
-- **`.prompt`** -- When no BPM-matched tracks remain and nil-BPM tracks exist, set `pendingFallbackTrack` on RunEngineService. ActiveRunView observes this and shows an alert. User confirms (play track) or skips (continue selection).
-
-**Critical design note for `.prompt`:** RunEngineService must NOT block or await user input. The `pendingFallbackTrack` property is observed by ActiveRunView. Meanwhile, the engine plays the last matched track longer or remains silent briefly. This keeps the non-UI service layer free of SwiftUI.
-
-## Data Flow
-
-### BPM Confidence Data Flow
-
-```
-GetSongBPMService.fetchBPM()
-    | returns Int?
-    v
-LibraryScanService
-    | bpm != nil, artist matched  --> confidence = "verified"
-    | bpm != nil, artist fallback --> confidence = "approximate"
-    | bpm == nil                  --> confidence = "none"
-    v
-BPMCacheService.cache(trackID:, bpm:, confidence:, source:)
-    v
-CachedBPM (SwiftData)
-    v
-PlaylistDetailView reads cache
-    v
-BPMConfidenceBadge displays tier with color
-```
-
-### Manual BPM (Tap) Data Flow
-
-```
-PlaylistDetailView
-    | user taps "Set BPM" on a nil-BPM track
-    | .sheet(item: trackForTapBPM)
-    v
-TapBPMView(track: track)
-    | user taps surface rhythmically
-    | computes rolling BPM from last 8 taps
-    | user confirms
-    v
-BPMCacheService.shared.cacheManualBPM(trackID:, bpm:)
-    | writes confidence = "manual", source = "manual_tap"
-    v
-CachedBPM updated
-    v
-PlaylistDetailView refreshes bpmCache dict
-    v
-BPMConfidenceBadge shows "manual" state (distinct color)
-```
-
-### Zero-BPM Fallback Data Flow
-
-```
-RunEngineService.selectNextMatch(forSPM:)
-    | iterates playlistTracks
-    | finds tracks with bpmMap[id] == nil
-    v
-ZeroBPMFallback.saved (UserDefaults)
-    |-- .skip       --> exclude from candidates (current behavior)
-    |-- .playRegardless --> append to end of candidate list
-    |-- .prompt     --> set pendingFallbackTrack on RunEngineService
-                         |
-                         v
-                    ActiveRunView observes pendingFallbackTrack
-                         | shows alert: "No BPM for [track]. Play anyway?"
-                         |-- confirm --> RunEngineService plays track
-                         |-- skip    --> RunEngineService continues
-```
-
-### Sensor Lab Data Flow
-
-```
-CadenceService (modified)
-    |-- .currentSPM          (existing: rolling average)
-    |-- .rawCadenceSample     (NEW: last unsmoothed value)
-    |-- .stepCount            (NEW: cumulative steps since start)
-    |-- .windowDuration       (NEW: configurable 0.5-5.0s)
-    |-- .sampleCount          (NEW: samples in current window)
-    |-- .state                (existing)
-    |-- .trend                (existing)
-         |
-         v
-SensorLabView reads all properties via @Observable
-    | displays real-time values with labels
-    | windowDuration slider writes back to CadenceService
-    | reset button clears step count
-```
-
-**Key insight about "configurable detection interval":** CMPedometer delivers updates event-driven (on each step batch), NOT on a fixed polling interval. The "detection interval" requirement maps to adjusting `windowDuration` on CadenceService -- the rolling average window. Shorter window = faster reaction but noisier. Longer window = smoother but laggier. The current 5.0s default is tuned for running. Debug mode with 0.5-1.0s enables desk testing with hand taps.
-
-## Integration Points
-
-### CachedBPM Model Extension (Foundation)
-
-Every downstream feature depends on confidence data being available in the model.
-
-| Consumer | Reads | Writes | When |
-|----------|-------|--------|------|
-| `BPMConfidenceBadge` | `confidence` field | -- | Track list rendering |
-| `RunEngineService` | `bpm` nil check | -- | Song selection (zero-BPM fallback) |
-| `TapBPMView` | -- | `confidence = "manual"` | After tap-along confirm |
-| `LibraryScanService` | -- | `confidence = "verified"/"approximate"` | During BPM scan |
-| `PlaylistDetailView` | `confidence` via cache | -- | Rendering track rows |
-
-### CadenceService Debug Extension
-
-| Change | Impact | Risk |
-|--------|--------|------|
-| Configurable `windowDuration` | Affects rolling average responsiveness. Does NOT restart pedometer. | LOW -- changing a numeric parameter |
-| Raw data exposure (`rawCadenceSample`) | New `@ObservationIgnored` property set in `handlePedometerData`, exposed via getter | NONE -- additive |
-| Step count tracking (`stepCount`) | Already available from `CMPedometerData.numberOfSteps`, just needs to be stored and published | NONE -- additive |
-| Sample count in window | `cadenceWindow.count` exposed as computed property | NONE -- already computed internally |
-
-### RunEngineService Fallback Policy
-
-Currently `findMatchingTracks` and `selectNextMatch` skip nil-BPM tracks via `guard let bpm = bpmMap[track.id]`. The fallback policy intercepts this.
-
-| Mode | Change to `selectNextMatch` | Complexity |
-|------|---------------------------|------------|
-| `.skip` | No change -- current behavior | None |
-| `.playRegardless` | After BPM-matched candidates, collect nil-BPM tracks and append | Low |
-| `.prompt` | Return nil + set `pendingFallbackTrack`, view handles alert | Medium (needs view coordination) |
-
-### SettingsView Additions
-
-```swift
-// Debug section (new)
-Section("Developer") {
-    Toggle("Debug Mode", isOn: $debugModeEnabled)
-
-    if debugModeEnabled {
-        NavigationLink("Sensor Lab") {
-            SensorLabView()
-        }
-    }
+enum BSAnimation {
+    static let quick: Animation = .easeInOut(duration: 0.15)
+    static let standard: Animation = .easeInOut(duration: 0.25)
+    static let smooth: Animation = .spring(response: 0.35, dampingFraction: 0.8)
+    static let entrance: Animation = .spring(response: 0.4, dampingFraction: 0.75)
 }
 
-// Playback section (new or merged with existing)
-Section("Playback") {
-    Picker("Unknown BPM Tracks", selection: $zeroBPMFallback) {
-        ForEach(ZeroBPMFallback.allCases, id: \.self) { mode in
-            Text(mode.displayLabel)
-        }
+enum BSTransition {
+    static let fadeSlide: AnyTransition = .opacity.combined(with: .move(edge: .top))
+    static let scale: AnyTransition = .scale.combined(with: .opacity)
+}
+```
+- **New** `ShimmerModifier`: Skeleton loading shimmer for playlist/track loading states.
+- **Modify** existing views: Replace hardcoded `.animation(.easeInOut(duration: 0.2))` with `BSAnimation.standard`. Apply consistent transitions to state changes.
+
+**Risk:** LOW. Additive constants.
+
+---
+
+### Feature 7: Settings Screen Structure
+
+**What changes:** `SettingsView` (136 lines, flat sections) reorganized into proper grouped sections.
+
+**Current sections:** Account, Running Zones, Playback, Permissions, Disconnect, Sensor Lab (hidden), Version footer.
+
+**Integration:**
+- **Modify** `SettingsView`: Restructure into: Account, Run Defaults (zones + playback), Permissions, Debug (Sensor Lab), About (version + credits).
+- **Extract** section views for clarity: `SettingsAccountSection`, `SettingsRunDefaultsSection`, `SettingsPermissionsSection`, `SettingsDebugSection`, `SettingsAboutSection`. These can be private structs within SettingsView or in a `Views/Settings/` subfolder.
+- **Fix** hardcoded "v1.4" version string (line 114) -> read from `Bundle.main.infoDictionary`.
+
+**Risk:** LOW. View-only reorganization.
+
+---
+
+### Feature 8: Pre-built Skip Queue
+
+**What changes:** RunEngineService pre-computes the next track for instant skipping.
+
+**Existing flow:**
+```
+skipToNextMatch() -> queueNextMatch() -> selectNextMatch(forSPM:) -> playTrack()
+```
+`selectNextMatch` is already synchronous (in-memory bpmMap filtering). The only async part is `SpotifyPlayerService.play(uri:)` which fires a network call to Spotify Web API.
+
+**Integration:**
+- **Modify** `RunEngineService`: Add `@ObservationIgnored private var preQueuedTrack: SpotifyTrack?`.
+- **Modify** `playTrack()`: After playing current, compute and store next match: `preQueuedTrack = selectNextMatch(forSPM: effectiveBPM)`.
+- **Modify** `skipToNextMatch()`: If `preQueuedTrack` exists, play it immediately and pre-compute the next one. Otherwise fall back to current behavior.
+- **New** method on `SpotifyPlayerService`: `addToQueue(uri:)` using Spotify Web API `POST /me/player/queue?uri={uri}`. This pre-loads audio on Spotify's side for gapless transition.
+- **Modify** `SpotifyPlayerService`: Add the queue endpoint call. This is a fire-and-forget optimization -- if it fails, skip still works via direct `play(uri:)`.
+
+**Spotify queue API interaction concern:** When using `play(uri:)` to start a specific track, Spotify may or may not clear its internal queue. The safest approach: always use `play(uri:)` for the current track, use `addToQueue` only as a pre-loading hint. Never rely on Spotify's queue state for track selection.
+
+**Risk:** MEDIUM. Spotify queue API behavior with direct `play` calls needs verification. Pre-computation is safe; pre-queueing is the risky part.
+
+---
+
+### Feature 9: Library Analysis Status Bug Fix
+
+**What changes:** Fix stale analysis status display in library.
+
+**Root cause analysis from code:**
+- `PlaylistListView.loadCoverageData()` fetches `ScannedPlaylist` records and builds `coverageMap`.
+- It runs on `.task` (initial load) and `.refreshable` (pull-to-refresh).
+- After a swipe-to-scan completes (`scanPlaylistByID`), `loadCoverageData()` is called in the `.swipeActions` Task closure.
+- BUT: if the user navigates away and back, or if a background scan completes (via `scanEnabledPlaylists` in ContentView `.task`), `coverageMap` is stale.
+- Missing: no observation of `LibraryScanService.scanningPlaylistID` changes. When scan finishes (`scanningPlaylistID` goes to nil), coverage should reload.
+
+**Fix:**
+- **Modify** `PlaylistListView`: Add `.onChange(of: scanService.scanningPlaylistID)` observer. When it transitions to `nil` (scan completed), call `loadCoverageData()`.
+
+```swift
+.onChange(of: scanService.scanningPlaylistID) { oldValue, newValue in
+    if oldValue != nil && newValue == nil {
+        loadCoverageData()
     }
 }
 ```
 
-### PlaylistDetailView Changes
+**Risk:** LOW. Single observer addition.
 
-Two modifications to TrackRow:
+---
 
-1. **BPM badge becomes BPMConfidenceBadge** -- reads confidence from cache, shows colored capsule with tier label
-2. **Tap BPM action** -- for tracks with `bpm == nil`, show a tap target or long-press action that opens TapBPMView sheet
+## New Components Summary
 
-```swift
-// In PlaylistDetailView
-@State private var trackForTapBPM: SpotifyTrack?
+| Component | File Location | Purpose |
+|-----------|---------------|---------|
+| `BSHaptics` | `DesignSystem/BSHaptics.swift` | Centralized haptic feedback |
+| `BSAnimation` | `DesignSystem/BSAnimation.swift` | Animation/transition tokens |
+| `ShimmerModifier` | `DesignSystem/ShimmerModifier.swift` | Loading skeleton effect |
+| `LibraryFilter` | `Models/LibraryFilter.swift` | All/Analyzed/Unanalyzed enum |
+| `CoverageInfo` | `Models/CoverageInfo.swift` | Rich coverage data struct |
+| `LibraryFilterBar` | `Views/Library/LibraryFilterBar.swift` | Filter chip row |
+| `ScanQualityBadge` | `Views/Library/ScanQualityBadge.swift` | Visual coverage indicator |
+| `RunPlaylistCard` | `Views/Run/RunPlaylistCard.swift` | Extracted playlist card |
 
-// In TrackRow or track action
-.onLongPressGesture {
-    if bpm == nil {
-        trackForTapBPM = track
-    }
-}
-.sheet(item: $trackForTapBPM) { track in
-    TapBPMView(track: track) {
-        // Refresh cache on dismiss
-        bpmCache[track.id] = BPMCacheService.shared.getBPM(forTrackID: track.id)
-    }
-}
+## Modified Components Summary
+
+| Component | What Changes | Scope |
+|-----------|-------------|-------|
+| `PlaylistListView` | Search, filter, remove global banner, richer coverage data, scan completion observer | Major |
+| `PlaylistRow` | Extract to internal, inline scan button, `ScanQualityBadge` | Major |
+| `RunTabView` | Extract `RunPlaylistCard`, multi-zone binding, haptics | Major |
+| `ZonePickerView` | Multi-select `Set<Int>` binding | Medium |
+| `ActiveRunView` | Accept `Set<Int>` zone IDs | Small |
+| `RunEngineService` | `preQueuedTrack` pre-computation | Medium |
+| `SpotifyPlayerService` | `addToQueue(uri:)` endpoint | Small |
+| `SettingsView` | Section restructuring, dynamic version | Medium |
+| `RunZone` | `selectedZoneIds` persistence (Set<Int>) | Small |
+| `LongPressStopButton` | Haptic calls at progress milestones | Small |
+| `DesignTokens.swift` | No changes (new tokens go in separate files) | None |
+
+## Unchanged Components
+
+| Component | Reason |
+|-----------|--------|
+| `ContentView` / `AppState` | No routing changes |
+| `BPMCacheService` | No schema changes |
+| `CadenceService` | No cadence logic changes |
+| `GetSongBPMService` | No API changes |
+| `BPMDiscoveryService` | No discovery changes |
+| `Onboarding views` | Complete in v1.5 |
+| `TapBPMEngine` / `TapBPMView` | Complete in v1.4 |
+| `SensorLabView` / `SensorLabService` | Complete in v1.4 |
+
+## Recommended Build Order
+
 ```
-
-## Suggested Build Order
-
-Dependencies flow downward -- each phase builds on the previous:
-
-```
-Phase 1: BPM Confidence Model + Service Layer
-    CachedBPM +confidence +source fields (SwiftData migration)
-    BPMConfidence enum
-    BPMCacheService.cacheManualBPM() + updated cache() signature
-    LibraryScanService writes confidence during scan
-    --- Foundation: all other features read/write these fields ---
-
-Phase 2: BPM Confidence Badges in UI
-    BPMConfidenceBadge view component
-    PlaylistDetailView / TrackRow integration
-    --- Depends on Phase 1 model ---
-
-Phase 3: Tap BPM Input
-    TapBPMView (tap-along interface)
-    PlaylistDetailView sheet integration
-    --- Depends on Phase 1 for write, Phase 2 for display ---
-
-Phase 4: Zero-BPM Fallback
-    ZeroBPMFallback enum + UserDefaults persistence
-    RunEngineService fallback policy in selectNextMatch()
-    SettingsView fallback picker
-    ActiveRunView prompt alert (for .prompt mode)
-    --- Depends on Phase 1 for confidence awareness ---
-
-Phase 5: Sensor Lab
-    CadenceService debug extensions (windowDuration, raw data)
-    SensorLabView
-    SettingsView debug toggle + NavigationLink
-    --- Independent of Phases 1-4, last because dev tooling ---
+Phase 1: Design System Foundation (BSHaptics, BSAnimation, ShimmerModifier)
+    No dependencies. All later features reference these tokens.
+        |
+Phase 2: Analysis Bug Fix
+    Add .onChange observer to PlaylistListView for scan completion.
+    Quick win. Ensures accurate coverage data for all later features.
+        |
+Phase 3: Coverage Data Model (CoverageInfo, LibraryFilter)
+    Foundation structs needed by library search AND playlist card redesign.
+        |
+    +---+---+
+    |       |
+Phase 4a: Library Search + Filter       Phase 4b: Playlist Card Redesign
+    .searchable + LibraryFilterBar          ScanQualityBadge + PlaylistRow rework
+    Uses CoverageInfo, LibraryFilter        Uses CoverageInfo
+    |       |
+    +---+---+
+        |
+Phase 5: Contextual Scan Actions
+    Per-row scan UI. Builds on redesigned PlaylistRow from 4b.
+        |
+Phase 6: Run Menu Redesign
+    RunPlaylistCard + multi-zone + layout. Independent of library work
+    but benefits from design tokens in Phase 1.
+        |
+Phase 7: Settings Screen Structure
+    Section reorganization. Independent, can be moved earlier.
+        |
+Phase 8: Pre-built Skip Queue
+    RunEngineService pre-queue + SpotifyPlayerService.addToQueue.
+    Highest risk (Spotify API behavior). Build last to allow investigation.
+        |
+Phase 9: Micro-interaction Pass
+    Sprinkle BSHaptics + BSAnimation across ALL modified views.
+    Must come last -- all views need to be in final form.
 ```
 
 **Ordering rationale:**
-- **Phase 1 first:** Data model change that every other feature depends on. SwiftData migration must land before anything reads the new fields.
-- **Phase 2 before Phase 3:** Tap BPM needs confidence badges to show results. Building badges first gives the tap flow visual feedback immediately.
-- **Phase 3 before Phase 4:** Tap BPM is the primary way users resolve zero-BPM tracks. Having it available makes the fallback config more useful.
-- **Phase 4 before Phase 5:** Zero-BPM fallback is user-facing functionality that completes the BPM data quality story.
-- **Phase 5 last:** Sensor Lab is debug/developer tooling with no dependencies on other features. Could be built in parallel with Phases 2-4 if needed.
+- **Phase 1 first:** Design system tokens are referenced by everything else.
+- **Phase 2 early:** Bug fix ensures data correctness before building features that depend on coverage data.
+- **Phase 3 before 4a/4b:** Both library features need the shared data model.
+- **4a and 4b can parallel:** Search and card redesign are independent views that share the data model.
+- **Phase 5 after 4b:** Contextual scan actions build on the redesigned `PlaylistRow`.
+- **Phase 6 independent:** Run menu work does not depend on library features.
+- **Phase 8 last (before 9):** Skip queue is the riskiest feature and is isolated from other work.
+- **Phase 9 strictly last:** Haptic/animation pass touches every view and must happen after all views are finalized to avoid rework.
 
-## Anti-Patterns
+## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Storing Confidence as Computed Property
+### Anti-Pattern 1: God ViewModifier for Haptics
 
-**What people do:** Derive confidence from existing fields (`bpm != nil && lookupAttempted` = verified) instead of persisting it.
-**Why it is wrong:** Cannot distinguish "API returned exact BPM with artist match" from "user tapped BPM" from "API returned best-guess." The provenance matters for trust signals.
-**Do this instead:** Store `confidence` and `source` as persisted fields on CachedBPM. Compute the display tier from these explicit values.
+**What people do:** Create a `.hapticFeedback(type:)` modifier that tries to detect interaction context.
+**Why it is wrong:** SwiftUI modifiers cannot reliably distinguish tap vs. long-press vs. selection. Wrong feedback or missed triggers.
+**Do this instead:** Explicit `BSHaptics.selection()` calls at action sites. Haptics are intentional design choices.
 
-### Anti-Pattern 2: Making Sensor Lab a Separate Tab
+### Anti-Pattern 2: Multi-Zone as RunEngine Concept
 
-**What people do:** Add Sensor Lab as a 4th tab in the TabView for easy access during development.
-**Why it is wrong:** Pollutes the 3-tab information architecture, requires removing later, visible to all users.
-**Do this instead:** Gate behind a Settings toggle. NavigationLink push within Settings tab. Discoverable for power users without being prominent.
+**What people do:** Push zone IDs and multi-zone logic into `RunEngineService`.
+**Why it is wrong:** RunEngine works with `targetBPM: Int` + `tolerance: BPMTolerance`. Zones are a UI concept. Adding zone awareness to the engine couples it to the view model.
+**Do this instead:** Resolve multi-zone to a single BPM + tolerance at the `RunTabView` layer. Pass resolved values to the engine. Same pattern as current single-zone implementation.
 
-### Anti-Pattern 3: Blocking Song Selection for Prompt Fallback
+### Anti-Pattern 3: Spotify Queue as Source of Truth
 
-**What people do:** Make `selectNextMatch()` async and await user input when encountering a zero-BPM track in prompt mode.
-**Why it is wrong:** RunEngineService is a non-view service. Blocking selection freezes the run experience while waiting for UI interaction.
-**Do this instead:** Set a published `pendingFallbackTrack` property. Skip the track in selection. ActiveRunView observes the property and presents an alert. On user response, either play the track directly or continue.
+**What people do:** Use Spotify's queue API to track "next track" and read it back.
+**Why it is wrong:** Spotify's queue is opaque. User actions in Spotify app, other devices, or Connect sessions can modify it unpredictably.
+**Do this instead:** Keep `preQueuedTrack` in `RunEngineService` as the source of truth. Use queue API only as an audio pre-loading optimization. Always fall back to direct `play(uri:)`.
 
-### Anti-Pattern 4: Restarting CMPedometer for Interval Changes
+### Anti-Pattern 4: Observable Service for Animation State
 
-**What people do:** Call `stopUpdates()` + `startUpdates(from:)` when the user changes detection interval in Sensor Lab.
-**Why it is wrong:** CMPedometer is event-driven, not polling-based. Restarting loses the step count baseline and creates a data gap.
-**Do this instead:** Keep pedometer running continuously. Change `windowDuration` for the rolling average and the inactivity timer threshold. These are processing parameters, not pedometer parameters.
+**What people do:** Create an `AnimationService` singleton that views observe.
+**Why it is wrong:** Animations are view-local concerns. Centralizing creates unnecessary re-renders and coupling.
+**Do this instead:** Use `BSAnimation` as a namespace of constants. Each view applies its own `.animation()` using these tokens.
 
-### Anti-Pattern 5: Tap BPM Saving Without Confirmation
+### Anti-Pattern 5: Modifying DesignTokens.swift for New Token Types
 
-**What people do:** Auto-save BPM as soon as enough taps are collected.
-**Why it is wrong:** User might still be finding the rhythm. Early taps are often off. Auto-saving captures bad data.
-**Do this instead:** Show live BPM preview as user taps, require explicit "Save" button press. Minimum 4 taps before save is enabled. Last 8 taps used for calculation to filter out early outliers.
+**What people do:** Add haptic and animation tokens to the existing `DesignTokens.swift` file.
+**Why it is wrong:** `DesignTokens.swift` (84 lines) contains Color, Font, Spacing, Radius, and ComponentSize tokens. Adding unrelated categories bloats it and makes it hard to navigate.
+**Do this instead:** Create separate files: `BSHaptics.swift`, `BSAnimation.swift`. Same folder (`DesignSystem/`), separate concerns.
 
 ## Sources
 
-- BeatStep v1.3 codebase: CadenceService.swift, RunEngineService.swift, BPMCacheService.swift, CachedBPM.swift, PlaylistDetailView.swift, SettingsView.swift, LibraryScanService.swift, GetSongBPMService.swift
-- Apple CMPedometer: event-driven step delivery, not interval-polled (currentCadence property on CMPedometerData)
-- SwiftData lightweight migration: new optional fields handled automatically without VersionedSchema
-- @Observable pattern used throughout existing codebase for reactive state
+- Full codebase read: all 65 Swift files in `/Users/stijngragt/Projects/beatstep/BeatStep/`
+- `.planning/PROJECT.md`: v1.6 requirements and architectural decisions
+- SwiftUI `.searchable`: stable since iOS 15, works with NavigationStack (HIGH confidence)
+- `UIFeedbackGenerator` APIs: stable since iOS 10 (HIGH confidence)
+- Spotify Web API `POST /me/player/queue`: documented endpoint (MEDIUM confidence -- interaction with direct `play` calls needs verification)
+- SwiftUI `@Observable` singleton pattern: established throughout codebase, verified working (HIGH confidence)
 
 ---
-*Architecture research for: BeatStep v1.4 "Under The Hood" -- debug tooling, tap BPM, confidence, zero-BPM fallback*
+*Architecture research for: BeatStep v1.6 Little Big Things*
 *Researched: 2026-03-25*

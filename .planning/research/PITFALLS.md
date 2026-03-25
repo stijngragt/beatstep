@@ -1,202 +1,248 @@
 # Pitfalls Research
 
-**Domain:** Debug tooling, manual BPM input, confidence tracking, and zero-BPM fallback for iOS running music app
+**Domain:** iOS running music app -- UI polish milestone (haptics, animations, search, gestures, queue, settings)
 **Researched:** 2026-03-25
-**Confidence:** HIGH (based on direct codebase analysis of CadenceService, BPMCacheService, RunEngineService, CachedBPM model)
-
----
+**Confidence:** HIGH (codebase-specific analysis + verified SwiftUI/Spotify patterns)
 
 ## Critical Pitfalls
 
-### Pitfall 1: SwiftData Schema Migration Breaking Existing BPM Cache
+### Pitfall 1: Haptic Fatigue -- Over-Hapticizing a Fitness App
 
 **What goes wrong:**
-Adding a `bpmSource` or `bpmConfidence` field to `CachedBPM` triggers a SwiftData schema migration. If the new field is non-optional without a default value, the migration fails and the app crashes on launch for every existing user. Their entire BPM cache (built up across playlist scans) is destroyed.
+Every button tap, toggle, and scroll snap gets a haptic. During a 45-minute run the phone vibrates hundreds of times. Users either disable haptics system-wide or perceive the app as cheap/annoying. Battery drain compounds -- the Taptic Engine draws measurable power on sustained use, and BeatStep already runs CoreMotion + Spotify polling + screen-on during exercise.
 
 **Why it happens:**
-The current `CachedBPM` model has 7 fields (`spotifyTrackID`, `trackName`, `artistName`, `bpm`, `lookupAttempted`, `lastUpdated`, `danceability`). SwiftData's automatic lightweight migration only handles additive optional fields or fields with default values. Adding `var bpmSource: BPMConfidence` as a non-optional enum triggers a destructive migration. This works fine on clean simulator installs during development -- the bug only surfaces when upgrading from v1.3 with existing data.
+Haptics are easy to add with iOS 17's `.sensoryFeedback` modifier. Developers sprinkle them everywhere during the "micro-interaction pass" because each one feels good in isolation. Nobody tests the cumulative experience over a full run session.
 
 **How to avoid:**
-- Add new fields as optionals: `var bpmSource: String?` (raw string, not enum)
-- Provide computed properties for type safety: `var resolvedSource: BPMSource { BPMSource(rawValue: bpmSource ?? "") ?? .api }`
-- Treat nil as "api" (the default for all existing records -- they were all populated by GetSongBPM)
-- Test migration: install v1.3 build, scan a playlist, then install v1.4 build and verify cache survives
+Define a haptic budget before writing code. Three tiers:
+- **Always haptic:** Run start, run stop (long-press confirm), zone transition, sync state change (in-sync/drifting/mismatch). These are ~5-10 events per run.
+- **Light haptic:** Skip song, toggle tempo mode. Use `.selection` weight only.
+- **Never haptic:** Scrolling, tab switching, navigation push/pop, loading states, pull-to-refresh, search typing.
+
+Use `UIImpactFeedbackGenerator` prepared instances (not `.sensoryFeedback` inline) for the run screen -- prepare once at run start, fire during run, deallocate at run stop. This avoids repeated engine wake-up costs.
 
 **Warning signs:**
-- `NSInternalInconsistencyException` on launch after update
-- SwiftData console logs showing "failed to migrate" or "model version mismatch"
-- Works on simulator (clean install) but crashes on device (existing data)
+- More than 8 distinct haptic call sites in a single view
+- Haptics firing inside `onChange` or rapid-update closures
+- No `.prepare()` call before time-critical haptics (causes 50-100ms latency on first fire)
 
 **Phase to address:**
-BPM Confidence phase -- schema change must be the very first thing built, before any UI references the new fields.
+Micro-interaction pass phase. Define the haptic inventory as the first task before adding any `.sensoryFeedback` modifiers.
 
 ---
 
-### Pitfall 2: Debug Detection Interval Leaking Into Production Runs
+### Pitfall 2: Animation Jank on the Run Screen During Active Exercise
 
 **What goes wrong:**
-The Sensor Lab allows configuring detection interval from 5s down to 0.5s for desk testing. If this setting persists in shared UserDefaults, a user who tested in debug mode unknowingly starts real runs with 0.5s intervals. This floods `CadenceService.cadenceWindow` with 10x more samples than designed, making the rolling average sluggish (the window prunes by time, not count, so 50 samples in 5 seconds all stay). Battery drains rapidly.
+Animations that look smooth in Xcode previews stutter during an actual run. The run screen has real-time updates every 2 seconds (cadence, sync state, zone band, ramp progress) plus album art changes on song transitions. Adding transition animations to these elements causes frame drops because SwiftUI is already re-rendering the body on every `@Observable` state change from `RunEngineService.shared`.
 
 **Why it happens:**
-The current `CadenceService` uses hardcoded `windowDuration: TimeInterval = 5.0` and relies on CMPedometer's native update frequency (~1Hz). A configurable interval means either restarting CMPedometer on a timer or switching to raw `CMMotionManager` accelerometer. Either approach creates a setting that must be completely isolated from the production code path.
+`ActiveRunView` reads `RunEngineService.shared` directly (per the v1.3 decision "Direct service reads over @State copies"). This means ANY property change on `RunEngineService` triggers a full view body evaluation. Adding `.animation(.spring())` to sync-state color shifts or zone band position creates animation work on top of the already-frequent re-renders. On ProMotion displays (120Hz) this compounds.
 
 **How to avoid:**
-- CadenceService keeps its existing `startDetecting()` method untouched for production
-- Create a separate `SensorLabService` that wraps `CMMotionManager` for raw accelerometer data and has its own configurable cadence detection -- completely independent of CadenceService
-- The debug interval setting lives in `SensorLabService` only, never read by `CadenceService`
-- SensorLabService stops all updates in `onDisappear` and when `scenePhase` leaves `.active`
+- Use `drawingGroup()` on any animated sub-view in ActiveRunView (already proven with the Swift Charts waveform in SensorLabView).
+- Scope animations with `animation(_:value:)` tied to specific values, never use bare `.animation(.default)` which animates ALL changes.
+- For the sync background color shift (already exists via `SyncBackgroundModifier`), verify it uses `animation(_:value: syncQuality)` not a blanket animation.
+- Song transition animations: use `.transition(.opacity)` with `.animation(.easeInOut(duration: 0.3), value: currentMatchedTrack?.id)` -- short duration, single property trigger.
+- Never animate the cadence number or BPM number text itself -- number changes should snap, not interpolate.
 
 **Warning signs:**
-- Battery drain reports from testers who visited Sensor Lab
-- Rolling average window contains 50+ samples instead of the expected 5-10
-- Cadence reading responds slowly to pace changes (window overwhelmed with stale samples)
+- Instruments Time Profiler showing >16ms frame times during run
+- `.animation()` modifier without a `value:` parameter anywhere in the run view hierarchy
+- Multiple nested `withAnimation` blocks in `onChange` closures
 
 **Phase to address:**
-Sensor Lab phase -- isolation architecture must be designed from day one.
+Micro-interaction pass phase AND run menu redesign phase. Animation additions to `ActiveRunView` need profiling on a physical device during an actual run (not just previews).
 
 ---
 
-### Pitfall 3: Tap BPM Silently Overwriting API-Sourced BPM
+### Pitfall 3: Spotify Queue API Cannot Pre-Buffer -- Building a Skip Queue on a Lie
 
 **What goes wrong:**
-A user taps a BPM for a song that already has a GetSongBPM-verified value (e.g., API returned 128 BPM). The tap result (126 BPM) silently overwrites the verified value via `BPMCacheService.cache()`, which does a simple upsert. Now the song matches differently during runs, and there is no way to revert to the original API value.
+The v1.6 feature "Pre-built skip queue for instant song skipping" implies pre-loading the next N tracks into Spotify's queue so skipping is instant. But the Spotify Web API `POST /me/player/queue` has critical limitations:
+1. You cannot read back the queue reliably (GET returns max 20 items, with looping artifacts).
+2. You cannot remove items from the queue once added.
+3. Order of execution is not guaranteed when combined with other Player API endpoints.
+4. Each `add-to-queue` call is a separate HTTP request counting toward rate limits.
+
+If you pre-queue 5 tracks and the user's cadence changes, those 5 tracks are now wrong-BPM and there is no way to remove them. The user skips through 5 mismatched songs before reaching a fresh match.
 
 **Why it happens:**
-The current `cache(trackID:name:artist:bpm:)` method overwrites `bpm` regardless of origin. Without a `bpmSource` field, there is no distinction between "API-verified 128" and "user-tapped 126". The developer assumes manual input should always win, but users frequently tap to off-beats, half-time, or double-time.
+Developers assume "queue" means a controllable playlist-like buffer. Spotify's queue is append-only with no remove/reorder/clear API. The current `RunEngineService` correctly avoids this by using `play(uri:)` which plays a specific track immediately (overriding queue). Switching to queue-based playback loses this control.
 
 **How to avoid:**
-- Add `bpmSource: String?` to CachedBPM before building the tap BPM feature
-- Create separate write paths: `cacheFromAPI(trackID:bpm:)` sets source to `"api"`, `cacheManualBPM(trackID:bpm:)` sets source to `"manual"`
-- If a track already has API BPM, show the existing value in the tap UI and require explicit "Override" confirmation
-- Store the API BPM alongside manual BPM: add `manualBPM: Int?` field so the original is never lost
-- Provide "Reset to original" that clears `manualBPM` and reverts to API value
+Do NOT use Spotify's queue API for the skip queue. Instead, build a **local pre-computation queue**:
+- `RunEngineService` maintains an internal `nextTracks: [SpotifyTrack]` array (3-5 pre-selected matches for current BPM).
+- On skip, call `play(uri:)` with the next track from the local array (same as current behavior, but the selection is pre-computed so there is zero selection delay).
+- On cadence change, invalidate and recompute the local queue.
+- The user perceives "instant skip" because selection work is done ahead of time, but Spotify playback is still controlled via direct `play(uri:)` calls.
+
+This gives instant skip UX without the queue API's limitations.
 
 **Warning signs:**
-- Playlist BPM counts change after a user uses tap BPM
-- Songs that previously matched well now match poorly
-- No audit trail for which BPMs are human-entered vs API-sourced
+- Any code calling `POST /me/player/queue` in the skip flow
+- No invalidation logic when cadence/BPM changes
+- Skip flow making more than 1 API call (should be exactly 1 `play(uri:)`)
 
 **Phase to address:**
-Tap BPM phase -- source tracking must exist BEFORE any manual BPM write path is added. This means the BPM Confidence schema change must come first.
+Skip queue phase. The phase plan MUST specify "local pre-computation queue, NOT Spotify queue API" in its requirements.
 
 ---
 
-### Pitfall 4: Zero-BPM "Skip" Fallback Creating Rapid-Fire Spotify API Calls
+### Pitfall 4: Search/Filter Recomputing on Every Keystroke Against Full Playlist State
 
 **What goes wrong:**
-When fallback is set to "skip" and the playlist has many unscanned tracks (common for new users), `selectNextMatch(forSPM:)` finds no BPM match, falls through to `findClosestTrack(forSPM:)` (which also only considers tracks in `bpmMap`), and returns nil. The engine tries the next track, also nil, creating a rapid-fire cycle. Each failed match attempt that does find something calls `playTrack()` -> `SpotifyPlayerService.shared.play()`, risking Spotify's 429 rate limit.
+Adding `.searchable` to `PlaylistListView` with a naive `filteredPlaylists` computed property causes the entire `List` to re-render on every character typed. With 50+ playlists each showing `AsyncImage` album art, this creates visible lag -- images flash/reload as the list rebuilds.
 
 **Why it happens:**
-The current matching logic in `selectNextMatch` already handles empty pools (resets `playedTrackIDs`, falls back to `findClosestTrack`). But all fallbacks require tracks to be in `bpmMap`. If 80% of tracks have no BPM, the usable pool is tiny. When those few tracks exhaust and the pool resets, the same 3 songs repeat. Adding an explicit "skip nil-BPM tracks" behavior does not change the existing flow -- but it codifies a behavior that currently just silently ignores nil-BPM tracks.
+`PlaylistListView` currently loads playlists into `@State private var playlists: [SpotifyPlaylist]` with pagination. A naive filter creates a new array on every keystroke, and SwiftUI's `List` identity changes cause cell recycling to reset `AsyncImage` loads. Combined with the coverage map lookup and scan state checks per row, this is expensive.
 
 **How to avoid:**
-- At run start, count BPM coverage: `let coverage = bpmMap.count / playlistTracks.count`. If below 50%, warn the user and suggest scanning first
-- Circuit breaker: after 3 consecutive no-match cycles (selectNextMatch returns nil), auto-switch to "play regardless" mode and surface a toast
-- "Play regardless" should pick a random unplayed track from the nil-BPM pool -- this is better than silence
-- Rate-limit playTrack calls: the existing `lastPlayTime` + 5-second guard is good, but extend it to cover the skip cycle too
+- Debounce search text with a 300ms delay before filtering (use `.task(id: searchText)` with `Task.sleep`).
+- Filter should produce stable IDs so `List(filteredPlaylists)` does not destroy/recreate cells. Use `ForEach(filteredPlaylists, id: \.id)` -- already the case since `SpotifyPlaylist` is `Identifiable`, but verify the filtered array maintains identity stability.
+- For the filter segments (All / Analyzed / Unanalyzed), compute filter state from the existing `coverageMap` dictionary, not a re-fetch. The data is already loaded.
+- Keep `AsyncImage` in a separate extracted view so its identity is tied to the playlist ID, not the list position.
 
 **Warning signs:**
-- Spotify 429 errors in quick succession during a run
-- `playTrack()` called multiple times within the 5-second guard window
-- User sees no album art / rapid track flickering in the player
+- `AsyncImage` URLs being re-fetched during typing (visible as flickering album art)
+- Search text binding directly driving a computed property without debounce
+- Filter segments triggering `loadPlaylists()` or `loadCoverageData()` instead of filtering in-memory
 
 **Phase to address:**
-Zero-BPM Fallback phase -- circuit breaker must be designed alongside the fallback configuration, not bolted on after.
+Library search/filter phase. The filter segments (All/Analyzed/Unanalyzed) should be implemented first since they are a simple `coverageMap` lookup, then search is layered on top.
 
 ---
 
-### Pitfall 5: Confidence Badge Becoming Stale After Playlist Re-scan
+### Pitfall 5: Swipe Actions Conflicting with Navigation and Existing Gestures
 
 **What goes wrong:**
-A track is marked as `manual` source (user tapped BPM). Later, `LibraryScanService` re-scans the playlist and GetSongBPM now has a value. The scan calls `BPMCacheService.cache()` which overwrites BPM but has no awareness of `bpmSource`. Result: the track has an API-sourced BPM value but the source field still says "manual". The UI shows the wrong confidence badge.
+`PlaylistListView` already has `.swipeActions` on each row (the "Analyze" swipe). Adding more swipe actions (contextual scan actions) or context menus creates gesture priority conflicts. In iOS 18, custom swipe implementations in `ScrollView` are broken due to `highPriorityGesture` conflicts. Additionally, adding a long-press context menu to rows that already have `NavigationLink` causes the navigation to fire before the context menu appears.
 
 **Why it happens:**
-`LibraryScanService` and the tap BPM feature both write through the same `cache()` method. Neither updates the source field because it does not exist yet, and when it is added, the scan path must be updated to set it.
+SwiftUI's gesture system has a strict priority: `ScrollView` drag > `highPriorityGesture` > `gesture` > `simultaneousGesture`. Native `.swipeActions` on `List` work because they are built into the `List` implementation. But mixing native swipe actions with custom gesture recognizers or context menus creates unpredictable priority resolution. The existing `NavigationLink(value:)` wrapping each row means taps are already "claimed."
 
 **How to avoid:**
-- Define clear precedence: API BPM always upgrades confidence (API is more reliable than human tapping)
-- The scan path must call `cacheFromAPI()` which sets `bpmSource = "api"`, overriding any previous manual source
-- The tap path calls `cacheManualBPM()` which sets `bpmSource = "manual"` only when there is no existing API value (or when the user explicitly overrides)
-- Confidence badges derive directly from the `bpmSource` field on `CachedBPM`, not a separate state
+- Stick to native `.swipeActions` and `.contextMenu` modifiers on `List` rows -- do NOT implement custom swipe gesture recognizers.
+- Multiple swipe actions on the same edge are supported natively (e.g., Analyze + Delete on trailing edge). Use this instead of custom implementations.
+- For context menus: use `.contextMenu` modifier which coexists with `NavigationLink` and `.swipeActions` without conflict (SwiftUI handles the long-press disambiguation).
+- Order matters: apply `.swipeActions` before `.contextMenu` on the row.
+- Do NOT use `DragGesture` or `LongPressGesture` on rows inside `List` -- these will fight with scroll and swipe.
 
 **Warning signs:**
-- Badges showing "manual" for tracks that now have GetSongBPM data
-- User confusion about which BPMs they set vs which came from the API
+- Custom `DragGesture` or `UIGestureRecognizerRepresentable` inside List rows
+- Swipe actions that sometimes fail to trigger (gesture stolen by scroll)
+- Navigation fires when user intended long-press context menu
 
 **Phase to address:**
-BPM Confidence phase -- write-path separation must be established before LibraryScanService is modified.
+Contextual scan actions phase. Design the action inventory (what goes in swipe vs context menu) before implementation. Swipe = primary action (Analyze). Context menu = secondary actions (copy link, remove, etc.).
 
 ---
 
-### Pitfall 6: Sensor Lab Raw Accelerometer Draining Battery When Not Visible
+### Pitfall 6: Settings Screen Over-Engineering with Premature Abstraction
 
 **What goes wrong:**
-The Sensor Lab uses `CMMotionManager` for raw accelerometer data (waveforms, g-force visualization). If the user navigates to another tab without the Sensor Lab explicitly stopping, the accelerometer keeps running. Unlike CMPedometer (system-managed, power-efficient), `CMMotionManager` accelerometer updates run at 50-100Hz and drain battery rapidly.
+The current `SettingsView` is 137 lines with inline sections. The v1.6 goal is "Settings screen structure (account, defaults, debug, about)." Developers restructure this into a generic `SettingsSection` model, a `SettingsRow` component with multiple configuration options, and a data-driven settings architecture. This adds 300+ lines of abstraction for a screen with 6 sections and ~15 rows that rarely changes.
 
 **Why it happens:**
-CMPedometer is designed for background/continuous use. CMMotionManager is NOT -- it runs the accelerometer hardware continuously at the requested frequency. Developers treat them the same because both are CoreMotion APIs.
+Settings screens look like they should be data-driven because each row follows a pattern. But BeatStep's settings have heterogeneous row types: static text, `Picker`, `Button`, `NavigationLink`, zone editor with binding, permission status with computed color. A generic model cannot cleanly express this variety without becoming as complex as the view code it replaces.
 
 **How to avoid:**
-- Create a `SensorLabService` that is NOT a singleton -- instantiate it within the Sensor Lab view
-- Stop `CMMotionManager` updates in `onDisappear` of the Sensor Lab view
-- Add `scenePhase` observer that stops all accelerometer updates when app backgrounds
-- Assert in tests: after Sensor Lab dismiss, `CMMotionManager.isAccelerometerActive == false`
+Keep `SettingsView` as a plain `List` with explicit sections. The restructuring should be:
+1. Extract long sections into separate views (`AccountSection`, `ZonesSection`, `PlaybackSection`, `PermissionsSection`, `DebugSection`, `AboutSection`).
+2. Each section is a simple `Section { ... }` returning concrete views -- no generics, no model layer.
+3. Add the missing sections (About with version/credits, Debug with Sensor Lab toggle relocated).
+4. Total refactor should be <200 lines across all files.
 
 **Warning signs:**
-- Battery drain after visiting Sensor Lab but navigating to a different tab
-- `isAccelerometerActive` returns true when no debug screen is visible
-- Thermal throttling on older devices
+- A `SettingsItem` enum or struct being created
+- Generic `SettingsRow<Content: View>` wrapper
+- More than 3 new files for the settings restructure
+- Settings data flowing through a ViewModel/ObservableObject when `@AppStorage` and direct reads suffice
 
 **Phase to address:**
-Sensor Lab phase -- lifecycle management must be the first thing built, before any visualization.
+Settings screen phase. Keep the phase scope to "restructure into extracted sections + add About section" -- explicitly NOT "build a settings framework."
 
 ---
 
-### Pitfall 7: Tap BPM Accuracy Problems From Beat Subdivision Ambiguity
+### Pitfall 7: Design Token Drift -- New Components Bypassing the Token System
 
 **What goes wrong:**
-Users tap to the wrong beat subdivision. Running music often has strong off-beats. Users tap eighth notes (2x BPM) or half-notes (0.5x BPM). A 128 BPM track gets recorded as 64 or 256 BPM. Both are "correct" from a musical perspective but wrong for cadence matching.
+v1.6 introduces custom components (playlist cards, run menu rebuild, zone picker redesign). Each new component hardcodes colors, fonts, spacing, and radii instead of using `DesignTokens.swift`. After the milestone, some components use `Color.accent` while others use `Color(red: 1.0, green: 0.271, blue: 0.271)`. Typography uses `.system(size: 16)` instead of `.bodyText`. The design system fractures.
 
 **Why it happens:**
-Tap BPM is inherently ambiguous. Without audio playback during tapping, users guess the tempo from memory. Even with audio, uptempo EDM and hip-hop have beat subdivisions that confuse non-musicians.
+Developers copy-paste from Apple sample code or Stack Overflow answers that use raw values. The existing token system is not enforced by the compiler -- it requires discipline. New developers (or AI assistants) do not know the token vocabulary exists.
 
 **How to avoid:**
-- Show real-time BPM as user taps (updating after each tap), so they can self-correct
-- Require minimum 8 taps (fewer = wildly inaccurate due to timing variance)
-- Auto-detect doubling/halving: if tapped BPM is within 5% of 2x or 0.5x of a "running range" (130-200 SPM), suggest the normalized value
-- Show a pulsing visual at the tapped rate so user can verify "does this feel right?"
-- Add quick 2x / 0.5x adjustment buttons after tapping completes
-- Play the track during tapping if Spotify playback is available
+Every phase plan for v1.6 must include a verification step: "grep for hardcoded colors/fonts/spacing in new files." Specifically:
+- No `Color(red:` or `Color(white:` in view files (only in `DesignTokens.swift`).
+- No `.system(size:` in view files for text fonts (SF Symbol sizing is exempted per key decision).
+- No raw `CGFloat` padding/spacing values -- use `Spacing.sm`, `Spacing.md`, etc.
+- No raw corner radius values -- use `Radius.sm`, `Radius.md`, etc.
+
+Add a comment header to `DesignTokens.swift`: "All visual constants live here. Views use token names, never raw values."
 
 **Warning signs:**
-- Manual BPMs clustering at exactly 2x or 0.5x of expected values
-- Songs with manual BPM of 60-80 that are clearly uptempo pop/EDM
+- New `.swift` files in Views/ containing `Color(red:` or `Color(white:`
+- Inconsistent spacing between new and old components
+- "It looks slightly different" feedback on new components
 
 **Phase to address:**
-Tap BPM phase -- validation and correction affordances must ship with the initial tap UI, not as a follow-up.
+EVERY phase in v1.6. This is a cross-cutting concern. Each phase verification should include a token compliance check.
 
 ---
 
-### Pitfall 8: Confidence Indicator Colors Clashing With Existing Sync State Colors
+### Pitfall 8: RunEngineService Singleton Mutation During Queue Changes
 
 **What goes wrong:**
-BPM confidence badges (verified/approximate/manual) use a traffic-light color scheme (green/yellow/orange). The existing `SyncQuality` enum already uses color-coded states (`stateInSync`, `stateDrifting`, `stateMismatched`) via DesignTokens. Both systems present colored badges on the same screens or in the same mental model, confusing users about what the color means.
+The skip queue feature adds new state to `RunEngineService` (pre-computed next tracks array, queue invalidation logic). Since `RunEngineService` is `@Observable` and `ActiveRunView` reads it directly, adding new `var` properties triggers view re-renders. Adding a `var nextTracks: [SpotifyTrack]` that updates every 2 seconds (when cadence changes) causes `ActiveRunView` to re-render every 2 seconds even though it does not display the queue.
 
 **Why it happens:**
-The existing v1.3 design system has sync state colors baked into `DesignTokens.swift`. Adding another set of status colors for a different concept (BPM data confidence vs run sync quality) creates visual ambiguity. Both could appear in playlist view (confidence badge) and run view (sync state).
+`@Observable` tracks access at the property level. If `ActiveRunView`'s body never reads `nextTracks`, it will not re-render when `nextTracks` changes. But if ANY view in the hierarchy reads it (e.g., a future "up next" indicator), that view and its parent chain re-render. The singleton pattern means every view sharing `RunEngineService.shared` is in the same observation graph.
 
 **How to avoid:**
-- Confidence badges should NOT use colors from the sync state palette
-- Use icons instead of colors for confidence: checkmark (verified), tilde/wave (approximate), hand/tap icon (manual)
-- If color is needed, use the neutral palette (gray tones) for confidence -- reserve colored indicators exclusively for run-time sync state
-- The two systems should never appear in the same view simultaneously
+- Mark queue-internal state with `@ObservationIgnored` (same pattern used for `playlistTracks`, `bpmMap`, `playedTrackIDs`).
+- Only expose a minimal observable surface: `var nextTrackPreview: SpotifyTrack?` (single next track for potential "up next" UI display).
+- Keep queue computation in `@ObservationIgnored` properties and `private` methods.
+- If an "up next" view is added later, make it read only `nextTrackPreview`, not the full queue array.
 
 **Warning signs:**
-- Users asking "what does the green dot mean?" (could be sync quality OR confidence)
-- Design review reveals both color systems on same screen
+- New `var` (non-`@ObservationIgnored`) properties on `RunEngineService` that change frequently
+- `ActiveRunView` body being called on every cadence poll (check with `Self._printChanges()`)
+- Queue array exposed as a public observable property
 
 **Phase to address:**
-BPM Confidence phase -- visual design must be decided before building any badges.
+Skip queue phase. The implementation MUST use `@ObservationIgnored` for internal queue state, following the existing pattern in `RunEngineService`.
+
+---
+
+### Pitfall 9: Spotify February 2026 API Changes Breaking Existing Functionality
+
+**What goes wrong:**
+Spotify's February 2026 Web API changelog introduced breaking changes that may affect BeatStep during v1.6 development:
+1. Search endpoint `limit` parameter maximum decreased from 50 to 10 (default from 20 to 5).
+2. Playlist response field `tracks` renamed to `items` throughout the object hierarchy.
+3. Several batch endpoints removed (Get Several Tracks, Get Several Albums).
+4. User profile fields removed: `country`, `email`, `followers`, `product`.
+
+If `BPMDiscoveryService` uses search with `limit > 10`, it silently returns fewer results. If `SpotifyPlaylist` decoding relies on a `tracks` field, it breaks entirely.
+
+**Why it happens:**
+Spotify made these changes in February 2026. The app was built against the pre-February API. If the app is already running on the new API without issues, the decoding models are correct. But any new code written referencing old documentation or examples will use deprecated field names.
+
+**How to avoid:**
+- Audit `SpotifyAPIService.swift` search calls: verify `limit` parameter is <= 10.
+- Audit `SpotifyPlaylist` model: verify the field used for tracks/items matches the current API response.
+- Check `SpotifyUser` model: if it reads `product` field (used for Premium check), verify it still works. The `user.isPremium` check in SettingsView depends on this.
+- When writing new API integration code for v1.6, reference the current (post-February 2026) API docs, not cached examples.
+
+**Warning signs:**
+- Search returning fewer results than expected
+- Playlist decoding failures (`DecodingError.keyNotFound`)
+- User Premium status check returning incorrect values
+
+**Phase to address:**
+First phase of v1.6. Run a quick API audit before building new features. If the app is currently working, the models may already be correct -- but verify explicitly.
 
 ---
 
@@ -204,105 +250,105 @@ BPM Confidence phase -- visual design must be decided before building any badges
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Store `bpmSource` as raw String in SwiftData | Avoids enum migration issues | Typo-prone, no compile-time safety | Always -- use computed property with enum for type safety |
-| Single `cache()` method for both API and manual writes | Less code | Cannot distinguish write sources, causes silent overwrites | Never -- separate write paths from day one |
-| Debug interval in shared UserDefaults | Quick to implement | Leaks into production behavior, hard to audit | Never -- use separate UserDefaults suite or in-memory-only |
-| CMMotionManager as global singleton | Convenient access from any view | Lifecycle leak, battery drain when not visible | Never -- use view-scoped instance tied to Sensor Lab |
-| Tap BPM without minimum tap count | Faster UX | Inaccurate BPM from 2-3 taps (timing variance is huge) | Never -- require 8+ taps for reasonable accuracy |
-| Batch-fetching confidence for playlist view via individual SwiftData queries | Works with current code structure | O(n) fetches for n tracks, sluggish on large playlists | Only for playlists under 50 tracks; batch fetch above that |
-
----
+| Inline haptic `.sensoryFeedback` in run views | Quick to add | Engine wake-up latency, no prepare/release lifecycle | Only for non-time-critical interactions (settings, library). Run screen must use prepared generators |
+| `.animation(.default)` without value parameter | Animates "everything" easily | Animates state changes you did not intend, causes jank on rapid updates | Never in ActiveRunView. Acceptable in static views like Settings |
+| Computing filtered playlists in view body | No debounce code needed | Keystroke lag with 50+ playlists + AsyncImage | Only if playlist count is guaranteed <20 |
+| Storing skip queue in UserDefaults | Persists across app restarts | Queue is ephemeral -- stale data causes wrong-BPM playback on next run | Never. Queue should be in-memory only, cleared on run stop |
+| One-file SettingsView with all sections | Single file to edit | 200+ line file, merge conflicts when multiple features touch settings | Acceptable during v1.5, should be split in v1.6 settings phase |
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| CMMotionManager + CMPedometer simultaneously | Running both for Sensor Lab during an active run causes resource contention on older iPhones | Never run both: Sensor Lab is a debug tool, not for mid-run use. Disable "Start Run" when Sensor Lab is active, or stop Sensor Lab when a run starts |
-| SwiftData schema change on CachedBPM | Adding non-optional field without default to existing @Model | Always add as optional; test upgrade from v1.3 build with populated cache |
-| GetSongBPM re-scan + manual BPM coexistence | Scan overwrites manual values because both use `cache()` | Separate write paths: `cacheFromAPI()` vs `cacheManualBPM()` with clear precedence |
-| Spotify rate limits during skip fallback | Rapid `play()` calls when cycling through zero-BPM tracks | Circuit breaker: max 3 consecutive no-match attempts, then fall back to "play regardless" |
-| CMMotionManager startAccelerometerUpdates | Forgetting to call `stopAccelerometerUpdates()` on view dismiss | Tie lifecycle to view: stop in `onDisappear` AND `scenePhase != .active` |
-
----
+| Spotify Player API + queue feature | Using `POST /me/player/queue` for skip queue (append-only, no remove) | Local pre-computation queue with `PUT /me/player/play` for playback control |
+| Spotify API Feb 2026 changes | Search `limit` parameter still set to 20+ (max is now 10) | Update `BPMDiscoveryService` search calls to use `limit: 10`. Paginate if more results needed |
+| Spotify API Feb 2026 changes | Reading `playlist.tracks` field (renamed to `items`) | Verify `SpotifyPlaylist` model uses correct field name. Check `PaginatedResponse` decoding |
+| CoreMotion + haptics during run | Haptic engine interfering with accelerometer readings | No evidence of interference, but test on device. Haptic motor and accelerometer are separate hardware |
+| SwiftData + search filtering | Fetching `ScannedPlaylist` on every filter change | Cache `coverageMap` in memory (already done), filter against it. No SwiftData queries during search |
 
 ## Performance Traps
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Raw accelerometer at 100Hz in Sensor Lab | UI thread overwhelmed, dropped frames, battery drain | Downsample to 10-20Hz for display; buffer raw data on background queue | Immediately on iPhone 12 and below |
-| Individual SwiftData fetch per track for confidence badge | Playlist with 500 tracks = 500 queries on scroll | Batch fetch all CachedBPM for playlist track IDs in one query, build dictionary | Playlists over ~100 tracks |
-| Tap BPM timer using `Date()` on main thread | Timer drift when main thread is busy (layout, animation) | Use `CADisplayLink` or `mach_absolute_time()` for tap interval measurement | At high BPM (>160): 10ms drift = 2-3 BPM error |
-| Recomputing confidence enum for every cell in LazyVStack | Redundant computation on every scroll frame | Compute confidence once per playlist load, store in view model dictionary | Playlists over ~200 tracks |
-
----
+| `AsyncImage` reload on list filter | Album art flickers during search/filter | Extract `AsyncImage` into identity-stable subview, debounce filter | >30 playlists with search active |
+| Unbounded `.sensoryFeedback` in cadence-updated views | Battery drain, haptic motor overheating | Haptics only on discrete user actions, never on observed-state changes | Any run >10 minutes |
+| `.shadow()` or `.blur()` on scrolling list rows | Frame drops during scroll, especially with album art | Use `drawingGroup()` or remove blur/shadow from scrollable content | >20 visible rows |
+| Song transition animation + cadence poll both triggering re-render | Dropped frames during song change | Scope animations to `value:` parameter, use `@ObservationIgnored` for non-UI state | Every song transition during active run |
+| Pre-computing queue on every cadence update (every 2s) | Unnecessary CPU work during exercise | Only recompute queue when `sustainedSPM` changes (after 17s debounce), not on every `latestCadence` update | Continuous during run |
 
 ## UX Pitfalls
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Confidence badges without explanation | Users see "verified"/"approximate"/"manual" with no context | Info button or first-time tooltip explaining the three levels |
-| Tap BPM without audio playback | User must remember song tempo from memory -- unreliable | Play the track (or Spotify preview) during tapping |
-| Zero-BPM fallback buried in Settings | User hits the problem during a run, cannot fix mid-run | Show fallback choice inline on first encounter, with "remember my choice" option |
-| Sensor Lab showing raw numbers only | "Accel X: 0.0023" means nothing to non-developers | Show interpreted values: "Detecting: Walking", "Confidence: High", "Steps: smooth rhythm" |
-| Confidence colors clashing with sync state colors | Both use red/yellow/green -- which system does the color represent? | Confidence uses icons (checkmark/tilde/hand), sync state keeps its existing color system |
-| No undo for tap BPM | User accidentally saves wrong BPM, no way to revert | Show "Reset to original" option when track has API BPM available |
-
----
+| Haptic on every search keystroke | Annoying vibration while typing playlist name | No haptics on text input -- ever |
+| Context menu on playlist row with no visual affordance | Users never discover secondary actions exist | Add subtle "..." icon on row trailing edge, or mention in onboarding |
+| Search bar always visible (takes space) | Reduces visible playlist count on small screens | Use `.searchable` which auto-hides in navigation bar, revealed by pull-down |
+| Skip queue showing "Up Next" with track that changes when cadence changes | Confusing -- "up next" keeps changing before playing | Either hide queue preview, or only show it when cadence is stable (no pending rematch) |
+| Settings restructure moving zone configuration deeper | Users who configured zones in v1.2-v1.5 cannot find them | Keep zones at top level (not nested under a "Running" sub-page) |
+| Animated transitions on every screen push/pop | Feels overdone, slows navigation | Only animate meaningful state changes (run start, sync state). Navigation should be instant/default |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Schema migration:** Tested upgrade from v1.3 build with existing BPM cache -- not just clean install
-- [ ] **Sensor Lab cleanup:** Accelerometer stops when navigating away (onDisappear + scenePhase)
-- [ ] **Sensor Lab isolation:** Debug detection interval does NOT affect production CadenceService.startDetecting()
-- [ ] **Tap BPM validation:** Minimum 8 taps enforced, 2x/0.5x auto-detection, not just raw average
-- [ ] **Tap BPM vs API conflict:** Manual BPM cannot silently overwrite API-sourced BPM without confirmation
-- [ ] **Confidence derivation:** Badge reads from `bpmSource` field on CachedBPM, not a separate or stale cache
-- [ ] **Skip fallback circuit breaker:** Tested with playlist 90% unscanned on "skip" mode -- no rapid Spotify calls
-- [ ] **Fallback communication:** User understands why a song played despite no BPM (toast or indicator)
-- [ ] **Battery test:** 10-minute Sensor Lab session does not drain more than 5% above baseline
-- [ ] **Confidence in RunEngine:** `selectNextMatch` and `findMatchingTracks` correctly handle manual vs API BPM
-- [ ] **Re-scan updates confidence:** After LibraryScanService re-scan, tracks with new API data show "verified" badge (not stale "manual")
-- [ ] **Sensor Lab + active run:** Cannot have both running simultaneously -- one disables/warns about the other
-
----
+- [ ] **Haptics:** Tested during a 10+ minute run on physical device -- not just in previews
+- [ ] **Haptics:** `.prepare()` called before time-critical feedback (run screen events)
+- [ ] **Search:** Debounce verified -- type rapidly and confirm no lag or image flicker
+- [ ] **Search:** Filter segments (All/Analyzed/Unanalyzed) work without network calls
+- [ ] **Search:** Empty state shown when filter/search yields zero results
+- [ ] **Swipe actions:** Work after scrolling (not stolen by scroll gesture)
+- [ ] **Swipe actions:** Coexist with context menu without gesture conflicts
+- [ ] **Skip queue:** Local queue invalidates when cadence changes (not playing stale matches)
+- [ ] **Skip queue:** Skip during song transition does not double-fire (rate limit guard)
+- [ ] **Skip queue:** Uses `play(uri:)` not `POST /me/player/queue`
+- [ ] **Animations:** No bare `.animation(.default)` without `value:` in run views
+- [ ] **Animations:** Tested on physical device during run -- no frame drops
+- [ ] **Settings:** Zone configuration still at top level, not buried
+- [ ] **Settings:** Version string updated from "v1.4" to "v1.6"
+- [ ] **Design tokens:** Zero hardcoded `Color(red:` in new view files
+- [ ] **Design tokens:** All spacing uses `Spacing.*`, all radii use `Radius.*`
+- [ ] **Feb 2026 API:** Search limit parameter <= 10 in BPMDiscoveryService
+- [ ] **Feb 2026 API:** Playlist response field name verified (`items` not `tracks`)
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Schema migration crash | MEDIUM | Hotfix with correct optional field. Users re-launch, cache survives. If destructive migration shipped, cache rebuilds on next scan (data loss but not fatal) |
-| Debug interval leaked to production | LOW | Reset debug settings on app launch outside Sensor Lab. One-line fix |
-| Manual BPM overwrote API values | HIGH | No way to know which tracks were overwritten without audit log. Must re-scan all affected playlists. Prevention is the only real strategy |
-| Infinite skip loop / rate limit | MEDIUM | Add circuit breaker, ship update. Users can switch fallback to "play regardless" in the meantime |
-| Accelerometer battery drain | LOW | Stop accelerometer on next session. Add lifecycle guard in hotfix |
-| Stale confidence badges | LOW | Force-refresh confidence from bpmSource field on next playlist view load |
-| Confidence/sync color confusion | LOW | Replace color badges with icon badges. No data change needed |
-
----
+| Over-hapticized app | LOW | Grep for `.sensoryFeedback` and `UIImpactFeedbackGenerator`, remove non-essential ones. 1-2 hour fix |
+| Animation jank in run view | MEDIUM | Add `value:` parameter to all `.animation()` calls, add `drawingGroup()` to animated subviews. Requires device testing |
+| Built skip queue on Spotify queue API | HIGH | Must rewrite to local pre-computation approach. Queue API items cannot be removed -- users stuck with wrong-BPM songs until queue drains |
+| Search causes AsyncImage flicker | LOW | Extract playlist row album art into separate identity-stable view, add debounce. 1-2 hour fix |
+| Gesture conflicts on swipe + context menu | MEDIUM | Remove custom gesture recognizers, switch to native `.swipeActions` + `.contextMenu`. May require row layout restructure |
+| Settings over-engineered | MEDIUM | Delete abstraction layer, return to explicit section views. Wasted time but reversible |
+| Design token drift | LOW-MEDIUM | Grep + replace hardcoded values. Easy per-file but tedious if spread across many files |
+| RunEngineService observable bloat | MEDIUM | Add `@ObservationIgnored` to internal properties. Requires understanding observation tracking |
+| Feb 2026 API breakage | MEDIUM | Update model field names, adjust search limits. Requires testing each endpoint |
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Schema migration breaking cache | BPM Confidence (FIRST phase) | Install v1.3 build with data, upgrade to v1.4, verify cache intact |
-| Debug interval leaking to production | Sensor Lab | Use Sensor Lab with 0.5s interval, start production run, verify 5s window unchanged |
-| Tap BPM overwriting API values | Tap BPM (AFTER confidence/source tracking) | Tap BPM on track with API value, verify API value preserved unless explicitly overridden |
-| Zero-BPM skip loop | Zero-BPM Fallback | Start run with 90% unscanned playlist on "skip", verify circuit breaker fires after 3 attempts |
-| Stale confidence after re-scan | BPM Confidence | Tap BPM on track, re-scan playlist via LibraryScanService, verify badge updates to "verified" |
-| Sensor Lab battery drain | Sensor Lab | Leave Sensor Lab, verify CMMotionManager.isAccelerometerActive == false |
-| Tap BPM accuracy | Tap BPM | Tap half-time on 128 BPM track, verify 2x suggestion appears |
-| Confidence/sync color clash | BPM Confidence | Visual review: no overlapping color semantics between confidence and sync state |
-
----
+| Haptic fatigue | Micro-interaction pass | Haptic inventory defined before implementation; run-test on device |
+| Run screen animation jank | Micro-interaction pass + Run menu redesign | Instruments Time Profiler on device during 5-min run shows <16ms frames |
+| Spotify queue API misuse | Skip queue | Implementation uses `play(uri:)`, zero calls to queue endpoint |
+| Search keystroke lag | Library search/filter | Type rapidly in 50+ playlist library -- no flicker, no lag |
+| Swipe gesture conflicts | Contextual scan actions | Swipe + context menu + navigation all work on same row |
+| Settings over-engineering | Settings screen | Restructure is <200 LOC across all new files, no generic model layer |
+| Design token drift | ALL phases | `grep -r "Color(red:" BeatStep/Views/` returns zero matches in new files |
+| RunEngineService mutation | Skip queue | New queue state uses `@ObservationIgnored`; `Self._printChanges()` shows no spurious re-renders |
+| Feb 2026 API changes | First phase (API audit) | All endpoints tested against live API, search limit <= 10 |
 
 ## Sources
 
-- Direct codebase analysis: `CadenceService.swift` (rolling window, inactivity timer), `BPMCacheService.swift` (upsert pattern, no source field), `RunEngineService.swift` (selectNextMatch, findClosestTrack, bpmMap filtering), `CachedBPM.swift` (current schema)
-- Apple CoreMotion documentation: CMPedometer is background-safe and power-efficient; CMMotionManager accelerometer is not
-- SwiftData migration behavior: lightweight migration requires optional fields or fields with default values
-- Spotify Web API: 429 rate limit responses on rapid sequential play() calls
-- Domain knowledge: tap BPM half/double detection is a well-known problem in music production tools (Ableton, Logic Pro tap tempo all handle this)
+- [Spotify Web API Rate Limits](https://developer.spotify.com/documentation/web-api/concepts/rate-limits) -- rolling 30-second window, 429 responses
+- [Spotify Web API February 2026 Changelog](https://developer.spotify.com/documentation/web-api/references/changes/february-2026) -- search limit reduced to 10, playlist field renames
+- [Spotify Queue API Limitations (GitHub Issue #921)](https://github.com/spotify/web-api/issues/921) -- no remove from queue, append-only, 20-item read limit
+- [Sensory Feedback and Haptics in SwiftUI](https://bleepingswift.com/blog/sensory-feedback-haptics-swiftui) -- best practices, battery considerations
+- [SwiftUI Sensory Feedback (Use Your Loaf)](https://useyourloaf.com/blog/swiftui-sensory-feedback/) -- iOS 17+ modifier usage
+- [WWDC23: Demystify SwiftUI Performance](https://developer.apple.com/videos/play/wwdc2023/10160/) -- observation tracking, animation scoping
+- [SwiftUI Scroll Performance: The 120FPS Challenge](https://blog.jacobstechtavern.com/p/swiftui-scroll-performance-the-120fps) -- drawingGroup, lazy containers
+- [SwiftUI Gesture Conflicts in ScrollView (Apple Forums)](https://developer.apple.com/forums/thread/760035) -- iOS 18 highPriorityGesture breaking custom swipe
+- [SwiftUI Searchable Bugs and Learnings](https://medium.com/@snowham/exploring-swiftui-learnings-and-bugs-with-searchable-c5110995c80e) -- memory and lifecycle issues
+- BeatStep codebase: `RunEngineService.swift`, `SpotifyPlayerService.swift`, `PlaylistListView.swift`, `SettingsView.swift`, `DesignTokens.swift`
 
 ---
-*Pitfalls research for: BeatStep v1.4 -- debug tooling, tap BPM, confidence indicators, zero-BPM fallback*
+*Pitfalls research for: BeatStep v1.6 Little Big Things*
 *Researched: 2026-03-25*
