@@ -1,11 +1,39 @@
 # Milestones
 
-## v1.4 Under The Hood (Shipped: 2026-03-25)
+## v1.5 One Way In (Shipped: 2026-03-25)
 
-**Phases completed:** 6 phases, 11 plans, 0 tasks
+**Phases completed:** 3 phases, 3 plans
+**Timeline:** 2026-03-25 (1 day)
+**Swift LOC:** 9,482
+**Commits:** 6 feature commits
+
+**Delivered:** Unified run flow — Run tab is the single entry point for all runs, old duplicate screen deleted, Library routes to Run tab, and onboarding now includes first-playlist BPM analysis.
 
 **Key accomplishments:**
-- (none recorded)
+- Run tab Start Run button works reliably with last-used playlist, zone, and tolerance pre-loaded
+- Old RunView.swift deleted — single entry point via Run tab enforced
+- Library "Run with this playlist" CTA navigates to Run tab via SelectedTabKey EnvironmentKey
+- 4-page onboarding flow: Spotify → Health → Playlist Analysis → Zones
+- Immediate fullScreenCover on Start Run tap (workaround for Spotify bounce causing missed .onChange)
+
+**Git range:** e797d4f → f77815b
+
+---
+
+## v1.4 Under The Hood (Shipped: 2026-03-25)
+
+**Phases completed:** 6 phases, 11 plans
+**Timeline:** 2026-03-25 (1 day)
+
+**Delivered:** BPM data quality layer — confidence tracking, tap-to-correct input, zero-BPM fallback, and developer Sensor Lab for debugging cadence detection.
+
+**Key accomplishments:**
+- BPM confidence model (verified/approximate/manual) with lazy backfill migration
+- Confidence badges in playlist view (green/yellow/blue capsules)
+- Tap BPM input with rolling 8-interval average and outlier rejection
+- Zero-BPM fallback (skip/play regardless/prompt) in Settings
+- Sensor Lab with live accelerometer data, waveform chart, and configurable detection interval
+- Step count fix using CadenceService as single source of truth
 
 ---
 

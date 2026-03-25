@@ -227,6 +227,49 @@
 
 ---
 
+## Milestone: v1.5 — One Way In
+
+**Shipped:** 2026-03-25
+**Phases:** 3 | **Plans:** 3 | **Sessions:** ~1
+
+### What Was Built
+- Run tab Start Run button fully wired with engine integration, playlist fetch, and fullScreenCover
+- Old RunView.swift deleted — single run entry point enforced across entire codebase
+- Library "Run with this playlist" CTA that writes LastRunPlaylist and switches tab via SelectedTabKey EnvironmentKey
+- 4-page onboarding flow with playlist picker and inline BPM analysis before completion
+- Returning user quick-start: last-used playlist, zone, and tolerance pre-loaded on Run tab appear
+
+### What Worked
+- **Smallest milestone yet** — 3 phases, 3 plans, 1 day. Tight scope with clear "kill the old, wire the new" objective executed cleanly.
+- **EnvironmentKey for cross-tab navigation** — SelectedTabKey injection on the Library NavigationStack allowed PlaylistDetailView to switch tabs without deep binding chains. Clean, idiomatic SwiftUI.
+- **Immediate fullScreenCover on tap** — Spotify app bounce during playback handoff causes missed .onChange callbacks. Setting showActiveRun = true immediately on tap was the right fix.
+- **Delete-first approach** — Phase 25 deleted RunView.swift before adding alternatives. This "close the old path" approach prevents regression better than "add new path, then delete old."
+- **Integration checker caught zero issues** — All 6 requirements wired correctly across phases. Clean integration for the first time.
+
+### What Was Inefficient
+- **Research disabled** — All 3 phases skipped research. This was appropriate for the scope (mostly wiring and deleting) but meant no VALIDATION.md files were generated.
+- **Nyquist VALIDATION.md still missing** — Sixth milestone in a row. At this point it's a systemic gap in the workflow config, not a per-milestone issue.
+- **Xcode CLI tools not configured** — Phase 26 executor couldn't run build verification. The code compiles (verified in later phases) but automated build checking during execution would catch issues earlier.
+- **SUMMARY one-liner fields still null** — Sixth milestone. This is a permanent gap unless the summary template is changed.
+
+### Patterns Established
+- EnvironmentKey for cross-tab programmatic navigation (Library → Run tab)
+- Three-state onboarding view pattern: loading → picker → analyzing (with progress)
+- "No skip button" for critical onboarding steps that ensure data readiness
+
+### Key Lessons
+1. **Delete the old path before wiring the new** — removing RunView.swift first made it structurally impossible to regress. Grep-for-zero-references is the strongest verification.
+2. **EnvironmentKey beats deep binding chains** — for cross-tab navigation, injecting at the NavigationStack level and reading via @Environment is cleaner than threading Bindings through 3+ layers.
+3. **Immediate UI response over state-driven transitions** — when external systems (Spotify) can bounce or delay, don't gate UI transitions on their callbacks. Set the flag immediately, let the system catch up.
+4. **Small milestones ship fast and clean** — 3 plans, zero gaps, zero rework. Scope discipline pays dividends.
+
+### Cost Observations
+- Model mix: ~60% opus (execution), ~30% sonnet (verification/integration), ~10% haiku
+- Sessions: ~1 in a single day
+- Notable: Entire milestone completed in under 1 hour wall time — fastest milestone yet
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -238,6 +281,7 @@
 | v1.2 | ~2 | 3 | Single-day milestone, features-before-gate sequencing |
 | v1.3 | ~3 | 5 | Component-first assembly, gap closure cycle, reactive chain |
 | v1.4 | ~2 | 6 | Pure-logic engine pattern, integration checker value, lazy backfill |
+| v1.5 | ~1 | 3 | Smallest milestone, delete-first approach, EnvironmentKey navigation |
 
 ### Cumulative Quality
 
@@ -248,6 +292,7 @@
 | v1.2 | 50+ | Services + models + onboarding | 0 (HealthKit is first-party) |
 | v1.3 | 70+ | Services + models + views + run screen | 0 (all SwiftUI native) |
 | v1.4 | 90+ | Services + models + views + engine + debug | 0 (Swift Charts is first-party) |
+| v1.5 | 90+ | Services + models + views + onboarding + navigation | 0 (no new deps) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -264,3 +309,6 @@
 11. Cross-phase integration checking catches bugs per-phase verification misses (v1.4 — stepCount gap)
 12. Plan checkers should verify displayed properties have write paths (v1.4 — stepCount declared but never assigned)
 13. Lazy backfill via computed getters beats migration for backward-compatible model extensions (v1.4 — BPMConfidence)
+14. Delete the old path before wiring the new — structural enforcement via grep-for-zero-references (v1.5 — RunView deletion)
+15. EnvironmentKey beats deep binding chains for cross-tab navigation (v1.5 — SelectedTabKey)
+16. Small, tightly-scoped milestones ship fast and clean — zero gaps, zero rework (v1.2, v1.5)

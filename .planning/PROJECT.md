@@ -57,15 +57,16 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Sensor Lab debug screen behind hidden 5-tap Settings toggle — v1.4
 - ✓ Live accelerometer data, cadence, step count, algorithm state in Sensor Lab — v1.4
 - ✓ Real-time waveform chart with Swift Charts and configurable detection interval — v1.4
+- ✓ Single run entry point via Run tab — no more duplicate run screens — v1.5
+- ✓ Playlist selection in Library routes to Run tab with playlist pre-loaded — v1.5
+- ✓ Run tab Start Run button works reliably with engine integration — v1.5
+- ✓ Old RunView.swift deleted, single path enforced — v1.5
+- ✓ Onboarding includes first-playlist BPM analysis step before completion — v1.5
+- ✓ Quick start for returning users: last playlist, zone, tolerance pre-loaded on Run tab — v1.5
 
 ### Active
 
-- [ ] Single run entry point via Run tab — no more duplicate run screens from playlist view
-- [ ] Playlist selection routes to Run tab with playlist pre-loaded, not a separate run screen
-- [ ] Run tab Start Run button works reliably (currently broken)
-- [ ] Inline playlist picker in Run tab (bottom sheet or inline row) for swapping playlists without leaving tab
-- [ ] Onboarding includes first playlist analysis step before completion
-- [ ] Quick start for returning users: last playlist, zone, tolerance pre-loaded on Run tab
+(None — defining next milestone)
 
 ### Out of Scope
 
@@ -76,6 +77,7 @@ When you run, your music should move with you — every footstrike landing on th
 - Real-time tempo stretching of audio — queue matching songs instead
 - Android support — iOS native only for v1
 - Light mode support — v1.1 is intentional dark commitment; revisit only if feedback demands it
+- Inline playlist picker in Run tab — users go to Library to select playlists; keeps Run tab simple
 
 ## Constraints
 
@@ -129,40 +131,31 @@ When you run, your music should move with you — every footstrike landing on th
 | Hidden 5-tap toggle for Sensor Lab | Developer/power-user feature that shouldn't clutter normal Settings | ✓ Good — discoverable but not distracting |
 | Swift Charts with drawingGroup() for waveform | Metal-backed rendering prevents frame drops with 100-sample rolling buffer | ✓ Good — smooth chart updates |
 | stepCount from CadenceService (not SensorLabService) | CadenceService owns CMPedometer — authoritative source for step data | ✓ Good — fixed gap closure, single source of truth |
+| Immediate fullScreenCover on Start Run tap | Spotify app bounce during playback handoff causes missed .onChange on cadence state | ✓ Good — reliable run start |
+| Tab enum with selection binding | Programmatic tab switching from Library CTA to Run tab | ✓ Good — clean cross-tab navigation |
+| SelectedTabKey EnvironmentKey | Avoids deep binding chains for tab switching; injected at NavigationStack level | ✓ Good — PlaylistDetailView reads cleanly |
+| No skip button on onboarding playlist step | First-run experience requires at least one analyzed playlist | ✓ Good — ensures data ready for first run |
+| Fetch 20 playlists for onboarding picker | Enough for selection, avoids pagination complexity in onboarding | ✓ Good — simple and sufficient |
 
 ## Context
 
-Shipped v1.4 with 5,968 LOC Swift across 23 phases (5 milestones). All 12 v1.4 requirements satisfied.
+Shipped v1.5 with 9,482 LOC Swift across 26 phases (6 milestones). All 6 v1.5 requirements satisfied.
 Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer + CMMotionManager), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache, Swift Charts for waveform visualization.
 
-Key architecture additions in v1.4:
-- `BPMConfidence` / `BPMSource` — enums on CachedBPM for confidence tracking
-- `BPMInfo` — lightweight view data struct decoupled from SwiftData
-- `TapBPMEngine` — pure-logic class with rolling 8-interval BPM, outlier rejection, inactivity reset
-- `TapBPMView` — half-sheet tap-along interface presented from badge tap in PlaylistDetailView
-- `ZeroBPMFallback` — enum with UserDefaults persistence, consumed by RunEngineService
-- `SensorLabService` — @Observable singleton wrapping CMMotionManager with rolling buffer
-- `SensorLabView` — debug screen with accelerometer data, cadence readout, waveform chart, interval slider
-- `CadenceService.stepCount` — public observable property written from CMPedometer
+Key architecture additions in v1.5:
+- `SelectedTabKey` — EnvironmentKey for cross-tab navigation (Library CTA → Run tab)
+- `OnboardingPlaylistView` — three-state onboarding view (loading/picker/analyzing) with inline BPM analysis
+- `RunView.swift` deleted — RunTabView is the sole run entry point
+- 4-page onboarding flow: Spotify → Health → Playlist Analysis → Zones
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
 
-Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation (cosmetic).
-
-## Current Milestone: v1.5 One Way In
-
-**Goal:** Unify the run flow into a single path — Run tab is the only way to start a run. Kill duplicate screens, fix the broken start button, add playlist picker, extend onboarding with first analysis.
-
-**Target features:**
-- Kill old playlist-initiated run screen, route to Run tab instead
-- Fix Run tab Start Run button (currently non-functional)
-- Inline playlist picker in Run tab
-- Onboarding first-playlist analysis step
-- Quick start for returning users (last settings pre-loaded)
+Known issues:
+- Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
 
 ## Current State
 
-v1.4 shipped. 23 phases complete across 5 milestones. Starting v1.5 to consolidate the run flow.
+v1.5 shipped. 26 phases complete across 6 milestones. Ready for next milestone.
 
 ---
-*Last updated: 2026-03-25 after v1.5 milestone start*
+*Last updated: 2026-03-25 after v1.5 milestone*
