@@ -45,6 +45,8 @@ final class RunEngineService {
     @ObservationIgnored
     private var zeroBPMFallback: ZeroBPMFallback = .skip
     @ObservationIgnored
+    private var playedNilBPMIDs: Set<String> = []
+    @ObservationIgnored
     private var isDiscovering: Bool = false
     @ObservationIgnored
     private(set) var needsDiscovery: Bool = false
@@ -121,6 +123,7 @@ final class RunEngineService {
         playedTrackIDs = []
         pendingRematch = false
         isRunActive = true
+        zeroBPMFallback = ZeroBPMFallback.saved
         needsDiscovery = false
         isDiscovering = false
 
@@ -155,6 +158,7 @@ final class RunEngineService {
         bpmMap = [:]
         danceabilityMap = [:]
         playedTrackIDs = []
+        playedNilBPMIDs = []
         sustainedSPM = 0
         latestCadence = 0
         pendingRematch = false
@@ -258,6 +262,25 @@ final class RunEngineService {
                 playedTrackIDs.insert(closest.id)
                 checkDiscoveryNeeded(matchCount: 0, forBPM: spm)
                 return closest
+            }
+            // Zero-BPM fallback: include nil-BPM tracks if user configured playRegardless or prompt
+            if zeroBPMFallback == .playRegardless || zeroBPMFallback == .prompt {
+                let nilBPMTracks = playlistTracks.filter { bpmMap[$0.id] == nil && !playedNilBPMIDs.contains($0.id) }
+                if let track = nilBPMTracks.first {
+                    playedNilBPMIDs.insert(track.id)
+                    playedTrackIDs.insert(track.id)
+                    return track
+                }
+                // If nil-BPM pool exhausted, reset and retry
+                let allNilBPM = playlistTracks.filter { bpmMap[$0.id] == nil }
+                if !allNilBPM.isEmpty {
+                    playedNilBPMIDs.removeAll()
+                    if let track = allNilBPM.first {
+                        playedNilBPMIDs.insert(track.id)
+                        playedTrackIDs.insert(track.id)
+                        return track
+                    }
+                }
             }
             checkDiscoveryNeeded(matchCount: 0, forBPM: spm)
             return nil
@@ -471,6 +494,7 @@ final class RunEngineService {
         playlistTracks = tracks
         self.bpmMap = bpmMap
         playedTrackIDs = []
+        playedNilBPMIDs = []
     }
 
     func setSustainedSPMForTesting(_ spm: Int) {
