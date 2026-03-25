@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: One Way In
 status: completed
-stopped_at: Phase 25 context gathered
-last_updated: "2026-03-25T20:00:56.717Z"
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-03-25T20:05:07.297Z"
 last_activity: 2026-03-25 -- Phase 25 Plan 01 complete (consolidate run entry to Run tab)
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 2
   completed_plans: 2
-  percent: 33
+  percent: 67
 ---
 
 # Project State
