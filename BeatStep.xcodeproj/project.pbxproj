@@ -15,6 +15,8 @@
 		AA18010101010101AA010208 /* BPMCacheWritePathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */; };
 		AA19010101010101AA010102 /* BPMInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010101 /* BPMInfo.swift */; };
 		AA19010101010101AA010104 /* BPMConfidenceBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */; };
+		AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010101 /* TapBPMEngine.swift */; };
+		AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20010101010101AA010103 /* TapBPMEngineTests.swift */; };
 		126F4939399F4A928811E639 /* BeatStepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6274DEE660A35399701FA544 /* BeatStepTests.swift */; };
 		1B9FE1F5B9EA81A1566F6282 /* GetSongBPMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D166178F00CF25146611C6FB /* GetSongBPMResponse.swift */; };
 		1D5883183D461FAA314B3D3B /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = 1D645A47023EFFA3D0BA0FD8 /* SpotifyiOS */; };
@@ -155,6 +157,8 @@
 		AA18010101010101AA010207 /* BPMCacheWritePathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMCacheWritePathTests.swift; sourceTree = "<group>"; };
 		AA19010101010101AA010101 /* BPMInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMInfo.swift; sourceTree = "<group>"; };
 		AA19010101010101AA010103 /* BPMConfidenceBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPMConfidenceBadgeTests.swift; sourceTree = "<group>"; };
+		AA20010101010101AA010101 /* TapBPMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngine.swift; sourceTree = "<group>"; };
+		AA20010101010101AA010103 /* TapBPMEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapBPMEngineTests.swift; sourceTree = "<group>"; };
 		78164965B7403F7D8CB49EC3 /* CadenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceService.swift; sourceTree = "<group>"; };
 		813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		82BA911E66F47778D3963B1D /* DesignTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
@@ -265,6 +269,7 @@
 				AD674B0D591CAAA01C3130FC /* SpotifyAPIServiceTests.swift */,
 				B74034E9B7A89BBF15C60005 /* SpotifyAuthServiceTests.swift */,
 				37AD5391E7BD4E7DC62371C7 /* SyncQualityTests.swift */,
+				AA20010101010101AA010103 /* TapBPMEngineTests.swift */,
 				E3C0C2D8AB5CCAD300237AD7 /* TrackCountTests.swift */,
 				EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */,
 				F927185F0FC2EA44EC85146D /* Mocks */,
@@ -337,6 +342,7 @@
 				AB8B969BF656CD1577C70007 /* SpotifyAPIService.swift */,
 				F57F4BF6356B22D675CE604B /* SpotifyAuthService.swift */,
 				0A75F1A96DAD38B70385AFC7 /* SpotifyPlayerService.swift */,
+				AA20010101010101AA010101 /* TapBPMEngine.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -587,6 +593,7 @@
 				2D30C68B62C2DE1EC7FB9202 /* ZoneSelectionTests.swift in Sources */,
 				AA16010101010101AA010104 /* LongPressStopTests.swift in Sources */,
 				AA16010101010101AA010108 /* ActiveRunViewTests.swift in Sources */,
+				AA20010101010101AA010104 /* TapBPMEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -652,6 +659,7 @@
 				9608D1E9229B70C2D4EC9D5E /* ZoneSettingsRow.swift in Sources */,
 				AA16010101010101AA010102 /* LongPressStopButton.swift in Sources */,
 				AA16010101010101AA010106 /* ActiveRunView.swift in Sources */,
+				AA20010101010101AA010102 /* TapBPMEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
