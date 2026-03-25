@@ -31,7 +31,7 @@ struct SensorLabView: View {
                     Text(String(describing: cadence.state))
                 }
                 LabeledContent("Steps") {
-                    Text("\(service.stepCount)")
+                    Text("\(cadence.stepCount)")
                 }
             }
 
@@ -63,9 +63,11 @@ struct SensorLabView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             SensorLabService.shared.startAccelerometer()
+            CadenceService.shared.requestPermissionAndStart()
         }
         .onDisappear {
             SensorLabService.shared.stopAccelerometer()
+            CadenceService.shared.stopDetecting()
         }
     }
 }

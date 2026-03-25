@@ -61,7 +61,6 @@ final class SensorLabServiceTests: XCTestCase {
         XCTAssertEqual(service.accelerationX, 0)
         XCTAssertEqual(service.accelerationY, 0)
         XCTAssertEqual(service.accelerationZ, 0)
-        XCTAssertEqual(service.stepCount, 0)
     }
 
     // MARK: - Test 4: AccelerometerSample magnitude
@@ -86,7 +85,6 @@ final class SensorLabServiceTests: XCTestCase {
         XCTAssertEqual(service.accelerationX, 0)
         XCTAssertEqual(service.accelerationY, 0)
         XCTAssertEqual(service.accelerationZ, 0)
-        XCTAssertEqual(service.stepCount, 0)
         XCTAssertTrue(service.samples.isEmpty)
         XCTAssertEqual(service.detectionInterval, 1.0)
     }

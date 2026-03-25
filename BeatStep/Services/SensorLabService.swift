@@ -10,7 +10,6 @@ final class SensorLabService {
     var accelerationX: Double = 0
     var accelerationY: Double = 0
     var accelerationZ: Double = 0
-    var stepCount: Int = 0
     var isRunning: Bool = false
     var detectionInterval: TimeInterval = 1.0
     var samples: [AccelerometerSample] = []
@@ -48,7 +47,6 @@ final class SensorLabService {
         accelerationX = 0
         accelerationY = 0
         accelerationZ = 0
-        stepCount = 0
     }
 
     func updateInterval(_ newInterval: TimeInterval) {
