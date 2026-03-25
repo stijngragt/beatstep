@@ -87,4 +87,109 @@ final class BPMCacheServiceTests: XCTestCase {
         XCTAssertEqual(stats.withBPM, 0)
         XCTAssertEqual(stats.total, 0)
     }
+
+    // MARK: - Confidence & Source Tracking
+
+    func testCacheFromAPISetsVerifiedConfidence() {
+        service.cacheFromAPI(trackID: "t1", name: "Song", artist: "A", bpm: 120)
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "t1" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertEqual(cached.confidence, .verified)
+        XCTAssertEqual(cached.source, .api)
+        XCTAssertEqual(cached.confidenceRaw, "verified")
+        XCTAssertEqual(cached.sourceRaw, "api")
+    }
+
+    func testCacheFromAPIWithNilBPMSetsNilConfidence() {
+        service.cacheFromAPI(trackID: "t1", name: "Song", artist: "A", bpm: nil)
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "t1" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertNil(cached.confidence)
+        XCTAssertNil(cached.source)
+        XCTAssertNil(cached.confidenceRaw)
+        XCTAssertNil(cached.sourceRaw)
+    }
+
+    func testCacheManualSetsManualConfidence() {
+        service.cacheManual(trackID: "t1", name: "Song", artist: "A", bpm: 150)
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "t1" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertEqual(cached.confidence, .manual)
+        XCTAssertEqual(cached.source, .manual)
+        XCTAssertEqual(cached.bpm, 150)
+    }
+
+    func testCacheFromAPISkipsManualBPM() {
+        // First set manual BPM
+        service.cacheManual(trackID: "t1", name: "Song", artist: "A", bpm: 150)
+        // Then try to overwrite with API BPM
+        service.cacheFromAPI(trackID: "t1", name: "Song", artist: "A", bpm: 120)
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "t1" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertEqual(cached.bpm, 150, "Manual BPM should be preserved, not overwritten to 120")
+        XCTAssertEqual(cached.confidence, .manual, "Confidence should still be manual")
+        XCTAssertTrue(cached.lookupAttempted, "lookupAttempted should be updated by cacheFromAPI")
+    }
+
+    func testCacheManualOverwritesAPIBPM() {
+        // First set API BPM
+        service.cacheFromAPI(trackID: "t1", name: "Song", artist: "A", bpm: 120)
+        // Then overwrite with manual BPM
+        service.cacheManual(trackID: "t1", name: "Song", artist: "A", bpm: 160)
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "t1" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertEqual(cached.bpm, 160, "Manual BPM should overwrite API BPM")
+        XCTAssertEqual(cached.confidence, .manual)
+    }
+
+    func testLazyBackfillReturnsVerifiedForOldRecords() {
+        // Simulate pre-migration record: has bpm but no confidenceRaw/sourceRaw
+        let record = CachedBPM(spotifyTrackID: "old", trackName: "Old Song", artistName: "A", bpm: 130, lookupAttempted: true)
+        container.mainContext.insert(record)
+        try! container.mainContext.save()
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "old" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertEqual(cached.confidence, .verified, "Lazy backfill should return .verified for old records with bpm")
+        XCTAssertEqual(cached.source, .api, "Lazy backfill should return .api for old records with bpm")
+        XCTAssertNil(cached.confidenceRaw, "Raw field should still be nil (backfill is in computed property only)")
+    }
+
+    func testLazyBackfillReturnsNilForNilBPM() {
+        // Record with nil bpm and no confidenceRaw
+        let record = CachedBPM(spotifyTrackID: "empty", trackName: "Empty Song", artistName: "A", bpm: nil, lookupAttempted: true)
+        container.mainContext.insert(record)
+        try! container.mainContext.save()
+
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == "empty" }
+        )
+        let cached = try! container.mainContext.fetch(descriptor).first!
+
+        XCTAssertNil(cached.confidence, "Nil bpm should return nil confidence")
+        XCTAssertNil(cached.source, "Nil bpm should return nil source")
+    }
 }
