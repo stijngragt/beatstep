@@ -4,10 +4,10 @@ milestone: v1.5
 milestone_name: One Way In
 status: active
 stopped_at: null
-last_updated: "2026-03-25T15:30:00.000Z"
-last_activity: 2026-03-25 -- Milestone v1.5 started
+last_updated: "2026-03-25T16:00:00.000Z"
+last_activity: 2026-03-25 -- v1.5 roadmap created (Phases 24-26)
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,63 +21,51 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Defining requirements for v1.5
+**Current focus:** Phase 24 - Fix Run Tab Start
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-25 -- Milestone v1.5 started
+Phase: 24 of 26 (Fix Run Tab Start)
+Plan: 0 of 0 in current phase
+Status: Ready to plan
+Last activity: 2026-03-25 -- v1.5 roadmap created (Phases 24-26)
+
+Progress: [..........] 0% (0/3 v1.5 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 8 v1.4)
+- Total plans completed: 42 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 11 v1.4)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
 - v1.3: 2 days, 8 plans
-- v1.4: in progress, 8 plans
+- v1.4: 1 day, 11 plans
 
-| Phase | Plan | Duration | Tasks | Files |
-|-------|------|----------|-------|-------|
-| 19-01 | confidence-badge-data | 6min | 2 | 6 |
-| 19-02 | confidence-badges-view | 7min | 2 | 1 |
-| 20-01 | tap-bpm-engine | 7min | 2 | 3 |
-| 20-02 | tap-bpm-view | 28min | 2 | 3 |
-| 21-01 | zero-bpm-fallback-model | 9min | 2 | 4 |
-| 21-02 | zero-bpm-fallback-engine | 6min | 1 | 2 |
-| 22-01 | sensor-lab-service | 4min | 1 | 4 |
-| 22-02 | sensor-lab-view | 17min | 2 | 3 |
-| 23-01 | step-count-fix | 2min | 2 | 5 |
+**Recent (v1.4):**
+
+| Phase | Plan | Duration |
+|-------|------|----------|
+| 19-01 | confidence-badge-data | 6min |
+| 19-02 | confidence-badges-view | 7min |
+| 20-01 | tap-bpm-engine | 7min |
+| 20-02 | tap-bpm-view | 28min |
+| 21-01 | zero-bpm-fallback-model | 9min |
+| 21-02 | zero-bpm-fallback-engine | 6min |
+| 22-01 | sensor-lab-service | 4min |
+| 22-02 | sensor-lab-view | 17min |
+| 23-01 | step-count-fix | 2min |
 
 ## Accumulated Context
 
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
 
-- [18-01] Lazy backfill pattern: nil raw + non-nil bpm returns .verified/.api without migration
-- [18-01] Write paths use confidenceRaw (String?) directly, never computed property
-- [18-01] Updated existing test files in 18-01 (originally 18-02 scope) since removing cache() broke compilation
-- [18-02] Task 1 no-op: rename already done in 18-01 as Rule 3 deviation
-- [19-01] BPMInfo uses let properties for immutability -- view layer receives read-only snapshots
-- [19-01] stateApproximate blue (0.35, 0.55, 0.95) distinct from existing state colors
-- [19-02] No-BPM tracks use muted gray capsule with -- BPM text for consistent row alignment
-- [20-01] 40% median-deviation threshold for outlier rejection (tunable constant)
-- [20-01] Boundary rejection at <0.2s and >2.0s before median check
-- [20-01] tapCount tracks tap events (1-indexed), not intervals
-- [20-02] Button wrapping on badge for gesture separation -- badge tap opens sheet, row tap plays track
-- [20-02] ShakeModifier with offset-based animation for outlier rejection visual feedback
-- [21-01] Default fallback is .skip preserving current behavior for existing users
-- [21-02] Separate playedNilBPMIDs set for independent nil-BPM pool cycling
-- [21-02] Prompt fallback shares playRegardless code path (plays track) -- future phase adds UI overlay
-- [22-01] Internal init + internal appendSample for testability without hardware
-- [22-01] Dual appendSample overloads: CMAccelerometerData for production, AccelerometerSample for tests
-- [22-02] Inline AccelerometerChartView as private struct in SensorLabView.swift for simplicity
-- [22-02] Version text shows hardcoded 'BeatStep v1.4' for hidden toggle target
-- [Phase 23-01]: stepCount lives on CadenceService (owns pedometer) not SensorLabService (owns accelerometer)
+- [v1.3]: fullScreenCover over NavigationLink for run screen
+- [v1.1]: TabView with per-tab NavigationStack
+- [v1.2]: AppState enum with static resolve() for routing
 
 ### Pending Todos
 
@@ -85,13 +73,12 @@ None.
 
 ### Blockers/Concerns
 
-- Spotify Premium detection timing during onboarding is an unresolved product decision (carried from v1.2)
-- SwiftData migration must use optional String? fields to trigger lightweight migration (from research)
-- Prompt fallback UX during active run may need deferral if skip + playRegardless cover the need (from research)
+- Run tab Start Run button is currently non-functional (FLOW-02 addresses this)
+- Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
 
 ## Session Continuity
 
-Last session: 2026-03-25T13:51:15.512Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-25
+Stopped at: v1.5 roadmap created, ready to plan Phase 24
 Resume file: None

@@ -40,18 +40,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FLOW-01 | - | Pending |
-| FLOW-02 | - | Pending |
-| FLOW-03 | - | Pending |
-| FLOW-04 | - | Pending |
-| FLOW-05 | - | Pending |
-| ONBD-01 | - | Pending |
+| FLOW-01 | Phase 25 | Pending |
+| FLOW-02 | Phase 24 | Pending |
+| FLOW-03 | Phase 25 | Pending |
+| FLOW-04 | Phase 25 | Pending |
+| FLOW-05 | Phase 24 | Pending |
+| ONBD-01 | Phase 26 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6
+- Mapped to phases: 6
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after initial definition*
+*Last updated: 2026-03-25 after roadmap creation*

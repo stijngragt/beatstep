@@ -7,6 +7,7 @@
 - v1.2 The Right Flow -- Phases 10-12 (shipped 2026-03-24)
 - v1.3 In The Zone -- Phases 13-17 (shipped 2026-03-25)
 - v1.4 Under The Hood -- Phases 18-23 (shipped 2026-03-25)
+- v1.5 One Way In -- Phases 24-26 (in progress)
 
 ## Phases
 
@@ -63,6 +64,46 @@
 
 </details>
 
+### v1.5 One Way In (In Progress)
+
+**Milestone Goal:** Unify the run flow into a single path -- Run tab is the only way to start a run. Kill duplicate screens, fix the broken start button, and extend onboarding with first playlist analysis.
+
+- [ ] **Phase 24: Fix Run Tab Start** - Make the Run tab Start Run button work reliably with last-used settings pre-loaded
+- [ ] **Phase 25: Consolidate Run Entry** - Kill the old run screen, route all run initiation through Run tab
+- [ ] **Phase 26: Onboarding Analysis Step** - Add first-playlist analysis to onboarding flow before completion
+
+## Phase Details
+
+### Phase 24: Fix Run Tab Start
+**Goal**: Users can start a run from the Run tab with one tap -- the button works and their last settings are ready
+**Depends on**: Phase 23
+**Requirements**: FLOW-02, FLOW-05
+**Success Criteria** (what must be TRUE):
+  1. User taps Start Run on Run tab and a run begins with the selected playlist, zone, and tolerance
+  2. Returning user sees their last-used playlist, zone, and tolerance pre-loaded when they open the Run tab
+  3. User can change playlist, zone, or tolerance before starting without navigating away from Run tab
+**Plans**: TBD
+
+### Phase 25: Consolidate Run Entry
+**Goal**: Run tab is the single entry point for all runs -- no duplicate screens, library routes to Run tab
+**Depends on**: Phase 24
+**Requirements**: FLOW-01, FLOW-03, FLOW-04
+**Success Criteria** (what must be TRUE):
+  1. Tapping "Run with this playlist" in PlaylistDetailView navigates to Run tab with that playlist pre-loaded
+  2. The old playlist-initiated run screen (green button menu) no longer exists in the codebase
+  3. There is no way to start a run from any screen other than the Run tab
+  4. After navigating from Library to Run tab, user sees the selected playlist and can start immediately
+**Plans**: TBD
+
+### Phase 26: Onboarding Analysis Step
+**Goal**: New users have an analyzed playlist ready before they finish onboarding
+**Depends on**: Phase 24
+**Requirements**: ONBD-01
+**Success Criteria** (what must be TRUE):
+  1. After granting Spotify and Health permissions, user sees a step to pick and analyze their first playlist
+  2. User completes onboarding with at least one analyzed playlist available for their first run
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -90,3 +131,6 @@
 | 21. Zero-BPM Fallback | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 22. Sensor Lab | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
+| 24. Fix Run Tab Start | v1.5 | 0/0 | Not started | - |
+| 25. Consolidate Run Entry | v1.5 | 0/0 | Not started | - |
+| 26. Onboarding Analysis Step | v1.5 | 0/0 | Not started | - |
