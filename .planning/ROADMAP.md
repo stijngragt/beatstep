@@ -129,10 +129,11 @@ Plans:
   3. Detection interval is adjustable from 0.5s to 5s within Sensor Lab for rapid desk testing
   4. A real-time waveform chart visualizes accelerometer output
   5. Closing Sensor Lab stops the accelerometer (no background battery drain)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 22-01: TBD
+- [ ] 22-01-PLAN.md -- SensorLabService + AccelerometerSample model + unit tests (buffer, interval, state)
+- [ ] 22-02-PLAN.md -- SensorLabView UI + waveform chart + hidden Settings toggle + visual checkpoint
 
 ## Progress
 
@@ -163,4 +164,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 19. Confidence Badges | 2/2 | Complete    | 2026-03-25 | - |
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
-| 22. Sensor Lab | v1.4 | 0/? | Not started | - |
+| 22. Sensor Lab | v1.4 | 0/2 | Not started | - |
