@@ -55,7 +55,7 @@
 
 **Milestone Goal:** Make the BPM matching algorithm observable, testable, and trustworthy -- debug tooling, manual BPM input, confidence indicators, and defined fallback behavior.
 
-- [ ] **Phase 18: BPM Confidence Model** - Extend data model with confidence/source tracking and separated write paths
+- [x] **Phase 18: BPM Confidence Model** - Extend data model with confidence/source tracking and separated write paths (completed 2026-03-25)
 - [ ] **Phase 19: Confidence Badges** - Show BPM confidence visually per track in playlist view
 - [ ] **Phase 20: Tap BPM Input** - Manual BPM entry via tap-along interface for unanalyzed tracks
 - [ ] **Phase 21: Zero-BPM Fallback** - Configurable behavior when tracks lack BPM data
@@ -156,7 +156,7 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 15. Run Player View | v1.3 | 1/1 | Complete | 2026-03-24 |
 | 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
-| 18. BPM Confidence Model | 1/2 | In Progress|  | - |
+| 18. BPM Confidence Model | 2/2 | Complete   | 2026-03-25 | - |
 | 19. Confidence Badges | v1.4 | 0/? | Not started | - |
 | 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
 | 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
