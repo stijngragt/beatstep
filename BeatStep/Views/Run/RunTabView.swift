@@ -58,11 +58,6 @@ struct RunTabView: View {
                     .interactiveDismissDisabled(true)
             }
         }
-        .onChange(of: cadenceService.state) { oldValue, newValue in
-            if newValue == .active && oldValue != .active {
-                showActiveRun = true
-            }
-        }
         .onDisappear {
             if !runEngine.isRunActive {
                 runEngine.stopRun()
@@ -276,6 +271,7 @@ struct RunTabView: View {
 
         cadenceService.requestPermissionAndStart()
         UIApplication.shared.isIdleTimerDisabled = true
+        showActiveRun = true
         Task { await runEngine.startRun(playlist: playlist, tracks: tracks) }
     }
 
