@@ -26,7 +26,7 @@ Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
 ### Sensor Lab
 
-- [ ] **SLAB-01**: Debug screen accessible via hidden settings toggle
+- [x] **SLAB-01**: Debug screen accessible via hidden settings toggle
 - [x] **SLAB-02**: Sensor Lab displays raw accelerometer output, cadence, step count, algorithm state
 - [x] **SLAB-03**: Detection interval configurable from 0.5s to 5s in Sensor Lab
 - [x] **SLAB-04**: Real-time accelerometer waveform chart in Sensor Lab
@@ -64,7 +64,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TAP-03 | Phase 20 | Complete |
 | FALL-01 | Phase 21 | Complete |
 | FALL-02 | Phase 21 | Complete |
-| SLAB-01 | Phase 22 | Pending |
+| SLAB-01 | Phase 22 | Complete |
 | SLAB-02 | Phase 22 | Complete |
 | SLAB-03 | Phase 22 | Complete |
 | SLAB-04 | Phase 22 | Complete |

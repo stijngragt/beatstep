@@ -59,7 +59,7 @@
 - [x] **Phase 19: Confidence Badges** - Show BPM confidence visually per track in playlist view (completed 2026-03-25)
 - [x] **Phase 20: Tap BPM Input** - Manual BPM entry via tap-along interface for unanalyzed tracks (completed 2026-03-25)
 - [x] **Phase 21: Zero-BPM Fallback** - Configurable behavior when tracks lack BPM data (completed 2026-03-25)
-- [ ] **Phase 22: Sensor Lab** - Debug screen exposing raw cadence detection internals
+- [x] **Phase 22: Sensor Lab** - Debug screen exposing raw cadence detection internals (completed 2026-03-25)
 
 ## Phase Details
 
@@ -164,4 +164,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 19. Confidence Badges | 2/2 | Complete    | 2026-03-25 | - |
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
-| 22. Sensor Lab | 1/2 | In Progress|  | - |
+| 22. Sensor Lab | 2/2 | Complete   | 2026-03-25 | - |
