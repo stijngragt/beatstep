@@ -64,6 +64,64 @@ final class SpotifyAPIServiceTests: XCTestCase {
         XCTAssertFalse(response.hasMore)
     }
 
+    // MARK: - Backward Compatibility
+
+    func testPlaylistTrackDecodingWithLegacyKey() throws {
+        let json = """
+        {
+            "items": [
+                {
+                    "track": {
+                        "id": "legacy_1",
+                        "name": "Legacy Track",
+                        "uri": "spotify:track:legacy_1",
+                        "duration_ms": 200000,
+                        "artists": [{ "name": "Legacy Artist" }],
+                        "album": { "name": "Legacy Album", "images": [] }
+                    }
+                }
+            ],
+            "total": 1,
+            "limit": 100,
+            "offset": 0,
+            "next": null
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let response = try JSONDecoder().decode(PaginatedResponse<PlaylistTrackItem>.self, from: data)
+
+        let track = try XCTUnwrap(response.items[0].track)
+        XCTAssertEqual(track.id, "legacy_1")
+        XCTAssertEqual(track.name, "Legacy Track")
+    }
+
+    // MARK: - User Decoding
+
+    func testUserDecodingWithoutProduct() throws {
+        let data = MockSpotifyResponses.devModeUser.data(using: .utf8)!
+        let user = try JSONDecoder().decode(SpotifyUser.self, from: data)
+
+        XCTAssertEqual(user.id, "dev_user_789")
+        XCTAssertNil(user.product)
+        XCTAssertTrue(user.isPremium, "Dev Mode users (no product field) should be treated as Premium")
+    }
+
+    func testUserDecodingWithProduct() throws {
+        let data = MockSpotifyResponses.premiumUser.data(using: .utf8)!
+        let user = try JSONDecoder().decode(SpotifyUser.self, from: data)
+
+        XCTAssertEqual(user.id, "test_user_123")
+        XCTAssertEqual(user.product, "premium")
+        XCTAssertTrue(user.isPremium)
+    }
+
+    func testUserDecodingFreeUser() throws {
+        let data = MockSpotifyResponses.freeUser.data(using: .utf8)!
+        let user = try JSONDecoder().decode(SpotifyUser.self, from: data)
+
+        XCTAssertFalse(user.isPremium)
+    }
+
     // MARK: - Error Handling
 
     func testErrorResponseHandling() throws {

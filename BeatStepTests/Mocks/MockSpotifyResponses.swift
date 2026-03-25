@@ -71,13 +71,22 @@ enum MockSpotifyResponses {
     }
     """
 
+    /// Dev Mode user (Feb 2026+) — no "product" field returned
+    static let devModeUser = """
+    {
+        "id": "dev_user_789",
+        "display_name": "Dev Mode User",
+        "images": []
+    }
+    """
+
     // MARK: - Tracks
 
     static let playlistTracks = """
     {
         "items": [
             {
-                "track": {
+                "item": {
                     "id": "track_1",
                     "name": "Run Boy Run",
                     "uri": "spotify:track:track_1",
@@ -90,7 +99,7 @@ enum MockSpotifyResponses {
                 }
             },
             {
-                "track": {
+                "item": {
                     "id": "track_2",
                     "name": "Stronger",
                     "uri": "spotify:track:track_2",
@@ -103,7 +112,7 @@ enum MockSpotifyResponses {
                 }
             },
             {
-                "track": {
+                "item": {
                     "id": "track_3",
                     "name": "Till I Collapse",
                     "uri": "spotify:track:track_3",
@@ -116,7 +125,7 @@ enum MockSpotifyResponses {
                 }
             },
             {
-                "track": {
+                "item": {
                     "id": "track_4",
                     "name": "Eye of the Tiger",
                     "uri": "spotify:track:track_4",

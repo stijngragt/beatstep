@@ -19,6 +19,7 @@
 		2B25F48FD49DDD38D8276278 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */; };
 		2B2DC5471E50AB176E0E0492 /* BPMToleranceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D413FF5901AC08B98D7F067E /* BPMToleranceTests.swift */; };
 		2B7F7CC7200BB1BE71391D56 /* OnboardingZonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921DA572AE78734B11336F42 /* OnboardingZonesView.swift */; };
+		17F9398DC28B9A9EC0841729 /* OnboardingPlaylistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60CE5108D8B68D9952B6C4B /* OnboardingPlaylistView.swift */; };
 		2D30C68B62C2DE1EC7FB9202 /* ZoneSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFEA0F4F056316BF069F22A /* ZoneSelectionTests.swift */; };
 		2D8DC08AF0A7904A7F9497F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53564AD8A26370E1D5CC4EB /* ContentView.swift */; };
 		2D92B9B9B8CDCDCA222FD14A /* CadenceDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8585AB4840A20AC67069FCF7 /* CadenceDisplayView.swift */; };
@@ -169,6 +170,7 @@
 		8F8C1DC159094F0DD59495F3 /* BeatStepTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BeatStepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		90286678C1ACD3B0FB816DB5 /* AccelerometerSample.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccelerometerSample.swift; sourceTree = "<group>"; };
 		921DA572AE78734B11336F42 /* OnboardingZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingZonesView.swift; sourceTree = "<group>"; };
+		F60CE5108D8B68D9952B6C4B /* OnboardingPlaylistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPlaylistView.swift; sourceTree = "<group>"; };
 		9C2C763D25E2D3570F632D0A /* LastRunPlaylistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastRunPlaylistTests.swift; sourceTree = "<group>"; };
 		9F53B43A668691E6914501E3 /* TolerancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TolerancePicker.swift; sourceTree = "<group>"; };
 		A14CC2671949AE629FDB00C4 /* MockPedometerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPedometerData.swift; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 				813BDED9D3A2037960FA19C5 /* OnboardingFlow.swift */,
 				20C661C6F478DBD57A4AE3AC /* OnboardingHealthView.swift */,
 				628426AC68C273B86DFB3E70 /* OnboardingSpotifyView.swift */,
+				F60CE5108D8B68D9952B6C4B /* OnboardingPlaylistView.swift */,
 				921DA572AE78734B11336F42 /* OnboardingZonesView.swift */,
 			);
 			path = Onboarding;
@@ -652,6 +655,7 @@
 				2B25F48FD49DDD38D8276278 /* OnboardingFlow.swift in Sources */,
 				E102A2FCE3D19A19B1FA353D /* OnboardingHealthView.swift in Sources */,
 				51B17F9600A75F01E593792E /* OnboardingSpotifyView.swift in Sources */,
+				17F9398DC28B9A9EC0841729 /* OnboardingPlaylistView.swift in Sources */,
 				2B7F7CC7200BB1BE71391D56 /* OnboardingZonesView.swift in Sources */,
 				E30F72B337974D6A6D9D94C8 /* PaginatedResponse.swift in Sources */,
 				280FE96EC7CE420EBABD5DB8 /* PlaylistDetailView.swift in Sources */,
