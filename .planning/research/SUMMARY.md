@@ -1,164 +1,157 @@
 # Project Research Summary
 
-**Project:** BeatStep v1.3 — In The Zone
-**Domain:** Native iOS running music app — active run experience rebuild
-**Researched:** 2026-03-24
+**Project:** BeatStep v1.4 "Under The Hood"
+**Domain:** iOS running music app -- debug tooling, manual BPM input, confidence tracking, zero-BPM fallback
+**Researched:** 2026-03-25
 **Confidence:** HIGH
 
 ## Executive Summary
 
-BeatStep v1.3 rebuilds the active run screen into a focused, glanceable experience with three visual zones: a status bar (zone, elapsed time, sync state), a hero cadence display (big SPM number, delta indicator, sync color), and an integrated music player (album art, song/artist, controls, BPM, half-tempo toggle). This replaces the current monolithic RunView (269 lines handling 5 states) and the disconnected MiniPlayer strip.
+BeatStep v1.4 is an infrastructure milestone that makes the BPM matching engine observable, correctable, and resilient. The work centers on four capabilities: a Sensor Lab debug screen for inspecting cadence detection internals, tap-to-BPM manual input for tracks the API misses, confidence indicators that show users where each BPM value came from, and configurable fallback behavior for tracks without BPM data. All four capabilities build on existing iOS frameworks (CoreMotion, SwiftUI Charts, SwiftData) with zero new external dependencies.
 
-Zero new external dependencies are needed. Every capability — numeric text animation, phase-driven effects, haptic feedback, async image loading, long-press gestures, periodic time updates — is available in SwiftUI's iOS 17 built-in APIs. The RunEngineService needs three new observable properties (syncQuality, tempoMode, runStartTime) but its core matching logic stays intact. CadenceService and SpotifyPlayerService are unchanged.
+The recommended approach is model-first: extend the `CachedBPM` SwiftData model with optional `confidence` and `source` fields before building any UI. This schema change is the foundation that every other feature reads or writes. The migration must use optional String fields (not enums) to trigger SwiftData's automatic lightweight migration and preserve existing user data. After the model layer, confidence badges, tap BPM input, zero-BPM fallback, and Sensor Lab can proceed in dependency order with minimal risk.
 
-The highest-risk feature is half-tempo matching: the existing `findMatchingTracks` already checks `spm/2` and `spm*2`. A naive implementation that divides the input BPM by 2 causes double-halving (spm/4 = ~42 BPM — no songs exist there). Half-tempo must be implemented as a ranking preference, not a BPM transformation. The second risk is false pause triggers: the current 5-second inactivity threshold is too aggressive for v1.3's deliberate pause UX (music behavior, visual state changes), and should increase to 8-10 seconds.
+The primary risks are data integrity problems: schema migration destroying existing BPM caches on upgrade, tap BPM silently overwriting API-verified values, and debug detection intervals leaking into production runs. All three are preventable through architectural separation (distinct write paths for API vs manual BPM, isolated SensorLabService for debug data) and upgrade testing (v1.3-to-v1.4 migration verification). A secondary risk is the zero-BPM skip fallback creating rapid-fire Spotify API calls when most tracks lack BPM data -- this requires a circuit breaker in the matching engine.
 
 ## Key Findings
 
 ### Recommended Stack
 
-All first-party Apple APIs on iOS 17+. No new dependencies.
+v1.4 requires zero new dependencies. Every capability maps to APIs already linked in the project or available in iOS 17.0.
 
 **Core technologies:**
-- `.contentTransition(.numericText())` — per-digit cadence counter animation with direction awareness
-- `.phaseAnimator` — pulse/breathe effects for sync state and pause state (already in use in RunView)
-- `.sensoryFeedback()` — haptic confirmation on long-press completion, half-tempo toggle, zone transitions
-- `AsyncImage` + thin `NSCache` wrapper — album art from Spotify CDN (300px for 80pt display)
-- `TimelineView` / `Text(date, style: .timer)` — elapsed run time without Combine
-- `.onLongPressGesture(minimumDuration:onPressingChanged:)` — protected stop action with progress ring
+- **CMMotionManager** (raw accelerometer): Live sensor waveform in Sensor Lab -- independent from CMPedometer, must be lifecycle-managed to avoid battery drain
+- **SwiftUI Charts (LineMark)**: Built-in waveform visualization for Sensor Lab, no third-party charting needed
+- **SwiftData lightweight migration**: Adding optional `String?` fields to CachedBPM triggers automatic migration with zero boilerplate
+- **UIImpactFeedbackGenerator**: One-line haptic confirmation for tap BPM input
+- **Date arithmetic**: Tap BPM calculation from inter-tap intervals -- 15 lines of code, no audio analysis libraries
+
+**What NOT to add:** AudioKit (50MB+ for timestamp math), Combine (codebase is @Observable-only), CoreHaptics (overkill for discrete taps), SwiftData VersionedSchema (not needed for optional fields).
 
 ### Expected Features
 
 **Must have (table stakes):**
-- Large center-stage cadence number — every fitness app puts primary metric big and center
-- Elapsed run time — universal across NRC, Strava, Apple Fitness
-- Now Playing: song + artist + album art — users expect to know what's playing
-- Play/pause + skip controls — thumb-reachable, 44pt+ touch targets
-- Song BPM visible — BeatStep's entire value prop; hiding it contradicts the promise
-- Zone/mode indicator — confirm which zone is active
-- Protected stop action — long-press prevents accidental mid-run stop
-- Pause-aware idle state — deliberate design when cadence drops
+- BPM confidence indicator per track -- users need to distinguish API-verified from manual from unknown
+- Configurable zero-BPM behavior -- "skip" (current silent default) vs "play regardless"
+- Tap BPM input -- universal manual override for tracks the API misses (minimum 4 taps, 8 for stability, outlier rejection)
+- Zero-BPM visibility -- show count of skipped tracks, not silent exclusion
 
-**Should have (competitive differentiators):**
-- Sync state indicator (in-sync/drifting/mismatched) — no competitor visualizes cadence-to-music sync. This is genuinely novel
-- Delta indicator ("+4 SPM") — quantifies the gap; runners can self-correct pace
-- Half-tempo toggle (1:1 vs 1/2) — makes the 180 SPM / 90 BPM relationship explicit and controllable
-- Zone band visualization — spatial awareness of where cadence sits within target range
-- Cadence-responsive color shift — subconscious sync feedback
+**Should have (differentiators):**
+- Sensor Lab debug screen -- no running music app exposes raw sensor data; builds algorithm trust
+- Configurable detection interval -- transforms desk testing speed (0.5s vs 5.0s window)
+- Pre-run BPM coverage summary -- "42/50 tracks matched" gives users agency before starting
 
-**Defer (v2+):**
-- Haptic feedback on sync state changes
-- Live Activities / Dynamic Island
-- Apple Watch companion
-- Customizable run screen layout
+**Defer (v1.4.x or v1.5+):**
+- Live confidence badge in RunPlayerView -- nice but not blocking
+- Batch tap BPM workflow -- only if demand materializes; most users have 5-10 unanalyzed tracks
+- Sensor Lab accelerometer graph -- move to v1.5 if SwiftUI Charts performance is sufficient for basic data
+- Auto-BPM via microphone -- fragile, battery-heavy, accuracy problems; tap BPM covers the need
 
 ### Architecture Approach
 
-Split RunView (currently 269 lines, 5 states) into: idle/detecting stays in RunView, active/paused moves to a new ActiveRunView presented via `fullScreenCover`. This prevents accidental dismissal (interactiveDismissDisabled), hides the tab bar automatically, and separates pre-run setup from the running experience. Pause state is an overlay on ActiveRunView, not a navigation transition — music keeps playing, run state preserved.
+The architecture follows BeatStep's established pattern: @Observable services own state, SwiftUI views observe them, SwiftData persists structured data, UserDefaults handles preferences. v1.4 adds 5 new files (SensorLabView, TapBPMView, BPMConfidenceBadge, BPMConfidence enum, ZeroBPMFallback enum) and modifies 7 existing files. The critical architectural decision is keeping SensorLabService completely isolated from CadenceService -- they use different CoreMotion subsystems (CMMotionManager vs CMPedometer) and must not share configuration state.
 
-**New components:**
-1. `ActiveRunView` — full-screen run experience container, presented via fullScreenCover
-2. `RunStatusBar` — zone label, sync quality badge, elapsed time
-3. `RunPlayerView` — album art, song/artist, BPM badge, controls, half-tempo toggle
-4. `PauseOverlayView` — translucent overlay when cadence pauses
-
-**Modified components:**
-5. `RunEngineService` — add TempoMode, syncQuality, cadenceDelta, runStartTime
-6. `CadenceDisplayView` — add delta label, sync color, zone band
-7. `RunView` — simplify to idle/detecting only
-8. `MiniPlayerView` — hide when ActiveRunView is showing (one-line change)
-9. `DesignTokens` — add sync color aliases, delta font, component sizes
+**Major components:**
+1. **CachedBPM + BPMConfidence** -- Extended model with confidence/source fields; enum provides type safety over String storage
+2. **BPMCacheService** -- Gains separate write paths: `cacheFromAPI()` and `cacheManualBPM()` to prevent silent overwrites
+3. **TapBPMView** -- Modal sheet with rolling 8-interval average, outlier rejection, stability indicator, explicit save
+4. **ZeroBPMFallback** -- UserDefaults-backed enum read by RunEngineService during song selection; three modes (skip/playRegardless/prompt)
+5. **SensorLabView + SensorLabService** -- Isolated debug screen behind Settings toggle; lifecycle-managed to prevent battery drain
 
 ### Critical Pitfalls
 
-1. **Half-tempo double-halving** — `findMatchingTracks` already checks spm/2. Adding another /2 creates spm/4 (~42 BPM). Implement as ranking preference, not BPM transformation.
-
-2. **False pause triggers** — 5-second inactivity threshold is too aggressive for v1.3's deliberate pause UX. Increase to 8-10 seconds; add internal `.pausePending` intermediate state.
-
-3. **Free mode delta is meaningless** — Delta assumes a fixed reference (guided mode target). In free mode, show sync quality (in-sync/adapting) not corrective delta (+4 SPM). Never show corrective arrows in free mode.
-
-4. **Accidental run dismissal** — Current `onDisappear { stopRun() }` + NavigationLink allows swipe-to-dismiss. Use `fullScreenCover(interactiveDismissDisabled: true)` with explicit long-press stop only.
-
-5. **Background/foreground pipeline break** — CMPedometer delivers in background but song-end polling gets suspended. Add "catch up on foreground" pattern: fetch current playback + cadence on `scenePhase == .active`, re-evaluate match.
+1. **Schema migration breaking existing BPM cache** -- Add fields as `String?` optionals only. Test upgrade path from v1.3 with populated data. Non-optional fields cause destructive migration and data loss.
+2. **Debug detection interval leaking into production** -- SensorLabService must be completely isolated from CadenceService. Debug interval lives in SensorLabService only, never persisted to shared UserDefaults.
+3. **Tap BPM silently overwriting API values** -- Separate write paths (`cacheFromAPI` vs `cacheManualBPM`). Show existing API value in tap UI. Require explicit "Override" confirmation. Store both values so original is never lost.
+4. **Zero-BPM skip loop causing Spotify rate limits** -- Circuit breaker after 3 consecutive no-match cycles. Auto-switch to "play regardless" with toast notification. Pre-run coverage warning when BPM coverage is below 50%.
+5. **Confidence badge colors clashing with sync state colors** -- Use icons (checkmark/tilde/hand) instead of traffic-light colors. Reserve colored indicators for run-time sync state only.
 
 ## Implications for Roadmap
 
-### Phase 1: RunEngine Extensions + Design Tokens
+Based on research, suggested phase structure:
 
-**Rationale:** All new views depend on syncQuality, cadenceDelta, tempoMode, and runStartTime. Building views without this data means placeholder logic that gets rewritten.
-**Delivers:** TempoMode enum, syncQuality computed property, cadenceDelta, runStartTime tracking, modified findMatchingTracks for explicit tempo mode, new design token aliases (sync colors, delta font, component sizes).
-**Addresses:** Half-tempo matching engine logic, sync state computation
-**Avoids:** Pitfall 1 (half-tempo double-halving) by designing the matching change first
+### Phase 1: BPM Confidence Model + Service Layer
+**Rationale:** Every other feature depends on confidence/source data existing in the model. Schema migration must be the first thing built and verified.
+**Delivers:** Extended CachedBPM model, BPMConfidence enum, separated write paths in BPMCacheService, LibraryScanService writing confidence during scans.
+**Addresses:** BPM confidence indicator (foundation), source tracking for all downstream features.
+**Avoids:** Schema migration crash (Pitfall 1), stale confidence after re-scan (Pitfall 5), tap BPM overwriting API values (Pitfall 3 -- prevention via write path separation).
 
-### Phase 2: CadenceDisplayView + RunStatusBar
+### Phase 2: BPM Confidence Badges in UI
+**Rationale:** With the model in place, badges are low-complexity visual work. Must exist before tap BPM so tapped values get immediate visual feedback.
+**Delivers:** BPMConfidenceBadge view component, TrackRow integration in PlaylistDetailView.
+**Addresses:** BPM confidence indicator per track (table stakes feature).
+**Avoids:** Confidence/sync color clash (Pitfall 8 -- design decision here carries forward).
 
-**Rationale:** Center-stage cadence and status bar are self-contained components that read from Phase 1's new engine properties. Can be previewed independently before the full run screen exists.
-**Delivers:** Enhanced CadenceDisplayView (big SPM, delta label, sync color, zone band), RunStatusBar (zone label, match quality, elapsed time via Text(date, style: .timer)).
-**Addresses:** Cadence indicators, elapsed time display
-**Avoids:** Pitfall 3 (free mode delta) by making delta display mode-aware from the start, Pitfall 7 (choppy updates) by observing CadenceService directly
+### Phase 3: Tap BPM Input
+**Rationale:** Primary way users resolve zero-BPM tracks. Requires confidence model (Phase 1) for source tracking and badges (Phase 2) for display.
+**Delivers:** TapBPMView modal, BPMCacheService manual write path, PlaylistDetailView integration.
+**Addresses:** Tap BPM input (table stakes), manual BPM for unanalyzed tracks.
+**Avoids:** Silent API overwrite (Pitfall 3), beat subdivision ambiguity (Pitfall 7 -- 2x/0.5x detection must ship with initial UI).
 
-### Phase 3: RunPlayerView
+### Phase 4: Zero-BPM Fallback
+**Rationale:** Completes the BPM data quality story. With tap BPM available (Phase 3), users have a path to fix tracks before falling back.
+**Delivers:** ZeroBPMFallback enum, RunEngineService fallback policy, SettingsView picker, pre-run coverage summary.
+**Addresses:** Configurable zero-BPM behavior (table stakes), pre-run coverage summary (differentiator).
+**Avoids:** Rapid-fire Spotify API calls (Pitfall 4 -- circuit breaker must ship with fallback config).
 
-**Rationale:** Independent component, no dependency on ActiveRunView layout. Reads from SpotifyPlayerService (already complete) and RunEngineService (Phase 1 additions). Can be previewed standalone.
-**Delivers:** Album art (AsyncImage + NSCache), song/artist display, BPM badge, play/pause/skip controls, half-tempo toggle UI.
-**Addresses:** Integrated music player, half-tempo toggle UX
-**Avoids:** Pitfall 6 (album art memory) by building caching from the start
-
-### Phase 4: ActiveRunView Assembly + Pause State
-
-**Rationale:** Pure composition — all building blocks exist from Phases 1-3. Wire up the full-screen experience, add pause overlay, handle dismissal and lifecycle.
-**Delivers:** ActiveRunView (fullScreenCover, composition of all sub-views), PauseOverlayView (dimmed metrics, music continues), long-press-to-end with progress ring, MiniPlayer hide-when-active, idle timer management, foreground catch-up logic.
-**Addresses:** Run screen rebuild, pause/idle state, protected stop action
-**Avoids:** Pitfall 4 (accidental dismissal) via interactiveDismissDisabled, Pitfall 2 (false pauses) by tuning inactivity threshold, Pitfall 9 (background break) with foreground catch-up
+### Phase 5: Sensor Lab
+**Rationale:** Debug/developer tooling with no feature dependencies on Phases 1-4. Last because it serves development workflow, not end-user BPM quality.
+**Delivers:** SensorLabService, SensorLabView, CadenceService debug extensions, Settings debug toggle, configurable detection interval.
+**Addresses:** Sensor Lab debug screen (differentiator), configurable detection interval (differentiator).
+**Avoids:** Battery drain from accelerometer (Pitfall 6), debug interval leaking to production (Pitfall 2).
 
 ### Phase Ordering Rationale
 
-- **Engine before views:** syncQuality, cadenceDelta, tempoMode must exist before any view can consume them
-- **Components before container:** CadenceDisplayView, RunStatusBar, RunPlayerView are built and previewed independently, then composed into ActiveRunView
-- **Pause last (with assembly):** Pause overlay is a thin layer on top of the complete run screen; it needs all other elements to exist so it knows what to dim
-- **4 phases, not 5:** Assembly and pause state are tightly coupled (pause affects all display areas) — combining them avoids a too-thin final phase
+- **Model before UI:** SwiftData migration must land and be verified before any view reads the new fields. Getting this wrong destroys user data.
+- **Badges before Tap BPM:** Tap BPM results need visual confirmation via confidence badges. Building badges first gives immediate feedback when manual values are saved.
+- **Tap BPM before Fallback:** Users need a way to fix zero-BPM tracks before configuring fallback behavior. The features are more useful together in this order.
+- **Sensor Lab last:** Fully independent of the BPM confidence/fallback work stream. Could theoretically be built in parallel with Phases 2-4 if capacity allows.
 
 ### Research Flags
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1:** Engine extensions are well-defined computed properties; matching change is a sort preference tweak
-- **Phase 2:** SwiftUI built-in APIs (contentTransition, TimelineView); patterns documented in STACK.md
-- **Phase 3:** AsyncImage + NSCache is standard; player controls mirror existing MiniPlayerView
+Phases likely needing deeper research during planning:
+- **Phase 3 (Tap BPM):** Beat subdivision ambiguity (half/double time detection), tap timing precision on main thread, UX for showing existing API value during override flow. Research the interaction between Spotify playback and tap timing.
+- **Phase 4 (Zero-BPM Fallback):** Circuit breaker threshold tuning, prompt-mode coordination between RunEngineService and ActiveRunView without blocking. Test with real playlists at various coverage levels.
 
-Phases that may benefit from brief research:
-- **Phase 4:** Background/foreground lifecycle handling — verify song-end prediction approach works with Spotify Web API's playback state response
+Phases with standard patterns (skip research-phase):
+- **Phase 1 (Model):** SwiftData lightweight migration is well-documented. Pattern is add optional field, done.
+- **Phase 2 (Badges):** Standard SwiftUI view component. Existing TrackRow pattern to follow.
+- **Phase 5 (Sensor Lab):** CMMotionManager and SwiftUI Charts are well-documented. Lifecycle management is the only concern and the pattern is straightforward (onDisappear + scenePhase).
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All first-party Apple APIs at iOS 17 target; zero new dependencies; verified against Apple docs |
-| Features | HIGH | Feature list derived from competitor analysis + codebase capabilities; novel sync indicator has no precedent but is straightforward computation |
-| Architecture | HIGH | Based on full codebase read of all 29 Swift source files; integration points verified |
-| Pitfalls | HIGH | 9 specific pitfalls with prevention strategies; derived from codebase inspection + Apple docs |
+| Stack | HIGH | Zero new dependencies. All APIs verified against iOS 17.0 target. Codebase inspection confirms integration points. |
+| Features | HIGH | Clear dependency graph. Feature scope is well-bounded. Anti-features identified and excluded. |
+| Architecture | HIGH | Extends established codebase patterns (@Observable, SwiftData, UserDefaults). No architectural paradigm shifts. |
+| Pitfalls | HIGH | 8 specific pitfalls with prevention strategies; derived from codebase inspection + Apple docs. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Music behavior during pause:** Research recommends keeping music playing (runner at traffic light). Confirm this as the default behavior during Phase 4.
-- **Half-tempo default:** 1:1 is the intuitive default, but if most songs in typical playlists are ~90 BPM, 1/2 might be better. Test with real song pools during implementation.
-- **Inactivity threshold tuning:** Research suggests 8-10 seconds. Exact value needs physical device testing during Phase 4 — Simulator cannot replicate real CMPedometer timing.
+- **Tap BPM timing precision:** Research suggests `Date()` on main thread may drift at high BPM (>160). May need `CADisplayLink` or `mach_absolute_time()`. Validate during Phase 3 implementation.
+- **SwiftUI Charts performance at 50Hz:** If accelerometer waveform drops frames on older devices, fallback to Canvas drawing. Test during Phase 5 on iPhone 12 or equivalent.
+- **Prompt fallback UX during active run:** The `.prompt` mode requires showing an alert during a run without blocking RunEngineService. The non-blocking pattern (published property + view observation) is designed but untested. Consider deferring `.prompt` to v1.4.x if skip + playRegardless cover the need.
+- **Batch confidence fetch performance:** Individual SwiftData queries per track for confidence badges may be sluggish on 500+ track playlists. Plan a batch fetch approach during Phase 2 if performance testing shows issues.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Apple Developer Documentation: contentTransition(.numericText()), phaseAnimator, sensoryFeedback, AsyncImage, LongPressGesture, TimelineView
-- Full codebase read: all Swift source files under /BeatStep/ (29 files)
-- RunEngineService.swift: findMatchingTracks logic, effectiveBPM, cadence monitor polling
+- [Apple CMMotionManager Documentation](https://developer.apple.com/documentation/coremotion/cmmotionmanager) -- singleton requirement, accelerometer API, update intervals
+- [Apple Core Motion Documentation](https://developer.apple.com/documentation/coremotion/) -- CMPedometer vs CMMotionManager independence
+- [SwiftData lightweight vs complex migrations](https://www.hackingwithswift.com/quick-start/swiftdata/lightweight-vs-complex-migrations) -- optional field = automatic migration
+- Direct codebase analysis: CadenceService.swift, BPMCacheService.swift, CachedBPM.swift, RunEngineService.swift, PlaylistDetailView.swift, SettingsView.swift, LibraryScanService.swift
 
 ### Secondary (MEDIUM confidence)
-- Competitor analysis: Nike Run Club, Strava, TrailMix, RockMyRun, Weav Run — App Store listings and public documentation
-- Running literature: spontaneous entrainment of cadence to music tempo (PMC), half/double tempo matching patterns
+- [Pro Tap Tempo: Accurate BPM Detection Tips](https://metronomeonline.org/blog/pro-tap-tempo-accurate-bpm-detection-tips) -- 8-tap window, outlier filtering, stabilization patterns
+- [Apple Developer Forums -- SwiftData migration](https://developer.apple.com/forums/thread/738812) -- community confirmation of lightweight migration behavior
+- [Building SwiftUI debugging utilities - Swift by Sundell](https://www.swiftbysundell.com/articles/building-swiftui-debugging-utilities/) -- debug screen patterns
 
 ### Tertiary (LOW confidence)
-- Spotify Web API rate limits: community-reported ~180 req/min, not officially documented per-endpoint
+- [Garmin Forums: Cadence drops to zero](https://forums.garmin.com/sports-fitness/running-multisport/f/forerunner-965/370223/running-power-and-cadence-randomly-drop-to-zero-in-the-middle-of-a-run) -- real-world zero-cadence scenarios (user reports, not systematic data)
 
 ---
-*Research completed: 2026-03-24*
+*Research completed: 2026-03-25*
 *Ready for roadmap: yes*

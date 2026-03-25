@@ -1,12 +1,12 @@
 # Feature Research
 
-**Domain:** Active run screen, music player, cadence visualization, tempo matching, pause/idle UX for a BPM-syncing running music app
-**Researched:** 2026-03-24
-**Confidence:** MEDIUM-HIGH (competitor patterns well-documented, codebase thoroughly analyzed)
+**Domain:** Debug tooling, manual BPM input, confidence indicators, and zero-BPM fallback for iOS running music app
+**Researched:** 2026-03-25
+**Confidence:** HIGH
 
 ## Scope Note
 
-This file covers NEW features for v1.3 "In The Zone" only. All v1.0-v1.2 features (cadence detection, BPM matching, Spotify playback, free/guided run, design system, tab nav, onboarding, zones, library analysis UX) are shipped and stable. Research below addresses: rebuilt active run screen, integrated music player, cadence sync indicators, half-tempo matching mode, and pause/idle state UX.
+This file covers NEW features for v1.4 "Under The Hood" only. All v1.0-v1.3 features (cadence detection, BPM matching, Spotify playback, free/guided run, design system, tab nav, onboarding, zones, library analysis UX, active run screen with sync indicators, tempo toggle) are shipped and stable. Research below addresses: Sensor Lab debug screen, tap BPM input, BPM confidence indicators, and zero-BPM fallback behavior.
 
 ---
 
@@ -14,135 +14,93 @@ This file covers NEW features for v1.3 "In The Zone" only. All v1.0-v1.2 feature
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist on an active run screen. Missing these = the run experience feels broken.
+Features that users of a BPM-matching app expect once they encounter tracks with missing or unreliable BPM data. Missing these = trust erosion.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Large center-stage cadence number** | Every fitness app puts the primary metric big and center; runners glance mid-stride. NRC, Strava, Apple Fitness all use oversized primary metrics | LOW | Already have `CadenceDisplayView` with `.displaySPM` font. Needs promotion to hero element in rebuilt layout. Keep trend arrow |
-| **Elapsed run time** | Universal across NRC, Strava, Apple Fitness, Peloton. Runners orient by duration even when not tracking distance | LOW | New addition. Simple `Date`-based timer, pause-aware (freeze when `CadenceService.state == .paused`). Display in status bar area, not hero size |
-| **Now Playing: song + artist** | Users expect to know what's playing without switching apps. RockMyRun and TrailMix show this inline. MiniPlayer already does this but is disconnected from the run screen | LOW | `SpotifyPlayerService.currentTrack` provides `name` and `artistName`. Elevate into run screen layout alongside album art |
-| **Play/pause + skip controls** | Every music player during exercise provides these. Must be thumb-reachable per one-handed navigation patterns | LOW | Already in `MiniPlayerView`. Move into run screen with larger touch targets (44pt minimum per Apple HIG, ideally 56pt+ for sweaty fingers) |
-| **Current song BPM visible** | BeatStep's entire value prop is BPM matching. Hiding the song BPM during the run contradicts the core promise | LOW | `BPMCacheService.shared.getBPM(forTrackID:)` already computed in MiniPlayer. Surface prominently in the integrated player area |
-| **Zone / mode indicator** | User selected a zone before starting; confirming which zone is active provides orientation. "Am I in guided or free mode?" should never be ambiguous | LOW | `runEngine.runMode` and zone data available. Display as persistent label in status bar area |
-| **Stop run action (protected)** | Must be available but protected from accidental taps. Accidental stop mid-run is catastrophic UX | LOW | Current `stopRunButton` has no protection. Add long-press confirmation or swipe-to-stop. Long-press is simpler and works with gloves |
-| **Pause-aware idle state** | Runner stops at traffic light. Screen must acknowledge the pause, not show stale data. Strava/NRC use auto-pause detection; BeatStep uses cadence timeout | MEDIUM | `CadenceService` already transitions to `.paused` after 5s inactivity. Current `pausedView` is a minimal placeholder ("Paused" + "Resume running to continue"). Needs deliberate, polished design |
-| **Album art / visual anchor** | Music players universally show album art. Creates visual interest on an otherwise metric-heavy screen | LOW | Spotify API provides image URLs via `currentTrack`. Not currently displayed on run screen. Use `AsyncImage` with playlist/track artwork |
+| **BPM confidence indicator per track** | Users already see BPM badges on TrackRow. When some tracks show "128 BPM" from the API and others show "--", users need to understand why. DJ apps (rekordbox, beaTunes) universally show source quality badges. Without confidence, users cannot distinguish a verified BPM from a guess. | LOW | Add `bpmSource` field to `CachedBPM` model. Render as color-coded badge variant on existing `TrackRow`: green dot for API-verified, blue dot for manual tap, gray "--" for unknown. Builds on existing orange BPM badge styling. |
+| **Zero-BPM fallback: skip by default** | Current `RunEngineService.findMatchingTracks` silently ignores tracks where `bpmMap[id] == nil` via `guard let bpm`. Users with niche libraries hit this constantly -- songs disappear from rotation with no explanation. The skip behavior is correct but must be made visible and configurable. | LOW | Current behavior already skips. Feature is making this explicit: show "N tracks skipped (no BPM)" in playlist header or pre-run summary. Add setting to control behavior. |
+| **Configurable zero-BPM behavior** | Three options: skip (default, preserves current behavior), play regardless (treat as wildcard fill), shuffle unmatched (mix unknowns into rotation). Users with large unanalyzed libraries need the "play regardless" option to avoid empty playlists during runs. | LOW | UserDefaults-backed enum in Settings. "Skip" maps to current `guard let` logic. "Play regardless" adds nil-BPM tracks to fallback pool in `selectNextMatch`. Clean integration -- one `if` branch in existing method. |
+| **Tap BPM input for tracks without data** | Songs without GetSongBPM results are dead weight in the library. Tap-to-detect is the universal manual override in every DJ tool, metronome app, and music production workflow. Research confirms: minimum 4 taps for display, 8 taps for stability, rolling average with outlier rejection. | MEDIUM | New modal sheet on long-press of TrackRow in `PlaylistDetailView`. Large tap area, running average of last 8 intervals, stddev-based stability indicator, save button. Writes to `CachedBPM` with `.manual` source. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set BeatStep apart. These make the "music syncs to your stride" promise tangible and visible.
+Features that make BeatStep's algorithm observable, testable, and trustworthy -- beyond what any running music app offers.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Sync state indicator (in-sync / drifting / mismatched)** | No competitor visualizes how well the music BPM matches cadence in real-time. TrailMix stretches tempo silently; RockMyRun adjusts BPM invisibly; Weav Run makes tempo changes audible but doesn't quantify the gap. BeatStep queues matching songs, so showing sync state IS the feedback loop that closes the experience | MEDIUM | Compare `currentSPM` against current song BPM (from `BPMCacheService`). Three states: **synced** (within tolerance), **drifting** (within 2x tolerance), **mismatched** (beyond). Color-code using existing tokens: `stateSuccess` / `stateWarning` / `stateError`. Must account for half-tempo mode in comparison |
-| **Delta indicator ("+4 SPM" / "-6 SPM")** | Quantifies the gap between cadence and song BPM. Runners can self-correct pace. Garmin shows HR zone delta; same principle applied to cadence. No running music app does this | LOW | Simple arithmetic: `currentSPM - effectiveSongBPM` (where effective accounts for half/double tempo). Display as signed number near cadence. Only meaningful during `.active` state; hide during `.paused` |
-| **Half-tempo toggle (1:1 vs 1/2)** | BeatStep already matches at half/double BPM internally (`findMatchingTracks` checks `spm/2` and `spm*2`), but users have zero visibility or control. A 90 BPM song at 180 SPM feels perfectly synced but the numbers "90 vs 180" look broken. Making this explicit and toggleable mid-run gives runners agency and eliminates confusion | MEDIUM | UI toggle that sets which BPM multiples are considered primary. When in half-tempo mode, the sync/delta display compares `currentSPM` against `songBPM * 2` rather than `songBPM`. Must persist during the run but reset between runs. Display: show effective comparison ("90 BPM x2") so user understands the math |
-| **Zone band visualization** | Shows cadence within context of the target zone range. A horizontal bar or arc showing where current SPM sits relative to zone min/max. More informative than a bare number -- provides spatial awareness of "how far off am I?" | MEDIUM | Zones have a BPM target; band = target +/- tolerance. Visual: simple gauge bar with current position marker. Fills green when in range, amber when approaching edge. Only shown in guided mode (free mode has no target) |
-| **Cadence-responsive color shift** | The screen subtly shifts color temperature based on sync state. Green-tinted accent when locked in, warm shift when drifting. Creates a visceral "in the zone" feeling without requiring focus. Subconscious feedback | LOW | Tint background or accent elements via `.opacity` modifiers on existing color tokens. Subtle -- not a full screen color change. Derive from sync state computation (same data as sync indicator) |
-| **Ramp phase progress** | In guided mode, show progression through warm-up / at-pace / cool-down with visual indicator. Users know where they are in the guided experience without counting songs | LOW | `runEngine.rampPhase` and `rampSongsPlayed` exist. Display as segmented bar with three sections or phase dots with active highlight |
+| **Sensor Lab debug screen** | No running music app exposes raw sensor data. For the developer this is essential for tuning the cadence algorithm. For power users it builds trust by showing the algorithm is working. Hidden behind Settings toggle -- zero cognitive cost for casual users. | MEDIUM | New `SensorLabView` behind `@AppStorage("sensorLabEnabled")` toggle in SettingsView. Shows: raw CMPedometer cadence, rolling average SPM, step count, detection state, trend. All data reads from `CadenceService.shared` which is already `@Observable`. |
+| **Configurable detection interval** | Default 5s rolling window (`CadenceService.windowDuration`) is tuned for running smoothness. For desk testing and development, 0.5-1s gives immediate feedback. This single parameter change transforms debugging speed. | LOW | Expose `windowDuration` as settable on `CadenceService` (currently `private let`). Add slider in Sensor Lab only (0.5s to 5.0s). Reset to 5.0 when Sensor Lab is dismissed to prevent accidental production use. |
+| **Live confidence badge in RunPlayerView** | During a run, show whether the current song's BPM is API-verified or manually tapped. Micro-badge next to BPM display. Builds trust without cluttering. | LOW | One additional view element in `RunPlayerView` next to BPM. Reads `CachedBPM.bpmSource` via cache lookup. Depends on confidence badge existing in TrackRow first. |
+| **Pre-run BPM coverage summary** | Before starting a run, show "42/50 tracks have BPM data. 8 tracks will be skipped." Gives users agency to fix coverage gaps before running. | LOW | Compute from existing `BPMCacheService.coverageStats(forTrackIDs:)` -- method already exists. Display in RunView before the Start button. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Real-time tempo stretching** | Weav Run and TrailMix do this. Seems like the "perfect" sync | Degrades audio quality noticeably. Requires audio processing pipeline (AVAudioEngine + time-pitch node). Increases battery drain. Licensing complexity. BeatStep's queuing model is a deliberate design choice (PROJECT.md key decision) | Show sync state clearly so users understand the relationship. The queue model preserves original audio quality -- that IS the differentiator |
-| **Distance / pace / calories overlay** | "Every running app shows this" | BeatStep is explicitly not a fitness tracker (PROJECT.md: "No workout tracking -- focused product"). Adding these metrics dilutes focus and competes with Strava/Apple Fitness which do it better with GPS/HR | Keep the run screen about music + cadence only. The absence of fitness metrics IS the brand statement. Users run Strava simultaneously |
-| **Heart rate display** | Peloton and Apple Fitness show HR prominently | Requires HealthKit continuous HR reading, watch pairing, creates another metric competing for screen real estate on a music-focused screen | Defer entirely. If added later, belongs in a secondary swipe-screen, not the primary run view |
-| **Auto-pause with timer freeze** | Standard in NRC/Strava -- timer pauses when you stop | BeatStep doesn't track workout duration for fitness purposes. Music continuing during brief stops (intersection wait) is actually desirable. A frozen timer implies workout tracking that BeatStep explicitly doesn't do | Show "Paused" state visually when cadence drops. Music behavior during pause is a separate concern (keep playing vs pause). Don't freeze a workout timer |
-| **Metronome / audio click** | Running metronome apps (RunCadence, My Cadence) use audio clicks to guide cadence | Conflicts with music playback. Annoying layered over headphones. The matched-BPM music IS the metronome -- that's the whole product | The music beat IS the pacing guide. Sync state indicator provides visual confirmation that the beat matches your stride |
-| **Song queue preview / upcoming tracks** | "What's playing next?" -- standard in music apps | BeatStep doesn't know what's next until the current song ends and cadence is re-evaluated. Showing a queue implies a fixed playlist, contradicting the adaptive model | Show nothing, or show "Next: matched to your cadence." The adaptive-unknown-next is a feature, not a bug |
-| **Complex gesture controls** | Swipe patterns, multi-finger gestures for different actions | Sweaty fingers, bouncing phone in armband, gloves in winter. Complex gestures fail during physical activity. Auto-pause research confirms: fewer controls = better during exercise | Large tap targets only. Play/pause, skip, stop. Three actions maximum for primary controls |
+| **Zero-BPM prompt during run** | "Let me decide per-song whether to play unknowns" | Interrupts the running experience. Cannot safely interact with phone while running. The entire BeatStep premise is hands-free flow. Every prompt is a broken stride. | Pre-run: show count of unmatched tracks. Settings: choose skip or play-regardless globally. Decision happens before the run, not during. |
+| **Auto-BPM via microphone analysis** | "Just listen to the song and detect BPM automatically" | Requires audio analysis SDK (Essentia, aubio), adds 5-10MB binary size, significant battery drain, and accuracy is unreliable for complex rhythms. Cannot access Spotify audio stream directly -- would need to record from mic during playback, which is fragile and quality-dependent. | Tap BPM is simpler, user-controlled, and handles the 5% of tracks GetSongBPM misses. API covers 95%+ of mainstream tracks. |
+| **Sensor Lab always visible** | "Show debug data on the run screen" | Clutters the carefully designed three-zone ActiveRunView layout. Information overload during exercise. Conflicts with the focused, glanceable run screen. | Sensor Lab is a separate screen accessed from Settings only. Run screen stays clean. Developer can split-screen on iPad or check between runs. |
+| **Export sensor data to CSV** | "Let me analyze my cadence patterns" | Scope creep into workout analytics territory. PROJECT.md explicitly excludes post-run analytics. Opens the door to feature requests for charts, trends, comparisons. | Sensor Lab is for live observation only. Users who want analytics have Strava, Apple Health, Garmin Connect. |
+| **Editable BPM text field** | "Let me just type the number" | Users rarely know exact BPM. Tap interface is more natural and produces confidence metadata (interval consistency). Text input gives false precision with zero confidence signal. Also requires keyboard which is hostile on a music input screen. | Tap BPM with visual feedback of stabilizing value. Display final integer BPM after save. If user knows exact BPM, they can tap at that tempo. |
+| **Batch tap BPM workflow** | "Let me fix all unanalyzed tracks at once" | Requires playing each track, tapping along, confirming, advancing. Complex flow with many error states. Easy to mis-tap on wrong song. | Single-track tap is sufficient for v1.4. If demand exists, batch workflow is a future milestone. Most users only have 5-10 unanalyzed tracks. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Rebuilt Run Screen Layout]
-    |-- contains --> [All table stakes features]
-    |-- contains --> [All differentiator features]
-    |-- requires --> [Status bar area: zone + time + sync state]
-    |-- requires --> [Hero area: cadence number + delta + trend]
-    |-- requires --> [Player area: art + song + controls + BPM]
-    |-- requires --> [Controls area: stop (protected)]
+[BPM Source Enum on CachedBPM]  <-- FOUNDATION, build first
+    |
+    +---> [BPM Confidence Badge in TrackRow]
+    |         |
+    |         +---> [Live Confidence Badge in RunPlayerView] (same data, different location)
+    |
+    +---> [Tap BPM Input] (writes .manual source on save)
+    |
+    +---> [Pre-run BPM Coverage Summary] (counts by source type)
 
-[Sync State Indicator]
-    |-- requires --> [Song BPM visible on run screen]
-    |-- requires --> [Cadence display active]
-    |-- feeds into --> [Cadence-responsive color shift]
-    |-- must account for --> [Half-tempo toggle mode]
+[Sensor Lab Toggle in Settings]
+    |
+    +---> [SensorLabView] (reads CadenceService.shared directly)
+              |
+              +---> [Configurable Detection Interval] (modifies CadenceService.windowDuration)
 
-[Delta Indicator "+4 SPM"]
-    |-- requires --> [Song BPM visible on run screen]
-    |-- requires --> [Cadence display active]
-    |-- enhances --> [Sync State Indicator]
-    |-- must account for --> [Half-tempo toggle mode]
-
-[Half-Tempo Toggle]
-    |-- requires --> [Song BPM visible on run screen]
-    |-- modifies --> [RunEngineService.findMatchingTracks multiplier logic]
-    |-- modifies --> [Sync state + delta calculations]
-    |-- must ship with --> [Sync State Indicator] (otherwise numbers confuse users)
-
-[Zone Band Visualization]
-    |-- requires --> [Zone / mode indicator in status bar]
-    |-- only shown in --> [Guided mode runs]
-
-[Cadence-Responsive Color Shift]
-    |-- requires --> [Sync State Indicator computed state]
-
-[Ramp Phase Progress]
-    |-- reads from --> [RunEngineService.rampPhase + rampSongsPlayed]
-    |-- only shown in --> [Guided mode runs]
-
-[Pause/Idle State UX]
-    |-- requires --> [CadenceService.state == .paused] (already implemented)
-    |-- affects --> [All display areas: dim hero, ghost last SPM, hide delta]
-    |-- independent of --> [Other differentiator features]
-
-[Elapsed Time Display]
-    |-- pauses when --> [CadenceService.state == .paused]
-    |-- independent of --> [Music player features]
+[Zero-BPM Fallback Config]  <-- STANDALONE, no dependencies on other v1.4 features
+    (integrates into existing RunEngineService.selectNextMatch)
 ```
 
 ### Dependency Notes
 
-- **Half-tempo toggle MUST ship with sync state indicator.** Without sync visualization, toggling between 1:1 and 1/2 is meaningless to the user. The toggle changes which BPM comparison is shown -- if nothing is shown, there's nothing to toggle.
-- **Sync state and delta both depend on song BPM.** Song BPM must be surfaced on the run screen before either indicator makes sense. Build the player area (with BPM display) first.
-- **Pause state is independent.** `CadenceService` already handles the `.paused` transition at 5s inactivity. The UX work is purely view-layer: dimming, ghosting last SPM, hiding active-only elements.
-- **Zone band and ramp progress are guided-mode-only.** These features are irrelevant in free mode. The layout must conditionally show/hide them based on `runEngine.runMode`.
-- **Color shift is a visual layer on top of sync state.** Same underlying computation, different output. Build sync state logic once, consume it in both the indicator and the color shift.
+- **BPM Confidence Badge requires BPM Source Enum:** The `CachedBPM` SwiftData model must gain a `bpmSource` field before any UI can display confidence. This is the data foundation -- build first, everything else layers on top.
+- **Tap BPM writes to BPM Source Enum:** Tap results are saved as `.manual` source. Without the enum, tap BPM has no way to record provenance distinct from API results.
+- **Live Confidence Badge depends on TrackRow badge:** Same data model, same rendering logic, different placement (`RunPlayerView` vs `TrackRow`). Build TrackRow version first, extract shared badge component, reuse in run screen.
+- **Configurable Detection Interval depends on Sensor Lab:** The interval slider lives inside Sensor Lab UI. Sensor Lab toggle and view must exist first.
+- **Zero-BPM Fallback is fully standalone:** Integrates directly into `RunEngineService.selectNextMatch` with a UserDefaults-backed enum. No dependency on confidence badges, tap BPM, or sensor lab. Can be built in parallel.
+- **Pre-run Coverage Summary uses existing method:** `BPMCacheService.coverageStats(forTrackIDs:)` already returns `(withBPM: Int, total: Int)`. Just needs a UI element in `RunView`.
 
 ---
 
-## MVP Definition
+## MVP Definition (v1.4 Scope)
 
-### Launch With (v1.3 Core)
+### Must Build
 
-The rebuilt run screen must ship with all of these to feel complete:
+- [ ] **BPM source enum on CachedBPM model** -- Foundation for all confidence features. SwiftData lightweight migration adds `bpmSource: String` with default mapping: existing records with `bpm != nil` get `.api`, records with `bpm == nil` get `.none`.
+- [ ] **BPM confidence badge in TrackRow** -- Color-coded indicator replacing uniform orange badge: green (API-verified), blue (manual tap), gray (no BPM). Integrates into existing `PlaylistDetailView` TrackRow.
+- [ ] **Tap BPM input sheet** -- Modal from long-press on track. Large tap target, rolling 8-interval average, outlier rejection (2x stddev), stability indicator, save when stddev < 5 BPM. Writes `.manual` source.
+- [ ] **Zero-BPM fallback setting** -- Picker in Settings: Skip (default), Play Regardless. Stored in UserDefaults. Integrates into `RunEngineService.selectNextMatch`.
+- [ ] **Sensor Lab screen** -- New view behind `@AppStorage` toggle in Settings. Displays: raw cadence SPM, state, trend, step count, window sample count.
+- [ ] **Configurable detection interval** -- Slider in Sensor Lab (0.5s-5.0s). Modifies `CadenceService.windowDuration`. Resets to 5.0 on Sensor Lab dismiss.
 
-- [ ] **Rebuilt run screen layout** -- three zones: status bar (zone, time, sync), hero area (cadence, delta, trend), player area (art, song, controls, BPM)
-- [ ] **Sync state indicator** -- color-coded in-sync/drifting/mismatched based on cadence vs song BPM (accounting for half-tempo)
-- [ ] **Delta indicator** -- "+4 SPM" / "-6 SPM" near cadence number, accounting for effective BPM comparison
-- [ ] **Song BPM on run screen** -- visible in the integrated player area, not just the global MiniPlayer
-- [ ] **Half-tempo toggle** -- 1:1 / 1/2 switch, visible mid-run, affects matching behavior and display math
-- [ ] **Pause/idle state** -- deliberate visual: dimmed elements, "Paused" overlay, last-known SPM ghosted, delta hidden
-- [ ] **Elapsed time** -- pause-aware timer in status bar
-- [ ] **Album art** -- visual anchor in player area
-- [ ] **Protected stop action** -- long-press to stop (prevents accidental mid-run stop)
+### Add After Validation (v1.4.x)
 
-### Add After Validation (v1.3.x)
+- [ ] **Live confidence badge in RunPlayerView** -- Micro-badge next to BPM in run screen player area. One view addition once TrackRow badge component exists.
+- [ ] **Pre-run BPM coverage summary** -- "42/50 tracks matched" in RunView. Uses existing `coverageStats` method.
 
-- [ ] **Zone band visualization** -- gauge bar showing cadence position within zone range. Add if users report confusion about whether they're "in zone"
-- [ ] **Cadence-responsive color shift** -- subtle background tinting based on sync state. Add if static sync indicator feels insufficient
-- [ ] **Ramp phase progress** -- visual warm-up/pace/cool-down progression. Add if guided mode users want more phase awareness
+### Future Consideration (v1.5+)
 
-### Future Consideration (v2+)
-
-- [ ] **Haptic feedback on sync state changes** -- vibrate when entering/leaving sync. iOS haptics are cheap but need user preference toggle
-- [ ] **Lock screen / Dynamic Island** -- Live Activities showing cadence + sync state without unlocking
-- [ ] **Apple Watch companion** -- cadence + sync on wrist, controls on watch
-- [ ] **Customizable run screen layout** -- let users choose which metrics are shown (like Cadence app's customizable screens)
+- [ ] **Batch tap BPM workflow** -- Queue unanalyzed tracks, play snippets, tap along. Only if demand materializes.
+- [ ] **Sensor Lab accelerometer graph** -- Real-time chart of raw accelerometer data (requires CMMotionManager, separate from CMPedometer).
 
 ---
 
@@ -150,144 +108,129 @@ The rebuilt run screen must ship with all of these to feel complete:
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Rebuilt run screen layout | HIGH | MEDIUM | P1 |
-| Sync state indicator | HIGH | LOW | P1 |
-| Delta indicator | MEDIUM | LOW | P1 |
-| Song BPM on run screen | HIGH | LOW | P1 |
-| Half-tempo toggle | HIGH | MEDIUM | P1 |
-| Pause/idle state UX | HIGH | LOW | P1 |
-| Album art in player | MEDIUM | LOW | P1 |
-| Elapsed time display | MEDIUM | LOW | P1 |
-| Protected stop action | MEDIUM | LOW | P1 |
-| Zone band visualization | MEDIUM | MEDIUM | P2 |
-| Cadence-responsive color shift | LOW | LOW | P2 |
-| Ramp phase progress | LOW | LOW | P2 |
+| BPM source enum (model migration) | HIGH | LOW | P1 |
+| Confidence badge in TrackRow | HIGH | LOW | P1 |
+| Tap BPM input | HIGH | MEDIUM | P1 |
+| Zero-BPM fallback setting | MEDIUM | LOW | P1 |
+| Sensor Lab screen | MEDIUM | MEDIUM | P1 |
+| Configurable detection interval | LOW (developer tool) | LOW | P1 |
+| Live confidence in RunPlayerView | LOW | LOW | P2 |
+| Pre-run coverage summary | MEDIUM | LOW | P2 |
+| Batch tap BPM | MEDIUM | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for v1.3 launch
-- P2: Should have, add in v1.3.x if time permits
+- P1: Must have for v1.4 milestone
+- P2: Should have, add when possible
 - P3: Nice to have, future consideration
 
 ---
 
-## Run Screen Layout Recommendation
+## Implementation Details
 
-Based on competitor analysis and the existing codebase, the rebuilt run screen should use a three-zone vertical layout optimized for mid-run glanceability:
+### Tap BPM Algorithm
 
+Based on research of tap tempo implementations (bpm-finder.net, taptempo.io, metronomeonline.org):
+
+1. **Minimum taps:** 4 to display a value (3 intervals minimum). Show "Keep tapping..." placeholder until threshold met.
+2. **Rolling window:** Last 8 tap intervals. Compute mean interval in milliseconds, convert to BPM: `60000 / meanIntervalMs`.
+3. **Outlier rejection:** Discard intervals that deviate more than 2x standard deviation from the rolling mean. This handles accidental double-taps and hesitation pauses.
+4. **Stability display:** Show live BPM updating with each tap. Show stability indicator based on standard deviation -- "Stabilizing..." when stddev > 5 BPM, "Stable" with checkmark when stddev <= 5 BPM.
+5. **Save threshold:** Enable save button only when stddev <= 5 BPM and minimum 4 taps received. Prevents saving unreliable values.
+6. **Inactivity reset:** If no tap for 3 seconds, reset the session. Show "Timed out -- tap again to restart."
+7. **UX layout:** Large tap target (full-width button covering lower 40% of sheet). Haptic feedback (`UIImpactFeedbackGenerator.light`) on each tap. Display: large BPM number center, tap count + stability status below, song name + artist at top for context, Save + Cancel buttons.
+8. **Accuracy expectation:** Typically within +/-2 BPM with 6-8 consistent taps. This is sufficient for BPM matching with the existing tolerance ranges (+-3, +-7, +-12).
+
+### CachedBPM Model Migration
+
+Current `CachedBPM` fields: `spotifyTrackID`, `trackName`, `artistName`, `bpm: Int?`, `lookupAttempted: Bool`, `lastUpdated: Date`, `danceability: Int?`.
+
+Add: `bpmSource: String` (String for SwiftData compatibility, mapped to enum in app code).
+
+```swift
+enum BPMSource: String, Codable {
+    case api        // GetSongBPM returned a value
+    case manual     // User tapped BPM
+    case none       // Lookup attempted, no result (bpm is nil)
+}
 ```
-+----------------------------------+
-| STATUS BAR                       |
-| [Zone 3] [12:34] [IN SYNC]      |
-+----------------------------------+
-|                                  |
-|           HERO AREA              |
-|            172                   |
-|         +4 SPM  ->              |
-|            SPM                   |
-|                                  |
-+----------------------------------+
-| PLAYER AREA                      |
-| [art] Song Name        [BPM]    |
-|       Artist Name               |
-|    [<<]  [||]  [>>]             |
-+----------------------------------+
-| [====== STOP (long press) =====] |
-+----------------------------------+
+
+**Migration strategy:** SwiftData lightweight migration. New field with default value. Backfill logic on first launch: iterate cached records, set `.api` where `bpm != nil && lookupAttempted`, set `.none` where `bpm == nil && lookupAttempted`, set `.none` for all others. This runs once.
+
+**Integration points:**
+- `BPMCacheService.cache()` must accept `bpmSource` parameter. Default to `.api` for existing call sites (GetSongBPM lookups).
+- New `BPMCacheService.cacheManualBPM()` method for tap input that sets `.manual`.
+- `BPMCacheService.getSource(forTrackID:)` new query method for badge rendering.
+
+### Sensor Lab Data Points
+
+All data reads from `CadenceService.shared` which is `@Observable`:
+
+| Data Point | Source Property | Display | Needs Exposure |
+|------------|----------------|---------|----------------|
+| Current SPM | `currentSPM` | Large number, updates live | No -- already public |
+| State | `state` | Badge: idle/detecting/active/paused | No -- already public |
+| Trend | `trend` | Arrow icon: up/steady/down | No -- already public |
+| Permission | `permissionDenied` | Status badge | No -- already public |
+| Window duration | `windowDuration` | Slider + value label | YES -- currently `private let` |
+| Samples in window | `cadenceWindow.count` | "N samples in window" | YES -- currently private |
+| Step count | CMPedometer `numberOfSteps` | Counter | YES -- not exposed |
+| Raw cadence | CMPedometer `currentCadence` | SPM before averaging | YES -- not exposed |
+
+Four properties need exposure. Options:
+1. **Computed read-only properties** (preferred): `var sampleCount: Int`, `var rawCadence: Double?`, settable `var windowDuration`. Keep `cadenceWindow` array private.
+2. **Debug-only struct**: `CadenceService.debugSnapshot` returns a frozen copy of internal state. Cleaner but adds a type.
+
+Recommend option 1 -- simpler, three computed properties plus making `windowDuration` a `var`.
+
+### Zero-BPM Fallback Integration
+
+Current behavior in `RunEngineService.findMatchingTracks(forSPM:)`:
+```swift
+guard let bpm = bpmMap[track.id] else { return false }
+```
+Tracks without BPM silently excluded.
+
+New behavior based on `ZeroBPMFallback` setting:
+
+```swift
+enum ZeroBPMFallback: String {
+    case skip           // Current behavior -- exclude nil-BPM tracks
+    case playRegardless // Add nil-BPM tracks to end of match list as filler
+}
 ```
 
-**Rationale:**
-- **Status bar at top:** Secondary info that orients but doesn't demand attention. Zone label, elapsed time, sync state pill.
-- **Hero cadence center stage:** The number runners glance at mid-stride. Largest element. Delta indicator and trend arrow are satellites to this number.
-- **Player area at bottom-center:** Album art provides visual weight. Song info + BPM visible. Controls in thumb zone for one-handed operation.
-- **Stop action at very bottom:** Protected by long-press. Full-width for findability but requires intentional action.
+- **Skip**: No change to `findMatchingTracks`. Current `guard let` logic preserved.
+- **Play Regardless**: In `selectNextMatch`, after normal matching fails (no BPM-matched tracks left), fall back to tracks with `bpmMap[id] == nil` in random order. These never affect sync quality computation (delta shows 0, sync state shows neutral).
 
----
-
-## Half-Tempo Matching: Design Details
-
-The 180 SPM / 90 BPM equivalence is well-documented in running literature. Research confirms:
-
-- A runner at 180 SPM matches perfectly to a 180 BPM song (1:1 -- one step per beat)
-- The same runner also matches to a 90 BPM song (1/2 -- two steps per beat, each foot lands on alternating beats)
-- `RunEngineService.findMatchingTracks` already checks `spm`, `spm/2`, and `spm*2`
-
-**The problem:** When BeatStep plays a 90 BPM song for a 180 SPM runner, the display shows "90 BPM" next to "180 SPM". Without context, this looks like a mismatch -- the delta shows "-90 SPM" which is alarming.
-
-**The solution:**
-1. **Toggle control:** Small segmented toggle or icon button: "1:1" vs "1/2". Defaults to 1:1.
-2. **When 1/2 is active:**
-   - Song BPM display shows effective BPM: "90 BPM (x2)" or "= 180"
-   - Delta computes against `songBPM * 2` instead of `songBPM`
-   - Sync state evaluates against the doubled value
-   - `findMatchingTracks` prioritizes half-tempo matches (or exclusively matches them)
-3. **When 1:1 is active:**
-   - Standard behavior: compare SPM directly to song BPM
-   - Half/double matches still work in the engine but aren't prioritized
-4. **Mid-run switching:** Toggle is accessible during the run. State persists for the duration of the run, resets on next run start.
-
----
-
-## Pause/Idle State: Design Details
-
-Current behavior: `CadenceService` transitions to `.paused` after 5 seconds of no steps. The `pausedView` shows "Paused" + "Resume running to continue" + last known SPM dimmed.
-
-**Enhanced pause state should:**
-
-| Element | Active State | Paused State |
-|---------|-------------|--------------|
-| Cadence number | Full brightness, updating | Ghosted (30% opacity), frozen at last value |
-| Trend arrow | Visible, colored | Hidden |
-| Delta indicator | Visible, signed number | Hidden |
-| Sync state | Color-coded pill | Neutral/grey |
-| Elapsed time | Counting | Frozen (or shows "Paused" badge) |
-| Music player | Playing | Keep playing (deliberate: music at traffic light is fine) |
-| Stop button | Available | Available |
-| Overall screen | Normal | Subtle dim overlay or reduced brightness on metrics |
-
-**Key design decision: Music continues during pause.** Unlike fitness apps that pause the workout timer, BeatStep's pause means "you stopped running" not "you want silence." The music keeps the energy up at traffic lights. When cadence resumes, the screen un-dims and metrics update live again.
-
-**Transition behavior:**
-- Active -> Paused: 5 second inactivity timeout (already implemented in `CadenceService`)
-- Paused -> Active: First step detected re-triggers `.active` state (already implemented)
-- The transition should animate: fade-to-dim over 0.5s, un-dim over 0.3s
+Integration is minimal: one `if` branch in `selectNextMatch` after the existing "pool exhausted" logic.
 
 ---
 
 ## Competitor Feature Analysis
 
-| Feature | Nike Run Club | Strava | TrailMix | RockMyRun | Weav Run | BeatStep v1.3 |
-|---------|--------------|--------|----------|-----------|----------|---------------|
-| Primary metric | Pace (large) | Pace + distance | Cadence | BPM target | Pace | **Cadence (hero)** |
-| Music integration | Separate app | None | Built-in tempo stretch | Built-in tempo adjust | Built-in tempo stretch | **Built-in queue match** |
-| BPM sync method | N/A | N/A | Tempo stretching | Body-Driven Music (accelerometer) | Tempo stretching (100-240 BPM range) | **Song queuing (preserves audio)** |
-| Sync feedback to user | None | None | None visible | BPM number only | Speed change audible | **Visual sync state + delta number** |
-| Half/double BPM | N/A | N/A | Manual tempo lock | N/A | Automatic (invisible) | **Explicit toggle with math shown** |
-| Pause detection | Auto-pause (GPS speed) | Auto-pause (GPS, configurable threshold) | Unknown | Unknown | Unknown | **Cadence-based (5s no-step timeout)** |
-| Pause behavior | Timer freezes | Timer freezes, configurable | Unknown | Unknown | Unknown | **Music continues, metrics dim** |
-| Run metrics shown | Distance, pace, HR, time | Distance, pace, elevation, HR, cadence | Steps, cadence | Steps, distance, HR, calories | Cadence, distance | **Cadence, time, zone, sync state only** |
-| Album art during run | N/A (separate player) | N/A | Yes | Yes (mix art) | Yes | **Yes** |
-
-**Key competitive insight:** No competitor in the running-music space visualizes the cadence-to-music sync relationship. TrailMix and RockMyRun adjust tempo silently. Weav Run makes tempo changes audible but doesn't quantify the gap. BeatStep's sync state indicator + delta display is genuinely novel. This is the primary differentiator for v1.3.
+| Feature | DJ Apps (rekordbox, beaTunes) | Running Music Apps (TrailMix, RockMyRun) | Metronome Apps (Live BPM) | BeatStep v1.4 |
+|---------|-------------------------------|------------------------------------------|---------------------------|---------------|
+| BPM confidence | Color-coded badges (green/yellow/red) by analysis confidence | Not shown -- BPM is invisible to user | N/A | Color-coded dot: green (API), blue (manual), gray (none) |
+| Manual BPM input | Tap tempo + text field | Not available | Tap-only interface | Tap tempo only -- text field is anti-feature |
+| Debug/sensor view | Hidden developer menu (Traktor), analysis log (beaTunes) | Not available | Live waveform display | Sensor Lab behind settings toggle |
+| Zero-BPM handling | Warning on import, require manual fix before use | Invisible -- unknown tracks silently excluded or included | N/A | Configurable: skip or play regardless, with pre-run visibility |
+| Detection interval config | Analysis quality presets | Not configurable | Not applicable | Slider in Sensor Lab (0.5-5.0s), developer-facing |
 
 ---
 
 ## Sources
 
-- [RockMyRun - Body-Driven Music technology](https://www.rockmyrun.com/)
-- [TrailMix: Step to the Beat - App Store](https://apps.apple.com/us/app/trailmix-step-to-the-beat/id647651691)
-- [Weav Run - Music matching pace - Women's Running](https://www.womensrunning.com/culture/weav-run-music-pace/)
-- [Nike Run Club app features](https://www.nike.com/nrc-app)
-- [Nike Run Club review - Tom's Guide](https://www.tomsguide.com/reviews/nike-run-club-review)
-- [Strava Auto-Pause documentation](https://support.strava.com/hc/en-us/articles/216919277-Auto-Pause)
-- [Garmin Auto-Pause best practices](https://forums.garmin.com/developer/connect-iq/f/discussion/7232/best-practices-to-implement-auto-pause-in-an-app)
-- [Running Music BPM Guide - half/double tempo](https://www.runoapp.com/blog/running-music-bpm-guide)
-- [Spontaneous Entrainment of Running Cadence to Music Tempo - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC4526248/)
-- [Fitness App UI Design principles - Stormotion](https://stormotion.io/blog/fitness-app-ux/)
-- [Running Apps UX Research - Medium](https://fernandocomet.medium.com/running-apps-ux-research-7e07e41f556c)
-- [Cadence app - customizable run screens](https://getcadence.app/features/)
-- [SportTracks - Pros and cons of pausing workouts](https://sporttracks.mobi/blog/the-pros-and-cons-of-pausing-workouts)
-- Codebase analysis: `RunView.swift`, `CadenceDisplayView.swift`, `MiniPlayerView.swift`, `CadenceService.swift`, `RunEngineService.swift`
+- [Live BPM: Tap Tempo & Counter - App Store](https://apps.apple.com/us/app/live-bpm-tap-tempo-counter/id6480474508) -- Reference tap BPM interface
+- [Pro Tap Tempo: Accurate BPM Detection Tips](https://metronomeonline.org/blog/pro-tap-tempo-accurate-bpm-detection-tips) -- Algorithm: 8-tap window, outlier filtering, stabilization
+- [Tap Tempo - Real-time BPM Detection](https://bpm-finder.net/tool/tap-tempo) -- Minimum 3 taps, stddev-based confidence
+- [TapTempo.io](https://taptempo.io/) -- Rolling average, inactivity reset pattern
+- [beaTunes](https://www.beatunes.com/en/) -- BPM confidence scoring and metadata quality indicators
+- [Automatic BPM and Key Detection (2025)](https://stemsplit.io/blog/bpm-key-detection-feature) -- Confidence scoring for automated BPM analysis
+- [Garmin Forums: Cadence drops to zero](https://forums.garmin.com/sports-fitness/running-multisport/f/forerunner-965/370223/running-power-and-cadence-randomly-drop-to-zero-in-the-middle-of-a-run) -- Real-world zero-cadence scenarios
+- [Building SwiftUI debugging utilities - Swift by Sundell](https://www.swiftbysundell.com/articles/building-swiftui-debugging-utilities/) -- Debug screen patterns in SwiftUI
+- [MBXHub Audio Features](https://mbxhub.com/12sfaq.htm) -- Confidence score 0-1 for mood/BPM estimates, dashboard display
+- Codebase analysis: `CadenceService.swift`, `BPMCacheService.swift`, `CachedBPM.swift`, `RunEngineService.swift`, `PlaylistDetailView.swift`, `SettingsView.swift`
 
 ---
-*Feature research for: BeatStep v1.3 "In The Zone" -- active run screen, music player, cadence visualization, tempo matching, pause states*
-*Researched: 2026-03-24*
+*Feature research for: BeatStep v1.4 "Under The Hood" -- debug tooling, tap BPM, confidence indicators, zero-BPM fallback*
+*Researched: 2026-03-25*

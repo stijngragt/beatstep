@@ -1,7 +1,7 @@
 # Stack Research
 
-**Domain:** iOS running app -- active run screen, integrated music player, cadence visualization, half-tempo matching, pause state UX
-**Researched:** 2026-03-24
+**Domain:** iOS debug tooling, manual BPM input, confidence tracking, fallback behavior
+**Researched:** 2026-03-25
 **Confidence:** HIGH
 
 ---
@@ -21,119 +21,124 @@
 
 ---
 
-## v1.3 Stack Additions: In The Zone
+## v1.4 Stack Additions: Under The Hood
 
-v1.3 requires **zero new external dependencies**. Every capability needed is available in SwiftUI's iOS 17 built-in APIs.
+v1.4 requires **zero new external dependencies**. Every capability needed is available in CoreMotion and SwiftUI APIs already linked in the project.
 
-### Core Technologies (v1.3)
+### Core Technologies (v1.4)
 
 | Technology | API | iOS Version | Purpose | Why This |
 |------------|-----|-------------|---------|----------|
-| Numeric text animation | `.contentTransition(.numericText())` | 17.0+ | Animate SPM counter digit changes (e.g., 164 to 168) with per-digit rolling transition | Built into SwiftUI. Digits animate individually with direction awareness (counts up vs down). Far cleaner than custom per-digit animation code. Already at target. |
-| Phase-driven animations | `.phaseAnimator(_:content:animation:)` | 17.0+ | Pulse effect on sync state, breathing animation for pause state, cadence indicator color transitions | Already used in RunView detecting state (`detectingView` opacity pulse). Extend same pattern to more states. Zero learning curve. |
-| Keyframe animations | `KeyframeAnimator` | 17.0+ | Multi-property choreography if needed (simultaneous scale + opacity + offset on BPM match events) | Reserve for cases where phaseAnimator is insufficient. Available at deployment target but use sparingly -- phaseAnimator handles most cases. |
-| Haptic feedback | `.sensoryFeedback(_:trigger:)` | 17.0+ | Tactile confirmation on long-press-to-end completion, half-tempo toggle, zone transitions mid-run | Native SwiftUI modifier. Declarative -- attach to view, specify trigger value. Note: no iPad haptic support (acceptable for running app). |
-| Async image loading | `AsyncImage(url:content:placeholder:)` | 15.0+ | Album art from Spotify CDN in run screen music player | Built-in SwiftUI. SpotifyTrack already has `album.images` array with 3 sizes (640px, 300px, 64px). Use 300px for run screen. |
-| Long press gesture | `.onLongPressGesture(minimumDuration:onPressingChanged:)` | 15.0+ | Long-press-to-end run with visual progress ring | `onPressingChanged` callback fires with `Bool` indicating press state. Drive a circular `ProgressView` or custom `trim()` arc from a timer started when pressing begins. |
-| Periodic UI updates | `TimelineView(.periodic(every: 1))` | 15.0+ | Run elapsed time display (HH:MM:SS) in status bar | Declarative periodic view updates. Cleaner than `Timer.publish` + `.onReceive` -- no Combine needed, stays in SwiftUI paradigm. |
-| Color interpolation | `.contentTransition(.interpolate)` | 17.0+ | Smooth color transition on cadence sync state changes (synced/close/off) | Animates between color values without explicit `withAnimation` wrapping. Pair with `animation(.easeInOut)` for smooth state-driven color shifts. |
+| CMMotionManager | `startAccelerometerUpdates(to:withHandler:)` | 4.0+ | Raw accelerometer x/y/z data stream for Sensor Lab waveform | Same CoreMotion framework already imported. CMPedometer gives processed steps; CMMotionManager gives raw accelerometer/gyro. Only way to expose raw sensor signal. |
+| CMPedometer polling mode | `queryPedometerData(from:to:withHandler:)` | 8.0+ | Configurable detection interval for desk testing (0.5-1.0s) | Current `startUpdates(from:)` has system-controlled delivery frequency (~1-5s). `queryPedometerData` on a repeating Timer gives true configurable sub-second polling. Only way to get faster cadence updates. |
+| SwiftUI Charts | `LineMark` + `Chart` | 16.0+ | Live accelerometer waveform visualization in Sensor Lab | Built-in since iOS 16. `LineMark` with a rolling window array gives a real-time waveform chart with axes, no custom drawing. |
+| UIImpactFeedbackGenerator | `.impactOccurred()` | 10.0+ | Haptic confirmation on each BPM tap input | Already available via UIKit. One-line haptic. Confirms tap registration, helps user maintain rhythm accuracy. |
+| SwiftData lightweight migration | Automatic | 17.0+ | Add `confidenceSource: String?` optional field to CachedBPM model | Adding an optional property with implicit nil default triggers automatic lightweight migration. Zero migration code needed -- no VersionedSchema, no SchemaMigrationPlan. |
 
 ### Supporting Patterns (no libraries)
 
 | Pattern | Implementation | Purpose | Detail |
 |---------|---------------|---------|--------|
-| Album art caching | `NSCache<NSURL, UIImage>` thin wrapper (~30 lines) | Prevent re-fetch on state transitions | AsyncImage does NOT cache between view reloads. On the run screen, the same album art persists across pause/resume/sync state changes. A simple in-memory cache avoids redundant network calls. |
-| Sync state computation | `SyncState` enum on RunEngineService | Single source of truth for cadence indicator colors | Compare `CadenceService.currentSPM` vs `RunEngineService.effectiveBPM` with tolerance thresholds. Three states: `.synced` (within tolerance), `.close` (within 2x tolerance), `.off` (beyond). Drives color + haptic feedback. |
-| Half-tempo flag | `Bool` on RunEngineService | Toggle 1:1 vs 1:2 step-to-beat ratio | `findMatchingTracks` already checks `spm`, `spm/2`, `spm*2`. Half-tempo mode changes `effectiveBPM` to use `sustainedSPM / 2` as primary. This is a ~3-line change in the computed property. |
-| Run elapsed time | `Date` on RunEngineService | HH:MM:SS display via TimelineView | Store `runStartDate` at `startRun()`. Compute elapsed on each TimelineView tick. Reset on `stopRun()`. |
-| Long-press progress | `@State private var isPressing = false` + Timer | Circular progress ring fills over 2-second hold | On `onPressingChanged: true`, start a 2-second animation filling a `Circle().trim()`. On release before completion, reset. On completion, stop run. Pair with `.sensoryFeedback(.success, trigger: runEnded)`. |
+| Tap BPM calculation | `Date.timeIntervalSince(_:)` arithmetic | Compute BPM from inter-tap intervals | Collect last N tap timestamps, average intervals, BPM = 60.0 / avgInterval. Discard outliers beyond 2x median. Minimum 4 taps for reliable result. ~15 lines of code total. |
+| BPM confidence enum | `BPMConfidence: String, CaseIterable` | Type-safe confidence levels | `.verified` (exact API match), `.approximate` (fuzzy API match), `.manual` (user tap). Stored as raw String in SwiftData. |
+| Zero-BPM fallback enum | `ZeroBPMFallback: String, CaseIterable` | Configurable behavior for tracks without BPM | `.skip` (current behavior), `.playRegardless` (include in pool), `.prompt` (surface UI). @AppStorage persistence -- same pattern as TempoMode. |
+| Debug mode toggle | `@AppStorage("debugModeEnabled")` | Gate Sensor Lab screen behind Settings | Single boolean. Sensor Lab appears in Settings navigation when enabled. Ships in release builds -- not `#if DEBUG`. |
+| Singleton CMMotionManager | `SensorLabService.shared` | One motion manager per app | Apple docs: "An app should create only a single instance of CMMotionManager." CadenceService owns CMPedometer (separate). Both run simultaneously without conflict. |
 
 ---
 
-## Design Token Extensions
+## Critical Implementation Details
 
-Existing `DesignTokens.swift` needs small additions:
+### CMMotionManager vs CMPedometer -- Coexistence
 
-### New Color Tokens
+These are independent CoreMotion subsystems. Both can run concurrently:
+- **CMPedometer** (CadenceService) -- processes steps from the motion coprocessor, battery-efficient
+- **CMMotionManager** (SensorLabService) -- raw accelerometer at configurable Hz, higher battery cost
 
-| Token | Value | Purpose |
-|-------|-------|---------|
-| `Color.syncGood` | `Color.stateSuccess` (reuse) | Cadence synced with BPM target -- green |
-| `Color.syncClose` | `Color.stateWarning` (reuse) | Cadence within 2x tolerance -- yellow |
-| `Color.syncOff` | `Color.accent` (reuse heartbeat red) | Cadence outside tolerance -- red |
-
-These are semantic aliases, not new color values. They map to existing palette colors but communicate intent in the run screen context.
-
-### New Font Tokens
-
-| Token | Value | Purpose |
-|-------|-------|---------|
-| `Font.displayDelta` | `.system(size: 18, weight: .bold, design: .monospaced)` | Delta indicator text: "+4 spm", "-2 spm" |
-
-### New Component Size Tokens
-
-| Token | Value | Purpose |
-|-------|-------|---------|
-| `ComponentSize.albumArtRun` | `80` | Album art in run screen player (between existing small 44 and large 200) |
-| `ComponentSize.longPressRing` | `72` | Long-press progress ring diameter |
-
----
-
-## RunEngineService Extensions
+SensorLabService should start/stop CMMotionManager only when the Sensor Lab screen is visible. Do NOT leave it running in the background.
 
 ```swift
-// New observable properties:
-var runStartDate: Date?              // Set at startRun(), nil at stopRun()
-var isHalfTempo: Bool = false        // Toggled mid-run by user
-var syncState: SyncState = .off      // Updated by cadence monitor
-
-enum SyncState: Equatable {
-    case synced   // |cadence - effectiveBPM| <= tolerance
-    case close    // |cadence - effectiveBPM| <= tolerance * 2
-    case off      // |cadence - effectiveBPM| > tolerance * 2
+// SensorLabService -- raw accelerometer at 50Hz
+motionManager.accelerometerUpdateInterval = 1.0 / 50.0
+motionManager.startAccelerometerUpdates(to: .main) { data, error in
+    guard let data = data else { return }
+    // data.acceleration.x, .y, .z -- G-forces
 }
+```
 
-// Modified effectiveBPM computed property:
-var effectiveBPM: Int {
-    switch runMode {
-    case .free:
-        return isHalfTempo ? sustainedSPM / 2 : sustainedSPM
-    case .guided:
-        // existing ramp logic unchanged
-        let base = /* existing calculation */
-        return isHalfTempo ? base / 2 : base
+### Configurable Cadence Interval -- Polling Approach
+
+`CMPedometer.startUpdates(from:)` does NOT accept an interval parameter. The system decides delivery frequency (typically every 1-5 seconds). For desk testing with sub-second updates:
+
+```swift
+// Poll pedometer data at configurable interval
+private var pollingTimer: Timer?
+
+func startDebugPolling(interval: TimeInterval) {
+    let startDate = Date()
+    pollingTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+        self.pedometer.queryPedometerData(from: startDate, to: Date()) { data, error in
+            guard let data = data else { return }
+            // Process step count delta since last query
+        }
     }
 }
 ```
 
-### CadenceService -- no changes needed
+The debug interval only affects the Sensor Lab display frequency. Production CadenceService remains unchanged -- it continues using `startUpdates(from:)` for battery-efficient detection.
 
-Already exposes `currentSPM`, `trend` (speedingUp/steady/slowingDown), `state` (idle/detecting/active/paused). The v1.3 run screen reads these existing properties.
+### CachedBPM Model Change
 
-### SpotifyPlayerService -- no changes needed
+Current model has 7 properties. Add one optional property:
 
-Already exposes `currentTrack` (with `album.images` for art), `isPaused`. The run screen player reads these same properties.
+```swift
+@Model
+final class CachedBPM {
+    // ... existing properties unchanged ...
+    var confidenceSource: String?  // "verified", "approximate", "manual"
+}
+```
 
-### SpotifyTrack -- already has album art
+This is a **lightweight migration**. SwiftData automatically handles adding optional properties with nil defaults. No VersionedSchema needed. No migration plan needed. The field just appears as nil on existing records.
 
-`SpotifyTrack.album.images` is `[SpotifyImage]?`. Spotify returns 3 sizes: 640px, 300px, 64px. For the run screen player at `ComponentSize.albumArtRun` (80pt), use the 300px image (closest to 80pt * 3x scale = 240px).
+### RunEngineService Zero-BPM Fallback Integration
+
+Current `selectNextMatch(forSPM:)` filters tracks by `bpmMap[track.id]`. Tracks without BPM in the map are excluded. For fallback:
+
+```swift
+// In selectNextMatch, after existing matching logic:
+if matches.isEmpty {
+    switch ZeroBPMFallback.saved {
+    case .skip:
+        return nil  // Current behavior
+    case .playRegardless:
+        // Include tracks without BPM data in the pool
+        let noBPMTracks = playlistTracks.filter { bpmMap[$0.id] == nil }
+        return noBPMTracks.filter { !playedTrackIDs.contains($0.id) }.randomElement()
+    case .prompt:
+        // Set flag for UI to display prompt
+        zeroBPMPromptNeeded = true
+        return nil
+    }
+}
+```
 
 ---
 
 ## Integration Points Summary
 
-| v1.3 Feature | Existing Code Touched | Change Type |
-|---|---|---|
-| Active run screen layout | `RunView.swift` | Rebuild -- new layout with status bar, center cadence, player |
-| Cadence visualization | `CadenceDisplayView.swift` | Enhance -- add `.contentTransition(.numericText())`, sync color, delta text |
-| Integrated music player | New view (e.g., `RunPlayerView.swift`) | New -- album art, song/artist, BPM badge, playback controls |
-| Run status bar | New view (e.g., `RunStatusBar.swift`) | New -- zone label, BPM match indicator, elapsed time |
-| Half-tempo toggle | `RunEngineService.swift`, `RunView.swift` | Small -- add `isHalfTempo` flag, toggle button in run UI |
-| Pause/idle state | `RunView.swift` | Rebuild -- deliberate pause design with breathing animation |
-| Long-press-to-end | `RunView.swift` | Replace -- replace stop button with long-press gesture + progress ring |
-| Sync state | `RunEngineService.swift` | Add -- `SyncState` enum, update in cadence monitor loop |
-| Elapsed time | `RunEngineService.swift`, `RunStatusBar` | Add -- `runStartDate`, `TimelineView` in status bar |
-| Design tokens | `DesignTokens.swift` | Extend -- add sync colors, delta font, component sizes |
+| Existing Code | Change | Risk |
+|---------------|--------|------|
+| CachedBPM model | Add `confidenceSource: String?` | LOW -- lightweight migration, additive |
+| BPMCacheService | Add `cacheWithConfidence()`, `getConfidence()` | LOW -- additive methods |
+| GetSongBPMService | Set confidence to `verified` or `approximate` based on match quality | LOW -- adding parameter to existing call |
+| CadenceService | No changes to production code. Debug polling is a separate code path in SensorLabService. | NONE |
+| RunEngineService | Add `ZeroBPMFallback` check in `selectNextMatch()` | MEDIUM -- core matching logic touched |
+| SettingsView | Add debug mode toggle, zero-BPM fallback picker | LOW -- additive UI |
+| PlaylistDetailView TrackRow | Show confidence badge color next to BPM | LOW -- visual-only change |
+| New: SensorLabService | New singleton owning CMMotionManager | LOW -- isolated new service |
+| New: SensorLabView | New debug screen (Charts waveform, step data, interval slider) | LOW -- new view |
+| New: TapBPMView | New sheet for tap-to-BPM input | LOW -- new view |
 
 ---
 
@@ -141,27 +146,27 @@ Already exposes `currentTrack` (with `album.images` for art), `isPaused`. The ru
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Lottie / Rive animation library | Every animation is achievable with built-in phaseAnimator, keyframeAnimator, contentTransition. Adding a dependency for animations on a run screen that must stay responsive is unnecessary weight and complexity. | `.phaseAnimator`, `.contentTransition(.numericText())`, `KeyframeAnimator` |
-| SDWebImage / Kingfisher / Nuke | Album art is one image at a time (current track). These libraries solve list-scrolling performance with dozens of images -- not relevant here. | `AsyncImage` + thin NSCache wrapper (~30 lines) |
-| CoreHaptics | Low-level haptic pattern authoring. Overkill for discrete feedback events (toggle, completion, zone change). | `.sensoryFeedback()` modifier |
-| Combine (Timer.publish, PassthroughSubject) | Codebase uses Swift Observation exclusively. Introducing Combine creates two reactive paradigms and training overhead. | `TimelineView` for periodic updates, `@Observable` for state, async/await for async work |
-| SwiftUI Charts | No data visualization in v1.3. The cadence zone band is a simple shape (progress bar), not a chart. | Custom `Capsule` / `RoundedRectangle` with `.frame(width:)` |
-| Custom audio session changes | Background audio already configured in Info.plist (`UIBackgroundModes: audio`). AudioSessionService already handles session setup. Run screen does not alter audio behavior. | Existing infrastructure |
-| UIKit gesture recognizers | SwiftUI's `onLongPressGesture` with `onPressingChanged` provides everything needed for the long-press-to-end pattern. Dropping to UIKit adds bridging complexity. | `.onLongPressGesture(minimumDuration:onPressingChanged:)` |
-| Third-party circular progress view | A `Circle().trim(from: 0, to: progress)` with `.animation` is ~10 lines of SwiftUI. No library needed. | Native `Circle().trim()` + `.rotationEffect` |
+| AudioKit / audio libraries | Tap BPM is timestamp math, not audio analysis. AudioKit is 50MB+ for something that takes 15 lines. | `Date.timeIntervalSince(_:)` |
+| DGCharts / third-party charting | SwiftUI Charts is built-in, maintained by Apple, sufficient for a debug waveform. | `import Charts` + `LineMark` |
+| Combine for sensor streams | Codebase uses @Observable exclusively. Introducing Combine creates two reactive paradigms. | @Observable properties on SensorLabService |
+| CoreHaptics for tap feedback | Complex API for custom haptic patterns. Single discrete tap needs one line. | `UIImpactFeedbackGenerator(.medium).impactOccurred()` |
+| os.signpost / MetricKit | Overkill -- Sensor Lab is a visual debug screen for the user, not performance profiling for developers. | @Observable properties displayed in SwiftUI views |
+| SwiftData VersionedSchema | Not needed for adding optional properties. Would add unnecessary boilerplate. | Just add the optional field. Lightweight migration handles it. |
+| Separate SwiftData model for confidence | Over-engineering. Confidence is a property of BPM data, not a separate entity. | String field on existing CachedBPM model |
+| `#if DEBUG` for Sensor Lab | Users need Sensor Lab in release builds for real-device desk testing. Compiler flags strip code from release. | `@AppStorage` boolean toggle in Settings |
+| CMSensorRecorder | Designed for background batch recording (up to 12hrs), not real-time display. | CMMotionManager for live data |
 
 ---
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|------------------------|
-| `AsyncImage` + NSCache | Kingfisher | If BeatStep later adds a scrollable track history with many images. Not needed for single-image run player. |
-| `.sensoryFeedback()` | `UIImpactFeedbackGenerator` | Only if targeting iOS < 17. BeatStep targets 17.0. |
-| `TimelineView` | `Timer.publish` + `.onReceive` | If Combine is already in the codebase (it is not) or if sub-second precision is needed (it is not -- 1-second ticks suffice). |
-| `.contentTransition(.numericText())` | Custom per-digit animation view | If non-standard digit animation is needed (slot machine effect). Built-in numericText handles the SPM counter perfectly. |
-| `phaseAnimator` for continuous effects | `withAnimation` + State toggles | For one-shot user-triggered animations. phaseAnimator is better for continuous state-driven cycles (pulse, breathe, glow). |
-| `Circle().trim()` for progress ring | `ProgressView(.circular)` | If you want system-styled indeterminate progress. For determinate long-press progress with custom styling, `Circle().trim()` gives full control. |
+|-------------|-------------|-------------------------|
+| CMMotionManager for raw accel | CMDeviceMotion (sensor fusion) | If you need attitude/rotation-rate/gravity-separated acceleration. For raw waveform display, plain accelerometer is simpler and sufficient. |
+| Timer + queryPedometerData for configurable interval | Modifying CadenceService.startUpdates | Never -- startUpdates has no interval parameter. Modifying CadenceService risks breaking production detection. Keep debug path separate. |
+| String field on CachedBPM | Enum stored as Int | String is more readable in debug/database inspection. Performance difference is negligible for a BPM cache. |
+| @AppStorage for fallback preference | SwiftData settings model | Only if settings become complex enough to warrant a dedicated model. For a single enum preference, @AppStorage is simpler. |
+| SwiftUI Charts LineMark | Custom Canvas drawing | Only if Charts performance is insufficient at 50Hz. Start with Charts, optimize to Canvas if frame drops observed. |
 
 ---
 
@@ -169,35 +174,46 @@ Already exposes `currentTrack` (with `album.images` for art), `isPaused`. The ru
 
 | API | Minimum iOS | BeatStep Target (17.0) | Status |
 |-----|-------------|------------------------|--------|
-| `.contentTransition(.numericText())` | 17.0 | 17.0 | Available |
-| `.contentTransition(.numericText(countsDown:))` | 17.0 | 17.0 | Available |
-| `.phaseAnimator` | 17.0 | 17.0 | Already in use (RunView) |
-| `KeyframeAnimator` | 17.0 | 17.0 | Available |
-| `.sensoryFeedback()` | 17.0 | 17.0 | Available |
-| `AsyncImage` | 15.0 | 17.0 | Available |
-| `TimelineView` | 15.0 | 17.0 | Available |
-| `.onLongPressGesture(minimumDuration:onPressingChanged:)` | 15.0 | 17.0 | Available |
-| `@Observable` macro | 17.0 | 17.0 | Already in use |
-| `.contentTransition(.interpolate)` | 17.0 | 17.0 | Available |
+| CMMotionManager | 4.0 | 17.0 | Available |
+| CMPedometer.queryPedometerData | 8.0 | 17.0 | Available |
+| SwiftUI Charts (LineMark) | 16.0 | 17.0 | Available |
+| UIImpactFeedbackGenerator | 10.0 | 17.0 | Available |
+| SwiftData lightweight migration | 17.0 | 17.0 | Available |
+| @AppStorage | 14.0 | 17.0 | Available |
+| @Observable | 17.0 | 17.0 | Already in use |
+
+No compatibility concerns. Every API needed predates or matches the iOS 17.0 deployment target.
+
+---
+
+## New Files to Create
+
+| File | Type | Purpose |
+|------|------|---------|
+| `SensorLabService.swift` | Service (@Observable) | CMMotionManager singleton, raw accelerometer data, debug cadence polling |
+| `SensorLabView.swift` | View | Debug screen with accelerometer waveform (Charts), step count, cadence, interval slider |
+| `TapBPMView.swift` | View | Tap-to-BPM input sheet with tap counter, live BPM display, save action |
+| `BPMConfidence.swift` | Model (enum) | `verified` / `approximate` / `manual` confidence levels |
+| `ZeroBPMFallback.swift` | Model (enum) | `skip` / `playRegardless` / `prompt` with @AppStorage persistence |
 
 ---
 
 ## Key Takeaway
 
-v1.3 requires zero new dependencies. Every capability -- numeric animations, phase-driven effects, haptic feedback, image loading, gesture handling, periodic updates -- is built into SwiftUI at iOS 17. The work is composing these APIs into a cohesive run screen, not adding libraries.
+v1.4 is a zero-dependency milestone. CMMotionManager (already in CoreMotion) provides raw accelerometer data. CMPedometer polling provides configurable intervals. SwiftUI Charts provides waveform visualization. Date arithmetic provides tap BPM. SwiftData lightweight migration provides confidence tracking. UserDefaults provides fallback persistence. The work is wiring these existing APIs into new services and views, not adding packages.
 
 ---
 
 ## Sources
 
-- [Apple: PhaseAnimator](https://developer.apple.com/documentation/swiftui/phaseanimator) -- confirmed iOS 17.0+, cycling phase animation (HIGH confidence)
-- [Apple: contentTransition numericText](https://developer.apple.com/documentation/SwiftUI/ContentTransition/numericText(countsDown:)) -- confirmed iOS 17.0+, per-digit animation (HIGH confidence)
-- [Apple: SensoryFeedback](https://developer.apple.com/documentation/swiftui/sensoryfeedback) -- confirmed iOS 17.0+, no iPad haptics (HIGH confidence)
-- [Apple: AsyncImage](https://developer.apple.com/documentation/swiftui/asyncimage) -- confirmed no built-in cache between reloads (HIGH confidence)
-- [Apple: LongPressGesture](https://developer.apple.com/documentation/swiftui/longpressgesture) -- confirmed onPressingChanged callback (HIGH confidence)
-- [Apple: onLongPressGesture](https://developer.apple.com/documentation/swiftui/view/onlongpressgesture(minimumduration:perform:onpressingchanged:)) -- press tracking API (HIGH confidence)
-- Codebase inspection: RunEngineService.swift (effectiveBPM already supports spm/2), CadenceService.swift (exposes state/trend/currentSPM), SpotifyPlayerService.swift (exposes currentTrack with album.images), SpotifyTrack.swift (Album has images array), DesignTokens.swift (existing token structure), RunView.swift (current layout and phaseAnimator usage), MiniPlayerView.swift (existing player pattern)
+- [CMMotionManager | Apple Developer Documentation](https://developer.apple.com/documentation/coremotion/cmmotionmanager) -- accelerometer API, update intervals, singleton requirement (HIGH confidence)
+- [Core Motion | Apple Developer Documentation](https://developer.apple.com/documentation/coremotion/) -- framework overview, CMPedometer vs CMMotionManager independence (HIGH confidence)
+- [Hacking with Swift -- Core Motion accelerometer](https://www.hackingwithswift.com/example-code/system/how-to-use-core-motion-to-read-accelerometer-data) -- push vs pull patterns (HIGH confidence)
+- [Using Core Motion within SwiftUI](https://www.createwithswift.com/using-core-motion-within-a-swiftui-application/) -- SwiftUI integration patterns (HIGH confidence)
+- [SwiftData lightweight vs complex migrations](https://www.hackingwithswift.com/quick-start/swiftdata/lightweight-vs-complex-migrations) -- optional property = automatic migration (HIGH confidence)
+- [Apple Developer Forums -- SwiftData migration](https://developer.apple.com/forums/thread/738812) -- community confirmation of lightweight migration behavior (MEDIUM confidence)
+- Codebase inspection: CadenceService.swift (CMPedometer usage, startUpdates pattern), CachedBPM.swift (current model schema), BPMCacheService.swift (cache/fetch patterns), RunEngineService.swift (selectNextMatch logic, bpmMap filtering), SettingsView.swift (existing toggle/picker patterns), PlaylistDetailView.swift (TrackRow BPM badge display)
 
 ---
-*Stack research for: BeatStep v1.3 In The Zone -- run screen, music player, cadence visualization, half-tempo, pause state*
-*Researched: 2026-03-24*
+*Stack research for: BeatStep v1.4 Under The Hood -- debug tooling, tap BPM, confidence, fallback*
+*Researched: 2026-03-25*
