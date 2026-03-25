@@ -60,7 +60,7 @@
 - [x] **Phase 20: Tap BPM Input** - Manual BPM entry via tap-along interface for unanalyzed tracks (completed 2026-03-25)
 - [x] **Phase 21: Zero-BPM Fallback** - Configurable behavior when tracks lack BPM data (completed 2026-03-25)
 - [x] **Phase 22: Sensor Lab** - Debug screen exposing raw cadence detection internals (completed 2026-03-25)
-- [ ] **Phase 23: Sensor Lab Step Count Fix** - Wire live step count data into Sensor Lab display (gap closure)
+- [x] **Phase 23: Sensor Lab Step Count Fix** - Wire live step count data into Sensor Lab display (gap closure) (completed 2026-03-25)
 
 ## Phase Details
 
@@ -180,4 +180,4 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other. Phase 23 depen
 | 20. Tap BPM Input | 2/2 | Complete    | 2026-03-25 | - |
 | 21. Zero-BPM Fallback | 2/2 | Complete    | 2026-03-25 | - |
 | 22. Sensor Lab | 2/2 | Complete    | 2026-03-25 | - |
-| 23. Sensor Lab Step Count Fix | 0/1 | Planned | - | - |
+| 23. Sensor Lab Step Count Fix | 1/1 | Complete   | 2026-03-25 | - |

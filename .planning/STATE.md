@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
 status: completed
-stopped_at: Completed 22-02-PLAN.md
-last_updated: "2026-03-25T13:23:33.585Z"
-last_activity: 2026-03-25 -- Plan 22-02 complete (SensorLabView debug screen + hidden toggle)
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-03-25T13:51:15.514Z"
+last_activity: 2026-03-25 -- Plan 23-01 complete (step count fix wired to CadenceService)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -21,26 +21,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 22 - Sensor Lab
+**Current focus:** Phase 23 - Sensor Lab Step Count Fix
 
 ## Current Position
 
-Phase: 22 of 22 (Sensor Lab) -- fifth of 5 v1.4 phases
-Plan: 2 of 2 complete
+Phase: 23 of 23 (Sensor Lab Step Count Fix) -- sixth of 6 v1.4 phases
+Plan: 1 of 1 complete
 Status: Complete
-Last activity: 2026-03-25 -- Plan 22-02 complete (SensorLabView debug screen + hidden toggle)
+Last activity: 2026-03-25 -- Plan 23-01 complete (step count fix wired to CadenceService)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 39 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 7 v1.4)
+- Total plans completed: 40 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 8 v1.4)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
 - v1.3: 2 days, 8 plans
-- v1.4: in progress, 7 plans
+- v1.4: in progress, 8 plans
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 | 21-02 | zero-bpm-fallback-engine | 6min | 1 | 2 |
 | 22-01 | sensor-lab-service | 4min | 1 | 4 |
 | 22-02 | sensor-lab-view | 17min | 2 | 3 |
+| 23-01 | step-count-fix | 2min | 2 | 5 |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Full decision log in PROJECT.md Key Decisions table.
 - [22-01] Dual appendSample overloads: CMAccelerometerData for production, AccelerometerSample for tests
 - [22-02] Inline AccelerometerChartView as private struct in SensorLabView.swift for simplicity
 - [22-02] Version text shows hardcoded 'BeatStep v1.4' for hidden toggle target
+- [Phase 23-01]: stepCount lives on CadenceService (owns pedometer) not SensorLabService (owns accelerometer)
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T13:16:41.634Z
-Stopped at: Completed 22-02-PLAN.md
+Last session: 2026-03-25T13:51:15.512Z
+Stopped at: Completed 23-01-PLAN.md
 Resume file: None
