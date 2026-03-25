@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: One Way In
-status: planning
-stopped_at: Phase 24 context gathered
-last_updated: "2026-03-25T18:10:44.787Z"
-last_activity: 2026-03-25 -- v1.5 roadmap created (Phases 24-26)
+status: executing
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-03-25T18:48:50Z"
+last_activity: 2026-03-25 -- Phase 24 Plan 01 complete (Run tab Start Run wiring)
 progress:
   total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 24 of 26 (Fix Run Tab Start)
-Plan: 0 of 0 in current phase
-Status: Ready to plan
-Last activity: 2026-03-25 -- v1.5 roadmap created (Phases 24-26)
+Plan: 1 of 1 in current phase (COMPLETE)
+Status: Phase 24 complete
+Last activity: 2026-03-25 -- Phase 24 Plan 01 complete (Run tab Start Run wiring)
 
-Progress: [..........] 0% (0/3 v1.5 phases)
+Progress: [███.......] 33% (1/3 v1.5 phases)
 
 ## Performance Metrics
 
@@ -56,6 +56,12 @@ Progress: [..........] 0% (0/3 v1.5 phases)
 | 22-02 | sensor-lab-view | 17min |
 | 23-01 | step-count-fix | 2min |
 
+**Recent (v1.5):**
+
+| Phase | Plan | Duration |
+|-------|------|----------|
+| 24-01 | fix-run-tab-start | 24min |
+
 ## Accumulated Context
 
 ### Decisions
@@ -66,6 +72,8 @@ Recent decisions affecting current work:
 - [v1.3]: fullScreenCover over NavigationLink for run screen
 - [v1.1]: TabView with per-tab NavigationStack
 - [v1.2]: AppState enum with static resolve() for routing
+- [v1.5]: Present ActiveRunView immediately on tap, not on cadence state change (Spotify bounce causes missed .onChange)
+- [v1.5]: Tab enum with selection binding for programmatic tab switching
 
 ### Pending Todos
 
@@ -73,12 +81,11 @@ None.
 
 ### Blockers/Concerns
 
-- Run tab Start Run button is currently non-functional (FLOW-02 addresses this)
 - Known tech debt: RunView.activeView has hardcoded syncQuality during ~0.3s fullScreenCover animation
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
 
 ## Session Continuity
 
-Last session: 2026-03-25T18:10:44.784Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-fix-run-tab-start/24-CONTEXT.md
+Last session: 2026-03-25T18:48:50Z
+Stopped at: Completed 24-01-PLAN.md
+Resume file: .planning/phases/24-fix-run-tab-start/24-01-SUMMARY.md
