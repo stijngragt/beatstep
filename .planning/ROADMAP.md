@@ -87,7 +87,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md -- Data contracts: BPMInfo struct, BPMConfidence display properties, getBPMInfo service method, stateApproximate color token, unit tests
+- [x] 19-01-PLAN.md -- Data contracts: BPMInfo struct, BPMConfidence display properties, getBPMInfo service method, stateApproximate color token, unit tests
 - [ ] 19-02-PLAN.md -- View integration: update PlaylistDetailView + TrackRow to render confidence badges with visual checkpoint
 
 ### Phase 20: Tap BPM Input
@@ -158,7 +158,7 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 18. BPM Confidence Model | v1.4 | 2/2 | Complete | 2026-03-25 |
-| 19. Confidence Badges | v1.4 | 0/2 | Not started | - |
+| 19. Confidence Badges | v1.4 | 1/2 | In progress | - |
 | 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
 | 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
 | 22. Sensor Lab | v1.4 | 0/? | Not started | - |
