@@ -124,4 +124,27 @@ final class DesignTokenTests: XCTestCase {
         XCTAssertEqual(ComponentSize.iconMedium, 44)
         XCTAssertEqual(ComponentSize.iconLarge, 60)
     }
+
+    // MARK: - Haptic Tokens
+
+    func testHapticTokensExist() {
+        // Each BSHaptics method should be callable without crash (no-ops on simulator)
+        BSHaptics.light()
+        BSHaptics.medium()
+        BSHaptics.heavy()
+        BSHaptics.selection()
+        BSHaptics.success()
+        BSHaptics.warning()
+        BSHaptics.error()
+    }
+
+    // MARK: - Animation Tokens
+
+    func testAnimationTokensExist() {
+        let _ = BSAnimation.snappy
+        let _ = BSAnimation.smooth
+        let _ = BSAnimation.gentle
+        let _ = BSAnimation.quick
+        let _ = BSAnimation.page
+    }
 }
