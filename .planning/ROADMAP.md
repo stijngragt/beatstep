@@ -82,7 +82,9 @@
   1. User taps Start Run on Run tab and a run begins with the selected playlist, zone, and tolerance
   2. Returning user sees their last-used playlist, zone, and tolerance pre-loaded when they open the Run tab
   3. User can change playlist, zone, or tolerance before starting without navigating away from Run tab
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 24-01-PLAN.md -- Wire Run tab Start Run with playlist fetch, engine integration, and fullScreenCover
 
 ### Phase 25: Consolidate Run Entry
 **Goal**: Run tab is the single entry point for all runs -- no duplicate screens, library routes to Run tab
@@ -131,6 +133,6 @@
 | 21. Zero-BPM Fallback | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 22. Sensor Lab | v1.4 | 2/2 | Complete | 2026-03-25 |
 | 23. Sensor Lab Step Count Fix | v1.4 | 1/1 | Complete | 2026-03-25 |
-| 24. Fix Run Tab Start | v1.5 | 0/0 | Not started | - |
+| 24. Fix Run Tab Start | v1.5 | 0/1 | Planning | - |
 | 25. Consolidate Run Entry | v1.5 | 0/0 | Not started | - |
 | 26. Onboarding Analysis Step | v1.5 | 0/0 | Not started | - |
