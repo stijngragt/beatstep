@@ -21,7 +21,7 @@ Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
 ### Zero-BPM Fallback
 
-- [ ] **FALL-01**: User can configure zero-BPM behavior in Settings (skip / play regardless / prompt)
+- [x] **FALL-01**: User can configure zero-BPM behavior in Settings (skip / play regardless / prompt)
 - [ ] **FALL-02**: Run engine respects configured fallback when encountering nil-BPM tracks
 
 ### Sensor Lab
@@ -62,7 +62,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TAP-01 | Phase 20 | Complete |
 | TAP-02 | Phase 20 | Complete |
 | TAP-03 | Phase 20 | Complete |
-| FALL-01 | Phase 21 | Pending |
+| FALL-01 | Phase 21 | Complete |
 | FALL-02 | Phase 21 | Pending |
 | SLAB-01 | Phase 22 | Pending |
 | SLAB-02 | Phase 22 | Pending |

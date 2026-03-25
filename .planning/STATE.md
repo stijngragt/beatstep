@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
-status: completed
-stopped_at: Completed 20-02-PLAN.md (Phase 20 complete)
-last_updated: "2026-03-25T11:56:22.904Z"
-last_activity: 2026-03-25 -- Plan 20-02 complete (TapBPMView UI + badge wiring)
+status: in-progress
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-25T12:20:21.000Z"
+last_activity: 2026-03-25 -- Plan 21-01 complete (ZeroBPMFallback enum + Settings picker)
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 8
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -21,26 +21,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 20 - Tap BPM Input
+**Current focus:** Phase 21 - Zero-BPM Fallback
 
 ## Current Position
 
-Phase: 20 of 22 (Tap BPM Input) -- third of 5 v1.4 phases
-Plan: 2 of 2 complete
-Status: Phase Complete
-Last activity: 2026-03-25 -- Plan 20-02 complete (TapBPMView UI + badge wiring)
+Phase: 21 of 22 (Zero-BPM Fallback) -- fourth of 5 v1.4 phases
+Plan: 1 of 2 complete
+Status: In Progress
+Last activity: 2026-03-25 -- Plan 21-01 complete (ZeroBPMFallback enum + Settings picker)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 88%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 4 v1.4)
+- Total plans completed: 37 (11 v1.0, 7 v1.1, 6 v1.2, 8 v1.3, 5 v1.4)
 - v1.0: 5 days, 11 plans
 - v1.1: 2 days, 7 plans
 - v1.2: 1 day, 6 plans
 - v1.3: 2 days, 8 plans
-- v1.4: in progress, 4 plans
+- v1.4: in progress, 5 plans
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -48,6 +48,7 @@ Progress: [██████████] 100%
 | 19-02 | confidence-badges-view | 7min | 2 | 1 |
 | 20-01 | tap-bpm-engine | 7min | 2 | 3 |
 | 20-02 | tap-bpm-view | 28min | 2 | 3 |
+| 21-01 | zero-bpm-fallback-model | 9min | 2 | 4 |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Full decision log in PROJECT.md Key Decisions table.
 - [20-01] tapCount tracks tap events (1-indexed), not intervals
 - [20-02] Button wrapping on badge for gesture separation -- badge tap opens sheet, row tap plays track
 - [20-02] ShakeModifier with offset-based animation for outlier rejection visual feedback
+- [21-01] Default fallback is .skip preserving current behavior for existing users
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T11:42:28Z
-Stopped at: Completed 20-02-PLAN.md (Phase 20 complete)
-Resume file: Next phase (21)
+Last session: 2026-03-25T12:11:47Z
+Stopped at: Completed 21-01-PLAN.md
+Resume file: 21-02-PLAN.md
