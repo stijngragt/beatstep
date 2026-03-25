@@ -71,10 +71,11 @@
   1. Every newly cached BPM record stores its source (API / manual) and confidence level (verified / approximate / manual)
   2. Existing BPM cache records from v1.3 survive the upgrade intact with a default confidence value assigned
   3. API-sourced and manual BPM writes use separate code paths that cannot silently overwrite each other
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 18-01: TBD
+- [ ] 18-01-PLAN.md -- Model + enums + write path split (BPMConfidence, BPMSource, CachedBPM extension, cacheFromAPI/cacheManual)
+- [ ] 18-02-PLAN.md -- Test updates + confidence tracking tests (update cache() callers, 7 new test methods)
 
 ### Phase 19: Confidence Badges
 **Goal**: Users can see at a glance which tracks have reliable BPM data and which need attention
@@ -155,7 +156,7 @@ Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 | 15. Run Player View | v1.3 | 1/1 | Complete | 2026-03-24 |
 | 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
-| 18. BPM Confidence Model | v1.4 | 0/? | Not started | - |
+| 18. BPM Confidence Model | v1.4 | 0/2 | Not started | - |
 | 19. Confidence Badges | v1.4 | 0/? | Not started | - |
 | 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
 | 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
