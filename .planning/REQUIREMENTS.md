@@ -30,7 +30,7 @@ Requirements for v1.6 Little Big Things. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INF-01**: Spotify API models verified against February 2026 changes (search limit, field renames)
+- [x] **INF-01**: Spotify API models verified against February 2026 changes (search limit, field renames)
 
 ## Future Requirements
 
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | POL-02 | Phase 32 | Pending |
 | POL-03 | Phase 31 | Pending |
 | POL-04 | Phase 31 | Pending |
-| INF-01 | Phase 27 | Pending |
+| INF-01 | Phase 27 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 13 total

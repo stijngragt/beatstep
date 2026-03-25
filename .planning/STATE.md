@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
-status: planning
-stopped_at: Completed 27-02-PLAN.md
-last_updated: "2026-03-25T22:25:12.888Z"
-last_activity: 2026-03-25 -- v1.6 roadmap created
+status: executing
+stopped_at: Completed 27-01-PLAN.md
+last_updated: "2026-03-25T22:28:06.000Z"
+last_activity: 2026-03-25 -- Phase 27 complete (2/2 plans)
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 27 (1 of 6 in v1.6 Little Big Things)
-Plan: Not yet planned
-Status: Ready to plan
-Last activity: 2026-03-25 -- v1.6 roadmap created
+Phase: 27 (1 of 6 in v1.6 Little Big Things) -- COMPLETE
+Plan: 2 of 2 (complete)
+Status: Phase 27 complete, ready for Phase 28
+Last activity: 2026-03-25 -- Phase 27 complete (2/2 plans)
 
-Progress (v1.6): [..........] 0/6 phases (0%)
+Progress (v1.6): [##........] 1/6 phases (17%)
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress (v1.6): [..........] 0/6 phases (0%)
 | 25-01 | consolidate-run-entry | 18min |
 | 26-01 | onboarding-analysis-step | 2min |
 | Phase 27 P02 | 3min | 2 tasks | 5 files |
+| Phase 27 P01 | 6min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -57,6 +58,7 @@ Progress (v1.6): [..........] 0/6 phases (0%)
 
 Full decision log in PROJECT.md Key Decisions table.
 - [Phase 27]: BSHaptics uses UIKit feedback generators directly, BSAnimation uses spring/easing presets
+- [Phase 27]: PlaylistTrackItem dual-key decoder (item first, track fallback); isPremium defaults true when product nil
 
 ### Pending Todos
 
@@ -64,12 +66,12 @@ None.
 
 ### Blockers/Concerns
 
-- Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
-- Spotify Feb 2026 API changes may affect existing functionality (INF-01 addresses this)
+- ~Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding~ RESOLVED in 27-01
+- ~Spotify Feb 2026 API changes may affect existing functionality~ RESOLVED by INF-01 (27-01)
 - Skip queue must use local buffer with play(uri:) -- never Spotify queue API (no remove endpoint)
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:25:12.880Z
-Stopped at: Completed 27-02-PLAN.md
+Last session: 2026-03-25T22:28:06Z
+Stopped at: Completed 27-01-PLAN.md (Phase 27 complete)
 Resume file: None
