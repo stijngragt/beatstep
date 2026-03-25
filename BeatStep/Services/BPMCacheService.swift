@@ -74,6 +74,16 @@ final class BPMCacheService {
         return try? context.fetch(descriptor).first?.bpm
     }
 
+    func getBPMInfo(forTrackID trackID: String) -> BPMInfo {
+        let descriptor = FetchDescriptor<CachedBPM>(
+            predicate: #Predicate { $0.spotifyTrackID == trackID }
+        )
+        guard let cached = try? context.fetch(descriptor).first else {
+            return .empty
+        }
+        return BPMInfo(bpm: cached.bpm, confidence: cached.confidence)
+    }
+
     func clearCache(forTrackID trackID: String) {
         let descriptor = FetchDescriptor<CachedBPM>(
             predicate: #Predicate { $0.spotifyTrackID == trackID }
