@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: One Way In
 status: completed
-stopped_at: Completed 24-01-PLAN.md
-last_updated: "2026-03-25T18:53:30.419Z"
+stopped_at: Phase 25 context gathered
+last_updated: "2026-03-25T19:02:39.275Z"
 last_activity: 2026-03-25 -- Phase 24 Plan 01 complete (Run tab Start Run wiring)
 progress:
   total_phases: 3
@@ -86,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T18:48:50Z
-Stopped at: Completed 24-01-PLAN.md
-Resume file: .planning/phases/24-fix-run-tab-start/24-01-SUMMARY.md
+Last session: 2026-03-25T19:02:39.272Z
+Stopped at: Phase 25 context gathered
+Resume file: .planning/phases/25-consolidate-run-entry/25-CONTEXT.md
