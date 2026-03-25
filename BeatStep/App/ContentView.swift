@@ -6,6 +6,19 @@ enum Tab: Hashable {
     case settings
 }
 
+// MARK: - Selected Tab Environment Key
+
+private struct SelectedTabKey: EnvironmentKey {
+    static let defaultValue: Binding<Tab> = .constant(.run)
+}
+
+extension EnvironmentValues {
+    var selectedTab: Binding<Tab> {
+        get { self[SelectedTabKey.self] }
+        set { self[SelectedTabKey.self] = newValue }
+    }
+}
+
 struct ContentView: View {
     @Environment(SpotifyAuthService.self) private var authService
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -51,6 +64,7 @@ struct ContentView: View {
             NavigationStack {
                 PlaylistListView()
             }
+            .environment(\.selectedTab, $selectedTab)
             .tag(Tab.library)
             .tabItem {
                 Label("Library", systemImage: "music.note.list")

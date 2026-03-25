@@ -3,6 +3,8 @@ import SwiftUI
 struct PlaylistDetailView: View {
     let playlist: SpotifyPlaylist
 
+    @Environment(\.selectedTab) private var selectedTab
+
     @State private var tracks: [SpotifyTrack] = []
     @State private var isLoading = false
     @State private var hasMore = true
@@ -30,12 +32,6 @@ struct PlaylistDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                NavigationLink {
-                    RunView(playlist: playlist, tracks: tracks)
-                } label: {
-                    Label("Run", systemImage: "figure.run")
-                }
-
                 Button {
                     Task { await scanBPM() }
                 } label: {
@@ -152,6 +148,22 @@ struct PlaylistDetailView: View {
                         .foregroundStyle(Color.textSecondary)
                 }
             }
+
+            // CTA: Run with this playlist
+            Button {
+                LastRunPlaylist.name = playlist.name
+                LastRunPlaylist.id = playlist.id
+                LastRunPlaylist.imageURL = playlist.images?.first?.url
+                selectedTab.wrappedValue = .run
+            } label: {
+                Label("Run with this playlist", systemImage: "figure.run")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(Color.textOnAccent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.md)
+                    .background(RoundedRectangle(cornerRadius: Radius.lg).fill(Color.accent))
+            }
+            .padding(.horizontal, Spacing.xl)
         }
         .frame(maxWidth: .infinity)
     }
