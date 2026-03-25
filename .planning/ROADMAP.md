@@ -6,6 +6,7 @@
 - v1.1 Dark by Design -- Phases 6-9 (shipped 2026-03-24)
 - v1.2 The Right Flow -- Phases 10-12 (shipped 2026-03-24)
 - v1.3 In The Zone -- Phases 13-17 (shipped 2026-03-25)
+- **v1.4 Under The Hood** -- Phases 18-22 (in progress)
 
 ## Phases
 
@@ -50,7 +51,90 @@
 
 </details>
 
+### v1.4 Under The Hood (In Progress)
+
+**Milestone Goal:** Make the BPM matching algorithm observable, testable, and trustworthy -- debug tooling, manual BPM input, confidence indicators, and defined fallback behavior.
+
+- [ ] **Phase 18: BPM Confidence Model** - Extend data model with confidence/source tracking and separated write paths
+- [ ] **Phase 19: Confidence Badges** - Show BPM confidence visually per track in playlist view
+- [ ] **Phase 20: Tap BPM Input** - Manual BPM entry via tap-along interface for unanalyzed tracks
+- [ ] **Phase 21: Zero-BPM Fallback** - Configurable behavior when tracks lack BPM data
+- [ ] **Phase 22: Sensor Lab** - Debug screen exposing raw cadence detection internals
+
+## Phase Details
+
+### Phase 18: BPM Confidence Model
+**Goal**: Every cached BPM value carries its origin and confidence level, enabling downstream features to distinguish API-verified from manual from unknown
+**Depends on**: Nothing (foundation for v1.4)
+**Requirements**: CONF-01, CONF-02
+**Success Criteria** (what must be TRUE):
+  1. Every newly cached BPM record stores its source (API / manual) and confidence level (verified / approximate / manual)
+  2. Existing BPM cache records from v1.3 survive the upgrade intact with a default confidence value assigned
+  3. API-sourced and manual BPM writes use separate code paths that cannot silently overwrite each other
+**Plans**: TBD
+
+Plans:
+- [ ] 18-01: TBD
+
+### Phase 19: Confidence Badges
+**Goal**: Users can see at a glance which tracks have reliable BPM data and which need attention
+**Depends on**: Phase 18
+**Requirements**: CONF-03
+**Success Criteria** (what must be TRUE):
+  1. Each track in playlist detail view displays an icon badge indicating its BPM confidence (checkmark for verified, tilde for approximate, hand for manual)
+  2. Tracks with no BPM data are visually distinguishable from tracks with any level of confidence
+**Plans**: TBD
+
+Plans:
+- [ ] 19-01: TBD
+
+### Phase 20: Tap BPM Input
+**Goal**: Users can manually set BPM for any track by tapping along with the music
+**Depends on**: Phase 19
+**Requirements**: TAP-01, TAP-02, TAP-03
+**Success Criteria** (what must be TRUE):
+  1. User can open a tap-along interface from any track in playlist view and tap to set its BPM
+  2. BPM calculation stabilizes after 8 taps using a rolling average, with a visual stability indicator
+  3. Erratic taps (outliers) are rejected without corrupting the calculated BPM
+  4. After saving a tapped BPM, the track immediately shows a manual confidence badge in the playlist
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01: TBD
+
+### Phase 21: Zero-BPM Fallback
+**Goal**: Users control what happens when the run engine encounters tracks without BPM data
+**Depends on**: Phase 18
+**Requirements**: FALL-01, FALL-02
+**Success Criteria** (what must be TRUE):
+  1. User can choose zero-BPM behavior in Settings: skip, play regardless, or prompt
+  2. During an active run, tracks without BPM are handled according to the user's configured fallback
+  3. The default behavior (skip) matches current behavior so existing users see no change without action
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01: TBD
+
+### Phase 22: Sensor Lab
+**Goal**: Developers and power users can inspect raw cadence detection data to build trust in the algorithm
+**Depends on**: Nothing (independent of Phases 18-21)
+**Requirements**: SLAB-01, SLAB-02, SLAB-03, SLAB-04
+**Success Criteria** (what must be TRUE):
+  1. A hidden debug toggle in Settings reveals the Sensor Lab screen
+  2. Sensor Lab displays live raw accelerometer data, cadence value, step count, and algorithm state
+  3. Detection interval is adjustable from 0.5s to 5s within Sensor Lab for rapid desk testing
+  4. A real-time waveform chart visualizes accelerometer output
+  5. Closing Sensor Lab stops the accelerometer (no background battery drain)
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
+Note: Phase 21 and 22 depend only on Phase 18, not on each other.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -71,3 +155,8 @@
 | 15. Run Player View | v1.3 | 1/1 | Complete | 2026-03-24 |
 | 16. Active Run Assembly | v1.3 | 2/2 | Complete | 2026-03-24 |
 | 17. Tempo Mode Toggle | v1.3 | 1/1 | Complete | 2026-03-25 |
+| 18. BPM Confidence Model | v1.4 | 0/? | Not started | - |
+| 19. Confidence Badges | v1.4 | 0/? | Not started | - |
+| 20. Tap BPM Input | v1.4 | 0/? | Not started | - |
+| 21. Zero-BPM Fallback | v1.4 | 0/? | Not started | - |
+| 22. Sensor Lab | v1.4 | 0/? | Not started | - |

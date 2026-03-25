@@ -1,7 +1,7 @@
 # Requirements: BeatStep
 
 **Defined:** 2026-03-25
-**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
+**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
 
 ## v1.4 Requirements
 
@@ -45,10 +45,10 @@ Requirements for v1.4 "Under The Hood". Each maps to roadmap phases.
 
 | Feature | Reason |
 |---------|--------|
-| Mid-run tap BPM | Disruptive to running flow — BPM should be set in library before the run |
+| Mid-run tap BPM | Disruptive to running flow -- BPM should be set in library before the run |
 | Microphone-based BPM detection | Fragile, heavy, unreliable in outdoor environments |
-| Text field BPM input | No confidence signal — tapping gives rhythm-verified data |
-| Sensor data export | Scope creep into analytics — debug screen is for live testing only |
+| Text field BPM input | No confidence signal -- tapping gives rhythm-verified data |
+| Sensor data export | Scope creep into analytics -- debug screen is for live testing only |
 
 ## Traceability
 
@@ -56,24 +56,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONF-01 | — | Pending |
-| CONF-02 | — | Pending |
-| CONF-03 | — | Pending |
-| TAP-01 | — | Pending |
-| TAP-02 | — | Pending |
-| TAP-03 | — | Pending |
-| FALL-01 | — | Pending |
-| FALL-02 | — | Pending |
-| SLAB-01 | — | Pending |
-| SLAB-02 | — | Pending |
-| SLAB-03 | — | Pending |
-| SLAB-04 | — | Pending |
+| CONF-01 | Phase 18 | Pending |
+| CONF-02 | Phase 18 | Pending |
+| CONF-03 | Phase 19 | Pending |
+| TAP-01 | Phase 20 | Pending |
+| TAP-02 | Phase 20 | Pending |
+| TAP-03 | Phase 20 | Pending |
+| FALL-01 | Phase 21 | Pending |
+| FALL-02 | Phase 21 | Pending |
+| SLAB-01 | Phase 22 | Pending |
+| SLAB-02 | Phase 22 | Pending |
+| SLAB-03 | Phase 22 | Pending |
+| SLAB-04 | Phase 22 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after initial definition*
+*Last updated: 2026-03-25 after roadmap creation*

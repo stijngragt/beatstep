@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Under The Hood
 status: active
-stopped_at: Defining requirements
-last_updated: "2026-03-25T09:00:00.000Z"
-last_activity: 2026-03-25 -- Milestone v1.4 started
+stopped_at: Roadmap created
+last_updated: "2026-03-25T10:00:00.000Z"
+last_activity: 2026-03-25 -- Roadmap created for v1.4
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** v1.4 Under The Hood
+**Current focus:** Phase 18 - BPM Confidence Model
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-25 — Milestone v1.4 started
+Phase: 18 of 22 (BPM Confidence Model) -- first of 5 v1.4 phases
+Plan: --
+Status: Ready to plan
+Last activity: 2026-03-25 -- Roadmap created for v1.4
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -52,9 +54,11 @@ None.
 ### Blockers/Concerns
 
 - Spotify Premium detection timing during onboarding is an unresolved product decision (carried from v1.2)
+- SwiftData migration must use optional String? fields to trigger lightweight migration (from research)
+- Prompt fallback UX during active run may need deferral if skip + playRegardless cover the need (from research)
 
 ## Session Continuity
 
-Last session: —
-Stopped at: —
+Last session: 2026-03-25
+Stopped at: Roadmap created, ready to plan Phase 18
 Resume file: None
