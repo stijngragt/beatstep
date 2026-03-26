@@ -11,7 +11,13 @@ final class RunEngineService {
     var currentMatchedTrack: SpotifyTrack?
     var runMode: RunMode = .free
     var rampPhase: RampPhase? = nil
-    var tempoMode: TempoMode = .saved
+    var tempoMode: TempoMode = .saved {
+        didSet {
+            if isRunActive && oldValue != tempoMode {
+                invalidateBuffer()  // Per D-08
+            }
+        }
+    }
     var latestCadence: Int = 0
 
     // MARK: - Private
@@ -24,8 +30,6 @@ final class RunEngineService {
     private var playedTrackIDs: Set<String> = []
     @ObservationIgnored
     private var sustainedSPM: Int = 0
-    @ObservationIgnored
-    private var pendingRematch = false
     @ObservationIgnored
     private var sustainedChangeTask: Task<Void, Never>?
     @ObservationIgnored
@@ -129,7 +133,6 @@ final class RunEngineService {
         bpmMap = map
         danceabilityMap = danceMap
         playedTrackIDs = []
-        pendingRematch = false
         isRunActive = true
         zeroBPMFallback = ZeroBPMFallback.saved
         needsDiscovery = false
@@ -154,6 +157,9 @@ final class RunEngineService {
             await playTrack(first)
         }
 
+        // Fill buffer with 3 pre-computed tracks (per D-01)
+        fillBuffer()
+
         // Start monitoring
         startCadenceMonitor()
         startSongEndMonitor()
@@ -169,7 +175,6 @@ final class RunEngineService {
         playedNilBPMIDs = []
         sustainedSPM = 0
         latestCadence = 0
-        pendingRematch = false
         isQueueingNext = false
         lastPlayTime = nil
         rampPhase = nil
@@ -191,8 +196,23 @@ final class RunEngineService {
     }
 
     func skipToNextMatch() async {
-        guard isRunActive, !isQueueingNext else { return }
-        await queueNextMatch()
+        guard isRunActive else { return }
+
+        // Per D-04: 1-second cooldown between skips (replaces old 5s rate limit per D-05)
+        if let lastSkip = lastSkipTime,
+           Date().timeIntervalSince(lastSkip) < 1.0 {
+            return
+        }
+
+        // Per D-06: if buffer empty, await refill (no fallback to on-demand)
+        if trackBuffer.isEmpty {
+            // Wait for in-flight refill to complete
+            await bufferRefillTask?.value
+            guard !trackBuffer.isEmpty else { return }
+        }
+
+        lastSkipTime = Date()
+        await popAndPlay()
     }
 
     /// Manually start cool-down phase (guided mode only)
@@ -481,8 +501,8 @@ final class RunEngineService {
             guard !Task.isCancelled else { return }
             // Commit sustained change
             self?.sustainedSPM = newSPM
-            self?.pendingRematch = true
-            // Re-match happens at next song end, not immediately
+            // Per D-07: invalidate buffer and rebuild with new cadence
+            self?.invalidateBuffer()
         }
     }
 
@@ -505,34 +525,28 @@ final class RunEngineService {
 
     // MARK: - Playback
 
+    /// Pop next track from buffer, play it, handle ramp, trigger refill.
+    /// Per D-03: serves ALL transitions (manual skip and song-end).
+    private func popAndPlay() async {
+        guard let next = popNextFromBuffer() else { return }
+
+        handleRampTransition()
+        await playTrack(next)
+        triggerBufferRefill()
+    }
+
     private func queueNextMatch() async {
         guard !isQueueingNext else { return }
         isQueueingNext = true
         defer { isQueueingNext = false }
 
-        // Rate limit: never play more than once per 5 seconds
-        if let lastPlay = lastPlayTime,
-           Date().timeIntervalSince(lastPlay) < 5.0 {
-            return
+        // Per D-03: song-end transitions pop from buffer (same as skip)
+        if trackBuffer.isEmpty {
+            await bufferRefillTask?.value
+            guard !trackBuffer.isEmpty else { return }
         }
 
-        // Handle ramp transition (increment songs played, check phase change)
-        handleRampTransition()
-
-        // Determine BPM for selection
-        let spm: Int
-        if runMode == .guided {
-            spm = effectiveBPM
-        } else if pendingRematch {
-            spm = sustainedSPM
-            pendingRematch = false
-        } else {
-            spm = sustainedSPM
-        }
-
-        if let next = selectNextMatch(forSPM: spm) {
-            await playTrack(next)
-        }
+        await popAndPlay()
     }
 
     private func playTrack(_ track: SpotifyTrack) async {
