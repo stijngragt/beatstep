@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
-stopped_at: Completed 29-02-PLAN.md (Run Menu UI Rebuild)
-last_updated: "2026-03-26T08:42:49.543Z"
+stopped_at: Phase 30 context gathered
+last_updated: "2026-03-26T09:39:31.507Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
@@ -85,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T08:35:46.485Z
-Stopped at: Completed 29-02-PLAN.md (Run Menu UI Rebuild)
-Resume file: None
+Last session: 2026-03-26T09:39:31.504Z
+Stopped at: Phase 30 context gathered
+Resume file: .planning/phases/30-skip-queue/30-CONTEXT.md
