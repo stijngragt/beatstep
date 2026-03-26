@@ -196,7 +196,7 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 26. Onboarding Analysis Step | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 27. Foundation + Fixes | 2/2 | Complete    | 2026-03-25 | - |
 | 28. Library Polish | 2/2 | Complete    | 2026-03-26 | - |
-| 29. Run Menu Rebuild | v1.6 | 2/2 | Complete   | 2026-03-26 |
+| 29. Run Menu Rebuild | v1.6 | 2/2 | Complete    | 2026-03-26 |
 | 30. Skip Queue | v1.6 | 0/? | Not started | - |
 | 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
 | 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |

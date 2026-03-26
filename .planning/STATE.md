@@ -4,7 +4,7 @@ milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
 stopped_at: Completed 29-02-PLAN.md (Run Menu UI Rebuild)
-last_updated: "2026-03-26T08:35:46.488Z"
+last_updated: "2026-03-26T08:42:49.543Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
@@ -24,8 +24,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 28 (2 of 6 in v1.6 Little Big Things)
-Plan: 2 of 2 (complete)
+Phase: 30 of 6 (skip queue)
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-03-26
 
