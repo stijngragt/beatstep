@@ -36,6 +36,11 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
 - [x] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
 
+### Polish
+
+- [x] **POL-03**: Loading states use shimmer skeleton placeholders instead of ProgressView spinners for library views
+- [x] **POL-04**: Settings screen organized into grouped sections (Account, Run Defaults, Permissions, Debug, About) with SF Symbol icons and discoverable structure
+
 ### Skip Queue
 
 - [x] **SKIP-01**: Skipping a song during a run is instant via pre-computed track buffer (no spinner, no delay)
@@ -97,12 +102,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RUN-02 | Phase 5 | Pending |
 | RUN-03 | Phase 5 | Complete |
 | SKIP-01 | Phase 30 | Complete |
+| POL-03 | Phase 31 | Complete |
+| POL-04 | Phase 31 | Complete |
 
 **Coverage:**
-- v1 requirements: 18 total
-- Mapped to phases: 18
+- v1 requirements: 20 total
+- Mapped to phases: 20
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after roadmap creation*
+*Last updated: 2026-03-26 after phase 31 gap closure*
