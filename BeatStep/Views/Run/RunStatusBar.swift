@@ -10,12 +10,14 @@ struct RunStatusBar: View {
                 Text(zoneName)
                     .font(.captionBold)
                     .foregroundStyle(Color.textPrimary)
+                    .transition(.opacity)
             }
             Spacer()
             SyncBadge(quality: syncQuality)
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
+        .animation(BSAnimation.smooth, value: zoneName)
     }
 }
 

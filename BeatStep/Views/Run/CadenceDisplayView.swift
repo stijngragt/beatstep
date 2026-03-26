@@ -18,13 +18,18 @@ struct CadenceDisplayView: View {
             }
 
             // Delta or sync label between SPM number and "SPM" label
-            if isGuidedMode {
-                deltaLabel
-            } else {
-                Text(syncQuality.displayLabel)
-                    .font(.captionBold)
-                    .foregroundStyle(syncQuality.color)
+            Group {
+                if isGuidedMode {
+                    deltaLabel
+                        .transition(.opacity)
+                } else {
+                    Text(syncQuality.displayLabel)
+                        .font(.captionBold)
+                        .foregroundStyle(syncQuality.color)
+                        .transition(.opacity)
+                }
             }
+            .animation(BSAnimation.smooth, value: isGuidedMode)
 
             Text("SPM")
                 .font(.displaySecondary)

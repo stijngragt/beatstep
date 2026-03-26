@@ -44,8 +44,10 @@ struct RunPlayerView: View {
                     Text("\(bpm) BPM")
                         .font(.captionBold)
                         .foregroundStyle(Color.stateWarning)
+                        .transition(.opacity)
                 }
             }
+            .animation(BSAnimation.smooth, value: trackBPM)
 
             Spacer()
 

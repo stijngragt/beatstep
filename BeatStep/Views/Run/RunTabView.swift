@@ -25,16 +25,23 @@ struct RunTabView: View {
 
             if LastRunPlaylist.id == nil {
                 noPlaylistContent
+                    .transition(.opacity)
             } else if isLoading && playlist == nil {
                 loadingContent
+                    .transition(.opacity)
             } else if let playlist {
                 loadedContent(playlist: playlist)
+                    .transition(.opacity)
             } else if loadError != nil {
                 errorOnlyContent
+                    .transition(.opacity)
             } else {
                 loadingContent
+                    .transition(.opacity)
             }
         }
+        .animation(BSAnimation.smooth, value: isLoading)
+        .animation(BSAnimation.smooth, value: playlist != nil)
         .navigationTitle("Run")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
@@ -235,6 +242,7 @@ struct RunTabView: View {
                             Text("\(range.lowerBound)-\(range.upperBound) BPM")
                                 .font(.captionText)
                                 .foregroundStyle(Color.textSecondary)
+                                .transition(.opacity)
                         }
                     }
                 }

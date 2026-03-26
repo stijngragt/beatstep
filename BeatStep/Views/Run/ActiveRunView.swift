@@ -49,6 +49,7 @@ struct ActiveRunView: View {
                             targetBPM: targetBPM
                         )
                         .padding(.horizontal, Spacing.xl)
+                        .transition(.opacity)
                     }
 
                     CadenceDisplayView(
@@ -67,8 +68,10 @@ struct ActiveRunView: View {
                             syncQuality: runEngine.syncQuality
                         )
                         .padding(.horizontal, Spacing.xl)
+                        .transition(.opacity)
                     }
                 }
+                .animation(BSAnimation.smooth, value: runEngine.runMode)
 
                 Spacer()
 
@@ -83,7 +86,9 @@ struct ActiveRunView: View {
                             onSkip: { Task { await runEngine.skipToNextMatch() } }
                         )
                         .padding(.horizontal, Spacing.md)
+                        .transition(.opacity)
                     }
+                    .animation(BSAnimation.smooth, value: runEngine.currentMatchedTrack != nil)
 
                     // Tempo mode toggle
                     Button {
@@ -115,7 +120,9 @@ struct ActiveRunView: View {
                                 .background(Capsule().fill(Color.stateWarning.opacity(0.8)))
                                 .padding(.horizontal, Spacing.xl)
                         }
+                        .transition(.opacity)
                     }
+                    .animation(BSAnimation.smooth, value: runEngine.rampPhase)
 
                     LongPressStopButton(onStop: stopRun)
                         .padding(.bottom, Spacing.lg)

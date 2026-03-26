@@ -13,6 +13,7 @@ struct MiniPlayerView: View {
                         Text("\(bpm)")
                             .font(.captionBold)
                             .foregroundStyle(Color.stateWarning)
+                            .transition(.opacity)
                         Text("BPM")
                             .font(.labelText)
                             .foregroundStyle(Color.textSecondary)
@@ -20,12 +21,14 @@ struct MiniPlayerView: View {
                         Text("--")
                             .font(.captionBold)
                             .foregroundStyle(Color.textSecondary)
+                            .transition(.opacity)
                         Text("BPM")
                             .font(.labelText)
                             .foregroundStyle(Color.textSecondary)
                     }
                 }
                 .frame(width: 52, height: 44)
+                .animation(BSAnimation.smooth, value: currentBPM)
                 .background(
                     RoundedRectangle(cornerRadius: Radius.sm)
                         .fill(Color.surfaceElevated)
@@ -82,6 +85,8 @@ struct MiniPlayerView: View {
             .onAppear {
                 currentBPM = BPMCacheService.shared.getBPM(forTrackID: track.id)
             }
+            .transition(.opacity)
         }
+        .animation(BSAnimation.smooth, value: playerService.currentTrack != nil)
     }
 }
