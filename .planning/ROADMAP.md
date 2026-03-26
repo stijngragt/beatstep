@@ -131,7 +131,7 @@ Plans:
 ### Phase 30: Skip Queue
 **Goal**: Skipping a song during a run feels instant with no perceptible delay
 **Depends on**: Phase 29 (run tab must be in final form before modifying engine)
-**Requirements**: RUN-03
+**Requirements**: SKIP-01
 **Success Criteria** (what must be TRUE):
   1. Tapping skip plays the next song within ~100ms (no spinner, no pause)
   2. Skipping multiple times in quick succession works reliably without playback errors
@@ -139,8 +139,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 30-01-PLAN.md -- Buffer infrastructure + lifecycle wiring (buffer, pop, refill, invalidation, cooldown)
-- [ ] 30-02-PLAN.md -- Fix requirements traceability (add SKIP-01, correct ROADMAP references)
-- [x] 30-03-PLAN.md -- Replace stub test assertions with real buffer state checks
+- [x] 30-02-PLAN.md -- Fix requirements traceability (add SKIP-01, correct ROADMAP references)
+- [ ] 30-03-PLAN.md -- Replace stub test assertions with real buffer state checks
 
 ### Phase 31: Settings + Skeleton States
 **Goal**: Settings screen is organized and discoverable, and loading states across the app feel polished instead of empty

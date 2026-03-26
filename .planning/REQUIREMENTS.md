@@ -36,6 +36,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
 - [x] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
 
+### Skip Queue
+
+- [x] **SKIP-01**: Skipping a song during a run is instant via pre-computed track buffer (no spinner, no delay)
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -92,10 +96,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RUN-01 | Phase 4 | Pending |
 | RUN-02 | Phase 5 | Pending |
 | RUN-03 | Phase 5 | Complete |
+| SKIP-01 | Phase 30 | Complete |
 
 **Coverage:**
-- v1 requirements: 17 total
-- Mapped to phases: 17
+- v1 requirements: 18 total
+- Mapped to phases: 18
 - Unmapped: 0
 
 ---
