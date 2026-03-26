@@ -83,7 +83,7 @@
 - [x] **Phase 29: Run Menu Rebuild** - Cohesive custom components with haptics and multi-zone selection (completed 2026-03-26)
 - [x] **Phase 30: Skip Queue** - Pre-built local track buffer for instant song skipping (completed 2026-03-26)
 - [x] **Phase 31: Settings + Skeleton States** - Settings screen structure and shimmer loading states (completed 2026-03-26)
-- [ ] **Phase 32: Micro-Interaction Pass** - Haptics, spring animations, and transitions on all interactions
+- [x] **Phase 32: Micro-Interaction Pass** - Haptics, spring animations, and transitions on all interactions (completed 2026-03-26)
 
 ## Phase Details
 
@@ -170,7 +170,7 @@ Plans:
 Plans:
 - [x] 32-01-PLAN.md -- Run screen animation scoping + token migration (raw haptics/animations to BSHaptics/BSAnimation)
 - [x] 32-02-PLAN.md -- Haptic additions across Settings, RunTab, Player, and Onboarding views
-- [ ] 32-03-PLAN.md -- Transition sweep (.transition(.opacity)) on all conditional views + POL-02 requirement
+- [x] 32-03-PLAN.md -- Transition sweep (.transition(.opacity)) on all conditional views + POL-02 requirement
 
 ## Progress
 
@@ -211,4 +211,4 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 29. Run Menu Rebuild | v1.6 | 2/2 | Complete    | 2026-03-26 |
 | 30. Skip Queue | v1.6 | 2/3 | Complete    | 2026-03-26 |
 | 31. Settings + Skeleton States | v1.6 | 2/3 | Complete    | 2026-03-26 |
-| 32. Micro-Interaction Pass | v1.6 | 1/3 | In Progress|  |
+| 32. Micro-Interaction Pass | v1.6 | 3/3 | Complete   | 2026-03-26 |

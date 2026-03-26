@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: executing
-stopped_at: Completed Wave 1 (32-01 + 32-02)
-last_updated: "2026-03-26T12:54:40.867Z"
+stopped_at: Completed 32-03-PLAN.md (Crossfade Transitions)
+last_updated: "2026-03-26T13:02:26.993Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 15
   percent: 75
 ---
 
@@ -60,6 +60,7 @@ Progress: [████████░░] 75%
 | Phase 31 P02 | 2 min | 2 tasks | 5 files |
 | Phase 32 P01 | 2min | 1 tasks | 10 files |
 | Phase 32 P02 | 3 min | 2 tasks | 10 files |
+| Phase 32 P03 | 4 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,7 @@ Recent decisions affecting current work:
 - [Phase 31]: Shimmer applied at container level for unified animation phase
 - [Phase 32]: Run screen numbers have zero animation modifiers (snap instantly); chrome uses BSAnimation tokens
 - [Phase 32]: BSHaptics calls as first line in button actions for immediate tactile feedback
+- [Phase 32-03]: Scoped animation drivers on ActiveRunView to avoid number jank (D-08)
 
 ### Pending Todos
 
@@ -105,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T12:54:40.865Z
-Stopped at: Completed Wave 1 (32-01 + 32-02)
+Last session: 2026-03-26T13:02:26.990Z
+Stopped at: Completed 32-03-PLAN.md (Crossfade Transitions)
 Resume file: None
