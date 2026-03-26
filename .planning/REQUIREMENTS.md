@@ -1,7 +1,7 @@
 # Requirements: BeatStep
 
 **Defined:** 2026-03-26
-**Core Value:** When you run, your music should move with you — every footstrike landing on the beat.
+**Core Value:** When you run, your music should move with you -- every footstrike landing on the beat.
 
 ## v1.7 Requirements
 
@@ -32,7 +32,7 @@ Requirements for v1.7 Beat Perfect. Each maps to roadmap phases.
 
 ## Future Requirements
 
-### Beat Sync — Advanced
+### Beat Sync -- Advanced
 
 - **SYNC-03**: Beat-phase alignment validation (actual footstrike-on-beat timing via CMMotionManager)
 - **SYNC-04**: Adaptive cadence window that tightens/loosens based on variance
@@ -52,23 +52,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAD-01 | — | Pending |
-| CAD-02 | — | Pending |
-| CAD-03 | — | Pending |
-| SYNC-01 | — | Pending |
-| SYNC-02 | — | Pending |
-| BUG-01 | — | Pending |
-| BUG-02 | — | Pending |
-| PLAY-01 | — | Pending |
-| PLAY-02 | — | Pending |
-| PLAY-03 | — | Pending |
-| PLAY-04 | — | Pending |
+| CAD-01 | Phase 36 | Pending |
+| CAD-02 | Phase 36 | Pending |
+| CAD-03 | Phase 36 | Pending |
+| SYNC-01 | Phase 37 | Pending |
+| SYNC-02 | Phase 37 | Pending |
+| BUG-01 | Phase 33 | Pending |
+| BUG-02 | Phase 33 | Pending |
+| PLAY-01 | Phase 34 | Pending |
+| PLAY-02 | Phase 35 | Pending |
+| PLAY-03 | Phase 35 | Pending |
+| PLAY-04 | Phase 35 | Pending |
 
 **Coverage:**
 - v1.7 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11 ⚠️
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after initial definition*
+*Last updated: 2026-03-26 after roadmap creation*
