@@ -9,10 +9,10 @@ Requirements for v1.6 Little Big Things. Each maps to roadmap phases.
 
 ### Library
 
-- [ ] **LIB-01**: User can search playlists by name in real-time from Library view
-- [ ] **LIB-02**: User can filter playlists by status (All / Analyzed / Unanalyzed)
-- [ ] **LIB-03**: Playlist cards show scan quality — matched tracks vs total tracks with visual coverage indicator
-- [ ] **LIB-04**: User can scan/delete scan via swipe action or context menu on each playlist (floating bar removed)
+- [x] **LIB-01**: User can search playlists by name in real-time from Library view
+- [x] **LIB-02**: User can filter playlists by status (All / Analyzed / Unanalyzed)
+- [x] **LIB-03**: Playlist cards show scan quality — matched tracks vs total tracks with visual coverage indicator
+- [x] **LIB-04**: User can scan/delete scan via swipe action or context menu on each playlist (floating bar removed)
 - [x] **LIB-05**: Library correctly shows analyzed status after scan completes (bug fix)
 
 ### Run Tab
@@ -57,10 +57,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LIB-01 | Phase 28 | Pending |
-| LIB-02 | Phase 28 | Pending |
-| LIB-03 | Phase 28 | Pending |
-| LIB-04 | Phase 28 | Pending |
+| LIB-01 | Phase 28 | Complete |
+| LIB-02 | Phase 28 | Complete |
+| LIB-03 | Phase 28 | Complete |
+| LIB-04 | Phase 28 | Complete |
 | LIB-05 | Phase 27 | Complete |
 | RUN-01 | Phase 29 | Pending |
 | RUN-02 | Phase 29 | Pending |
