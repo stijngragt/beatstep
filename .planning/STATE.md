@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v1.6
+milestone_name: Little Big Things
 status: executing
-stopped_at: Completed 30-01-PLAN.md (Skip Queue Buffer)
-last_updated: "2026-03-26T10:05:58.573Z"
+stopped_at: Completed 30-03-PLAN.md (Buffer Test Stub Replacement)
+last_updated: "2026-03-26T10:23:17.700Z"
 last_activity: 2026-03-26
 progress:
-  total_phases: 5
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 3
+  total_phases: 6
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 8
   percent: 75
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 2: BPM Data Pipeline
+**Current focus:** Phase 30 — skip-queue
 
 ## Current Position
 
-Phase: 2 of 5 (BPM Data Pipeline) -- IN PROGRESS
-Plan: 2 of 2 in current phase (plan 02-01 complete)
+Phase: 30 (skip-queue) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-03-26
 
@@ -55,6 +55,7 @@ Progress: [████████░░] 75%
 *Updated after each plan completion*
 | Phase 02-01 P01 | 4 min | 2 tasks | 10 files |
 | Phase 30 P01 | 5 min | 2 tasks | 2 files |
+| Phase 30 P03 | 3 min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,7 @@ Recent decisions affecting current work:
 - [Phase 30]: Array-based 3-track buffer with removeFirst pop for instant skip
 - [Phase 30]: tempoMode didSet invalidates buffer (simpler than explicit ActiveRunView call)
 - [Phase 30]: Removed pendingRematch: buffer invalidation on cadence commit replaces it
+- [Phase 30]: Used .loose tolerance instead of nonexistent .wide in buffer test fixtures
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:05:58.570Z
-Stopped at: Completed 30-01-PLAN.md (Skip Queue Buffer)
+Last session: 2026-03-26T10:23:17.697Z
+Stopped at: Completed 30-03-PLAN.md (Buffer Test Stub Replacement)
 Resume file: None
