@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 02-01-PLAN.md (BPM Data Foundation)
-last_updated: "2026-03-20T07:57:00.000Z"
-last_activity: 2026-03-20 -- Completed Plan 02-01 (BPM Data Foundation)
+status: executing
+stopped_at: Completed 30-01-PLAN.md (Skip Queue Buffer)
+last_updated: "2026-03-26T10:05:58.573Z"
+last_activity: 2026-03-26
 progress:
   total_phases: 5
   completed_phases: 1
@@ -26,15 +26,16 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 2 of 5 (BPM Data Pipeline) -- IN PROGRESS
-Plan: 1 of 2 in current phase (plan 02-01 complete)
-Status: Plan 02-01 complete, ready for Plan 02-02
-Last activity: 2026-03-20 -- Completed Plan 02-01 (BPM Data Foundation)
+Plan: 2 of 2 in current phase (plan 02-01 complete)
+Status: Ready to execute
+Last activity: 2026-03-26
 
 Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 2
 - Average duration: 16 min
 - Total execution time: 0.52 hours
@@ -47,11 +48,13 @@ Progress: [████████░░] 75%
 | 02-bpm-data-pipeline | 1 | 4 min | 4 min |
 
 **Recent Trend:**
+
 - Last 5 plans: 10 min, 21 min, 4 min
 - Trend: Accelerating
 
 *Updated after each plan completion*
 | Phase 02-01 P01 | 4 min | 2 tasks | 10 files |
+| Phase 30 P01 | 5 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -76,6 +79,9 @@ Recent decisions affecting current work:
 - [02-01]: BPMCacheService uses singleton with setContainer pattern for SwiftData access outside views
 - [02-01]: GetSongBPMService title sanitization strips Remastered/Live/feat/Deluxe suffixes via regex
 - [02-01]: coverageStats takes trackIDs array for flexible usage
+- [Phase 30]: Array-based 3-track buffer with removeFirst pop for instant skip
+- [Phase 30]: tempoMode didSet invalidates buffer (simpler than explicit ActiveRunView call)
+- [Phase 30]: Removed pendingRematch: buffer invalidation on cadence commit replaces it
 
 ### Pending Todos
 
@@ -88,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:57:00.000Z
-Stopped at: Completed 02-01-PLAN.md (BPM Data Foundation)
-Resume file: .planning/phases/02-bpm-data-pipeline/02-01-SUMMARY.md
+Last session: 2026-03-26T10:05:58.570Z
+Stopped at: Completed 30-01-PLAN.md (Skip Queue Buffer)
+Resume file: None

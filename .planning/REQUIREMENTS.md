@@ -34,7 +34,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **RUN-01**: Free run mode -- music adapts to the runner's natural pace
 - [ ] **RUN-02**: Guided run mode -- user sets target BPM, app plays music at that tempo
-- [ ] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
+- [x] **RUN-03**: Warm-up/cool-down ramp -- BPM gradually increases from warm-up to target pace, then decreases
 
 ## v2 Requirements
 
@@ -91,7 +91,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BPM-06 | Phase 5 | Pending |
 | RUN-01 | Phase 4 | Pending |
 | RUN-02 | Phase 5 | Pending |
-| RUN-03 | Phase 5 | Pending |
+| RUN-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total
