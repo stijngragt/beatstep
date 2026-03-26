@@ -73,7 +73,7 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Run menu redesign with cohesive custom components — v1.6
 - ✓ Multi-zone selection with merged BPM range — v1.6
 - [ ] Playlist card redesign with scan quality visibility
-- [ ] Micro-interaction pass (haptics, transitions, loading states)
+- ✓ Micro-interaction pass (haptics, transitions, loading states) — v1.6
 - ✓ Settings screen organized into 5 grouped sections with SF Symbol icons and Run Defaults sub-page — v1.6
 - ✓ Shimmer skeleton loading states replacing ProgressView spinners in library views — v1.6
 - ✓ Pre-built skip queue for instant song skipping — v1.6
