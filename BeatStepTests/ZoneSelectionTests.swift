@@ -6,6 +6,7 @@ final class ZoneSelectionTests: XCTestCase {
     override func tearDown() {
         super.tearDown()
         UserDefaults.standard.removeObject(forKey: "selectedRunZoneId")
+        UserDefaults.standard.removeObject(forKey: "selectedRunZoneIds")
     }
 
     // MARK: - selectedZoneId Persistence
@@ -39,5 +40,29 @@ final class ZoneSelectionTests: XCTestCase {
     func testFreeModeMappingWhenNil() {
         RunZone.selectedZoneId = nil
         XCTAssertNil(RunZone.selectedZoneId, "nil selectedZoneId means free mode")
+    }
+
+    // MARK: - selectedZoneIds (Multi-Zone) Persistence
+
+    func testSelectedZoneIdsDefaultsToEmptySet() {
+        UserDefaults.standard.removeObject(forKey: "selectedRunZoneIds")
+        UserDefaults.standard.removeObject(forKey: "selectedRunZoneId")
+        XCTAssertEqual(RunZone.selectedZoneIds, Set<Int>())
+    }
+
+    func testSelectedZoneIdsRoundTrip() {
+        RunZone.selectedZoneIds = Set([1, 3])
+        XCTAssertEqual(RunZone.selectedZoneIds, Set([1, 3]))
+    }
+
+    func testSelectedZoneIdsMigrationFromSingleId() {
+        UserDefaults.standard.removeObject(forKey: "selectedRunZoneIds")
+        UserDefaults.standard.set(3, forKey: "selectedRunZoneId")
+        XCTAssertEqual(RunZone.selectedZoneIds, Set([3]))
+    }
+
+    func testSelectedZoneIdsEmptySetPersists() {
+        RunZone.selectedZoneIds = Set<Int>()
+        XCTAssertEqual(RunZone.selectedZoneIds, Set<Int>())
     }
 }

@@ -95,4 +95,29 @@ final class RunZoneTests: XCTestCase {
         b.bpm = 999
         XCTAssertNotEqual(a, b)
     }
+
+    // MARK: - Merged BPM Range
+
+    func testMergedBPMRangeMultiZone() {
+        // Set([1, 3]) -> Recovery(155)...Tempo(174)
+        let range = RunZone.mergedBPMRange(for: Set([1, 3]))
+        XCTAssertEqual(range, 155...174)
+    }
+
+    func testMergedBPMRangeSingleZone() {
+        // Set([2]) -> Endurance(165)...Endurance(165)
+        let range = RunZone.mergedBPMRange(for: Set([2]))
+        XCTAssertEqual(range, 165...165)
+    }
+
+    func testMergedBPMRangeEmptyReturnsNil() {
+        let range = RunZone.mergedBPMRange(for: Set())
+        XCTAssertNil(range)
+    }
+
+    func testMergedBPMRangeFullSpread() {
+        // Set([1, 5]) -> Recovery(155)...Max(185)
+        let range = RunZone.mergedBPMRange(for: Set([1, 5]))
+        XCTAssertEqual(range, 155...185)
+    }
 }
