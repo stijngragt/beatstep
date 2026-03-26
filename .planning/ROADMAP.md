@@ -121,7 +121,7 @@ Plans:
   3. Scrollable content in Library and Settings does not get clipped behind the player
 **Plans**: 1 plan
 Plans:
-- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
+- [ ] 34-01-PLAN.md — Fix player dock layout and verify positioning
 **UI hint**: yes
 
 ### Phase 35: Collapsible Player Strip
@@ -135,7 +135,7 @@ Plans:
   4. Collapse/expand state persists across app restarts
 **Plans**: 1 plan
 Plans:
-- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
+- [ ] 35-01-PLAN.md — [To be planned]
 **UI hint**: yes
 
 ### Phase 36: Responsive Cadence
@@ -148,7 +148,7 @@ Plans:
   3. During steady-state running at a constant pace, the cadence display does not jitter by more than 5 SPM between consecutive readings
 **Plans**: 1 plan
 Plans:
-- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
+- [ ] 36-01-PLAN.md — [To be planned]
 
 ### Phase 37: Beat Sync Badge
 **Goal**: Runners can see at a glance how well their current stride matches the playing track's beat
@@ -160,7 +160,7 @@ Plans:
   3. The badge correctly handles half-tempo and double-tempo track matches without showing false mismatches
 **Plans**: 1 plan
 Plans:
-- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
+- [ ] 37-01-PLAN.md — [To be planned]
 **UI hint**: yes
 
 ## Progress
@@ -203,7 +203,7 @@ Phases execute in numeric order: 33 -> 34 -> 35 -> 36 -> 37
 | 31. Settings + Skeleton States | v1.6 | 3/3 | Complete | 2026-03-26 |
 | 32. Micro-Interaction Pass | v1.6 | 3/3 | Complete | 2026-03-26 |
 | 33. Analyzed State Fix | v1.7 | 1/1 | Complete    | 2026-03-26 |
-| 34. Player Dock Fix | v1.7 | 0/0 | Not started | - |
+| 34. Player Dock Fix | v1.7 | 0/1 | Not started | - |
 | 35. Collapsible Player Strip | v1.7 | 0/0 | Not started | - |
 | 36. Responsive Cadence | v1.7 | 0/0 | Not started | - |
 | 37. Beat Sync Badge | v1.7 | 0/0 | Not started | - |
