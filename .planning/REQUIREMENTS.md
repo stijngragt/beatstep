@@ -18,7 +18,7 @@ Requirements for v1.6 Little Big Things. Each maps to roadmap phases.
 ### Run Tab
 
 - [ ] **RUN-01**: Zone picker, tolerance selector, and playlist preview use cohesive custom components with haptic feedback
-- [ ] **RUN-02**: User can select multiple zones — BPM range merges from lowest zone floor to highest zone ceiling
+- [x] **RUN-02**: User can select multiple zones — BPM range merges from lowest zone floor to highest zone ceiling
 - [ ] **RUN-03**: Skipping a song is instant — 2-3 tracks pre-computed and ready in a local buffer
 
 ### Polish
@@ -63,7 +63,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIB-04 | Phase 28 | Complete |
 | LIB-05 | Phase 27 | Complete |
 | RUN-01 | Phase 29 | Pending |
-| RUN-02 | Phase 29 | Pending |
+| RUN-02 | Phase 29 | Complete |
 | RUN-03 | Phase 30 | Pending |
 | POL-01 | Phase 27 | Complete |
 | POL-02 | Phase 32 | Pending |
