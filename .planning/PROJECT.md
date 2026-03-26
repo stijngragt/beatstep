@@ -74,8 +74,9 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Multi-zone selection with merged BPM range — v1.6
 - [ ] Playlist card redesign with scan quality visibility
 - [ ] Micro-interaction pass (haptics, transitions, loading states)
-- [ ] Settings screen structure (account, defaults, debug, about)
-- [ ] Pre-built skip queue for instant song skipping
+- ✓ Settings screen organized into 5 grouped sections with SF Symbol icons and Run Defaults sub-page — v1.6
+- ✓ Shimmer skeleton loading states replacing ProgressView spinners in library views — v1.6
+- ✓ Pre-built skip queue for instant song skipping — v1.6
 - [ ] Fix library analysis status display bug
 
 ### Out of Scope
@@ -182,4 +183,4 @@ Known issues:
 v1.6 in progress. Phase 30 complete — skip queue with 3-track pre-computed buffer for instant song transitions. 27 phases complete across 6 milestones.
 
 ---
-*Last updated: 2026-03-26 after Phase 30 (skip-queue) completion*
+*Last updated: 2026-03-26 after Phase 31 (settings-skeleton-states) completion*
