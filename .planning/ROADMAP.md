@@ -169,7 +169,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 32-01-PLAN.md -- Run screen animation scoping + token migration (raw haptics/animations to BSHaptics/BSAnimation)
-- [ ] 32-02-PLAN.md -- Haptic additions across Settings, RunTab, Player, and Onboarding views
+- [x] 32-02-PLAN.md -- Haptic additions across Settings, RunTab, Player, and Onboarding views
 - [ ] 32-03-PLAN.md -- Transition sweep (.transition(.opacity)) on all conditional views + POL-02 requirement
 
 ## Progress

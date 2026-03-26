@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: executing
-stopped_at: Completed 32-01-PLAN.md (Run Screen Animation Scoping & Token Migration)
-last_updated: "2026-03-26T12:54:10.968Z"
+stopped_at: Completed Wave 1 (32-01 + 32-02)
+last_updated: "2026-03-26T12:54:40.867Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
@@ -59,6 +59,7 @@ Progress: [████████░░] 75%
 | Phase 31-settings-skeleton-states P01 | 3 min | 2 tasks | 2 files |
 | Phase 31 P02 | 2 min | 2 tasks | 5 files |
 | Phase 32 P01 | 2min | 1 tasks | 10 files |
+| Phase 32 P02 | 3 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,7 @@ Recent decisions affecting current work:
 - [Phase 31-01]: Label-based section headers with SF Symbols + foregroundStyle(Color.accent) pattern established
 - [Phase 31]: Shimmer applied at container level for unified animation phase
 - [Phase 32]: Run screen numbers have zero animation modifiers (snap instantly); chrome uses BSAnimation tokens
+- [Phase 32]: BSHaptics calls as first line in button actions for immediate tactile feedback
 
 ### Pending Todos
 
@@ -103,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T12:54:10.965Z
-Stopped at: Completed 32-01-PLAN.md (Run Screen Animation Scoping & Token Migration)
+Last session: 2026-03-26T12:54:40.865Z
+Stopped at: Completed Wave 1 (32-01 + 32-02)
 Resume file: None

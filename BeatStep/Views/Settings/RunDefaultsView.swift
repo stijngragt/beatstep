@@ -12,6 +12,7 @@ struct RunDefaultsView: View {
                 }
 
                 Button("Reset to Defaults") {
+                    BSHaptics.warning()
                     zones = RunZone.defaults
                     RunZone.resetToDefaults()
                 }
@@ -32,9 +33,11 @@ struct RunDefaultsView: View {
         .navigationTitle("Run Defaults")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: zones) { _, newValue in
+            BSHaptics.selection()
             RunZone.saveAll(newValue)
         }
         .onChange(of: zeroBPMFallback) { _, newValue in
+            BSHaptics.selection()
             newValue.save()
         }
     }

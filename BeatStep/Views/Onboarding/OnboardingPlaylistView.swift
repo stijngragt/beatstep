@@ -66,6 +66,7 @@ struct OnboardingPlaylistView: View {
                 LazyVStack(spacing: Spacing.xs) {
                     ForEach(playlists) { playlist in
                         Button {
+                            BSHaptics.light()
                             Task {
                                 await selectPlaylist(playlist)
                             }
@@ -183,6 +184,7 @@ struct OnboardingPlaylistView: View {
 
             if analysisComplete {
                 Button {
+                    BSHaptics.success()
                     onContinue()
                 } label: {
                     Text("Continue")

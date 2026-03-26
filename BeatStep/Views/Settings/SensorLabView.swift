@@ -48,7 +48,10 @@ struct SensorLabView: View {
                 Slider(
                     value: Binding(
                         get: { service.detectionInterval },
-                        set: { service.updateInterval($0) }
+                        set: {
+                            BSHaptics.selection()
+                            service.updateInterval($0)
+                        }
                     ),
                     in: 0.5 ... 5.0,
                     step: 0.5

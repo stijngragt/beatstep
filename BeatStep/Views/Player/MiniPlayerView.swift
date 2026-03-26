@@ -48,6 +48,7 @@ struct MiniPlayerView: View {
                 // Controls
                 HStack(spacing: Spacing.lg) {
                     Button {
+                        BSHaptics.light()
                         SpotifyPlayerService.shared.togglePlayPause()
                     } label: {
                         Image(systemName: playerService.isPaused ? "play.fill" : "pause.fill")
@@ -55,6 +56,7 @@ struct MiniPlayerView: View {
                     }
 
                     Button {
+                        BSHaptics.light()
                         if RunEngineService.shared.isRunActive {
                             Task { await RunEngineService.shared.skipToNextMatch() }
                         } else {

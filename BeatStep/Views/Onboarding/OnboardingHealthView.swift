@@ -40,6 +40,7 @@ struct OnboardingHealthView: View {
                 }
 
                 Button {
+                    BSHaptics.light()
                     onContinue()
                 } label: {
                     Text("Skip")
@@ -59,6 +60,7 @@ struct OnboardingHealthView: View {
 
     private var allowButton: some View {
         Button {
+            BSHaptics.light()
             requestPermissions()
         } label: {
             Text("Allow Permissions")
@@ -73,6 +75,7 @@ struct OnboardingHealthView: View {
 
     private var continueButton: some View {
         Button {
+            BSHaptics.light()
             onContinue()
         } label: {
             Text("Continue")

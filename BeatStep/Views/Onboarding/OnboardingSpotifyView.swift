@@ -55,6 +55,7 @@ struct OnboardingSpotifyView: View {
 
     private var connectButton: some View {
         Button {
+            BSHaptics.light()
             authService.initiateAuth()
         } label: {
             HStack(spacing: Spacing.sm) {
@@ -79,6 +80,7 @@ struct OnboardingSpotifyView: View {
 
             if message.contains("Premium") {
                 Button("Try Different Account") {
+                    BSHaptics.light()
                     authService.disconnect()
                     authService.initiateAuth()
                 }

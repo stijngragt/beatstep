@@ -83,6 +83,7 @@ struct RunTabView: View {
                     .foregroundStyle(Color.textSecondary)
 
                 Button {
+                    BSHaptics.light()
                     selectedTab = .library
                 } label: {
                     Text("Go to Library")
@@ -137,6 +138,7 @@ struct RunTabView: View {
                     .foregroundStyle(Color.textSecondary)
 
                 Button {
+                    BSHaptics.light()
                     fetchPlaylistIfNeeded(force: true)
                 } label: {
                     Text("Retry")
@@ -209,6 +211,7 @@ struct RunTabView: View {
                                 .foregroundStyle(Color.textSecondary)
 
                             Button {
+                                BSHaptics.light()
                                 fetchPlaylistIfNeeded(force: true)
                             } label: {
                                 Text("Retry")
@@ -265,6 +268,7 @@ struct RunTabView: View {
     // MARK: - Actions
 
     private func startRun() {
+        BSHaptics.success()
         guard let playlist else { return }
 
         // Configure engine mode
