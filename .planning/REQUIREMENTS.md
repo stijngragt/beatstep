@@ -20,8 +20,8 @@ Requirements for v1.7 Beat Perfect. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Library view shows correct analyzed/unanalyzed state immediately after scan completes
-- [ ] **BUG-02**: Analyzed/Unanalyzed filter correctly filters playlists based on actual scan state
+- [x] **BUG-01**: Library view shows correct analyzed/unanalyzed state immediately after scan completes
+- [x] **BUG-02**: Analyzed/Unanalyzed filter correctly filters playlists based on actual scan state
 
 ### Player
 
@@ -57,8 +57,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAD-03 | Phase 36 | Pending |
 | SYNC-01 | Phase 37 | Pending |
 | SYNC-02 | Phase 37 | Pending |
-| BUG-01 | Phase 33 | Pending |
-| BUG-02 | Phase 33 | Pending |
+| BUG-01 | Phase 33 | Complete |
+| BUG-02 | Phase 33 | Complete |
 | PLAY-01 | Phase 34 | Pending |
 | PLAY-02 | Phase 35 | Pending |
 | PLAY-03 | Phase 35 | Pending |

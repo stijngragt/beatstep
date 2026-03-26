@@ -91,7 +91,7 @@
 
 **Milestone Goal:** Make the core loop trustworthy -- responsive cadence, accurate beat sync, reliable library state, and a player that stays out of the way.
 
-- [ ] **Phase 33: Analyzed State Fix** - Library filters reflect actual scan state immediately
+- [x] **Phase 33: Analyzed State Fix** - Library filters reflect actual scan state immediately (completed 2026-03-26)
 - [ ] **Phase 34: Player Dock Fix** - Mini player docks above tab bar without overlap
 - [ ] **Phase 35: Collapsible Player Strip** - Two-state player with swipe collapse/expand
 - [ ] **Phase 36: Responsive Cadence** - Sub-2s display updates and faster song selection
@@ -109,7 +109,7 @@
   3. Background scans triggered at app launch update the filter counts when the user reaches the Library tab
 **Plans**: 1 plan
 Plans:
-- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
+- [x] 33-01-PLAN.md — Fix upsert + reactive state propagation
 
 ### Phase 34: Player Dock Fix
 **Goal**: Mini player sits in the correct vertical position -- above tab bar, no overlap, no double-padding
@@ -202,7 +202,7 @@ Phases execute in numeric order: 33 -> 34 -> 35 -> 36 -> 37
 | 30. Skip Queue | v1.6 | 3/3 | Complete | 2026-03-26 |
 | 31. Settings + Skeleton States | v1.6 | 3/3 | Complete | 2026-03-26 |
 | 32. Micro-Interaction Pass | v1.6 | 3/3 | Complete | 2026-03-26 |
-| 33. Analyzed State Fix | v1.7 | 0/0 | Not started | - |
+| 33. Analyzed State Fix | v1.7 | 1/1 | Complete   | 2026-03-26 |
 | 34. Player Dock Fix | v1.7 | 0/0 | Not started | - |
 | 35. Collapsible Player Strip | v1.7 | 0/0 | Not started | - |
 | 36. Responsive Cadence | v1.7 | 0/0 | Not started | - |
