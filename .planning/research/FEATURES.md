@@ -1,249 +1,182 @@
-# Feature Research: v1.6 Little Big Things
+# Feature Research
 
-**Domain:** iOS running music app -- UI polish, custom components, micro-interactions
-**Researched:** 2026-03-25
-**Confidence:** HIGH (patterns verified against SwiftUI docs and existing codebase)
+**Domain:** Running music sync -- cadence responsiveness, beat accuracy, collapsible player UX
+**Researched:** 2026-03-26
+**Confidence:** MEDIUM-HIGH
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Features that feel broken or incomplete if missing from a polished v1.6.
+Features that v1.7 must deliver. Without these, the "Beat Perfect" milestone name is misleading.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Library search | Any list >10 items needs search. Users with 50+ playlists cannot find what they need. | LOW | SwiftUI `.searchable()` modifier -- 15 lines of code. Computed property filters `playlists` array by name. Already have `PlaylistListView` with List. |
-| Library filter (All / Analyzed / Unanalyzed) | Users need to find unanalyzed playlists to scan them. Currently requires scrolling and reading status text on each row. | LOW | `.searchScopes()` modifier with enum, or segmented Picker above the list. Filter the same computed property used for search. |
-| Settings screen structure | Current Settings is a flat list mixing account, zones, playback, permissions, and debug. Users expect grouped organization like Apple's Settings app. | LOW | Already using `List` with `Section`. Just reorganize into: Account, Running (zones + tolerance defaults), Playback, Permissions, About. Add version/build at bottom. |
-| Skeleton/loading states | ProgressView spinners feel unfinished. Shimmer placeholders show users content is coming and where it will appear. | MEDIUM | `.redacted(reason: .placeholder)` built into SwiftUI. Add shimmer modifier (10-line custom ViewModifier with gradient animation). Apply to PlaylistRow and TrackRow shapes during loading. |
-| Analysis status bug fix | Existing bug where playlist analysis state displays incorrectly. Users cannot trust what they see. | LOW | Debug existing `coverageMap` logic in PlaylistListView. Likely race condition between `loadCoverageData()` and scan completion notification. |
+| Sub-2s cadence response | Current 5s rolling window creates perceptible lag. Competitors (TrailMix, RockMyRun) respond within 1-2 seconds. Users changing pace expect music to follow quickly. | MEDIUM | CadenceService uses 5s `windowDuration` with CMPedometer. Reducing window to 2-3s is low-risk. Supplementing with CMMotionManager accelerometer (100Hz) for sub-second peaks is possible but overkill -- CMPedometer delivers ~1 update/sec already. The bottleneck is the averaging window, not the sensor. |
+| Player not overlapping tab bar | Currently `.safeAreaInset(edge: .bottom)` on the TabView should push content up, but the reported bug means the player covers the tab bar in certain states. Basic layout correctness. | LOW | Likely a conditional rendering or z-ordering issue in ContentView where MiniPlayerView renders inside `.safeAreaInset` but something pushes it over the tab bar. Debug by inspecting the view hierarchy. Straightforward fix once root cause is identified. |
+| Analyzed state updates after scan | Broken filter (analyzed/unanalyzed) shows stale results after scanning a playlist. Users cannot trust what they see. | LOW | Root cause is likely that `PlaylistListView` does not re-query coverage data after `LibraryScanService` completes a scan. SwiftData observation may not be triggering a view refresh. Fix with explicit notification or by ensuring the `@Query` or coverage map is invalidated on scan completion. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that make BeatStep feel intentionally designed vs. a hobby project.
+Features that make BeatStep meaningfully better than TrailMix, RockMyRun, and Weav Run.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Contextual scan actions replacing floating bar | Scan actions appear where relevant (swipe on playlist row, toolbar in detail view) instead of a persistent floating bar that covers content. Feels native, not bolted-on. | MEDIUM | Already have swipe-to-analyze on PlaylistListView rows. Add `.contextMenu` on playlist rows for Analyze/Clear. Add toolbar button on PlaylistDetailView (partially exists). Remove any floating scan bar overlay. |
-| Custom zone picker with haptics | Current ZonePickerView is capsule buttons with no tactile feedback. Adding `.sensoryFeedback(.selection, trigger: selectedZoneId)` makes zone switching feel physical. | LOW | SwiftUI `.sensoryFeedback()` modifier (iOS 17+). One line per interactive component. Add to ZonePickerView, TolerancePicker, and half-tempo toggle. |
-| Multi-zone selection with merged BPM range | Select Zone 2 + Zone 3 to get a merged 150-170 BPM range. No running app does this -- they force a single zone. Lets runners target a range naturally. | HIGH | Change `selectedZoneId: Int?` to `selectedZoneIds: Set<Int>`. Compute merged BPM range from min/max of selected zones. Update RunEngineService tolerance to use merged range. Requires rethinking zone capsule selection UX (multi-select vs single-select). |
-| Playlist card redesign with scan quality | Show BPM coverage as a visual progress ring or bar on the playlist card, not just "42/50 BPM" text. Color-code by quality: green (>80% coverage), yellow (50-80%), red (<50%). | MEDIUM | New `PlaylistCard` component replacing `PlaylistRow`. Add a small circular progress indicator or horizontal bar showing coverage percentage. Use existing `coverageMap` data, parse the "X/Y" string into percentage. |
-| Micro-interaction pass (transitions) | `.animation()` on state changes, `.transition()` on view insertions. Loading->content uses `.transition(.opacity)`. Zone picker selection uses `.spring()`. Makes UI feel alive. | MEDIUM | Audit every state change in RunTabView, PlaylistListView, PlaylistDetailView. Add `.animation(.spring(duration: 0.3))` to value changes. Add `.transition(.blurReplace)` or `.transition(.opacity)` to conditional views. |
-| Pre-built skip queue | Pre-compute next 2-3 songs so skip is instant instead of requiring API call + BPM match computation on tap. | MEDIUM | Add `private var upcomingQueue: [SpotifyTrack] = []` to RunEngineService. After playing a track, immediately compute next 2-3 matches and store. On skip, pop from queue and play. Refill queue after each pop. No Spotify queue API needed -- just local pre-computation. |
-| Run menu redesign with custom components | Replace system Picker segmented controls with custom capsule components matching the zone picker style. Unified visual language across Run tab. | MEDIUM | Build `BeatStepSegmentedControl` reusable component using HStack of capsule buttons (same pattern as ZonePickerView). Replace `TolerancePicker` segmented control. Add haptics on selection. |
+| Collapsible player strip (expand/collapse) | No running-music app has a collapsible mini-player. Spotify and Apple Music do, but running apps show a static bar. Lets the runner minimize visual noise outside of runs while keeping controls accessible. | MEDIUM | Two states: expanded (current MiniPlayerView with BPM pill, title, controls at 64pt) and collapsed (thin strip ~24-28pt with drag handle, truncated title, play/pause only). Swipe-down to collapse, tap to expand. Use `matchedGeometryEffect` for smooth morphing of the play/pause button between positions. The `safeAreaInset` height changes dynamically with state -- SwiftUI handles this natively. Persist preference in `@AppStorage`. |
+| Beat accuracy confidence score | No running music app surfaces how well the music BPM actually tracks the runner's cadence over time. BeatStep already has sync badges (in-sync/drifting/mismatched) but they are instantaneous snapshots. A rolling "sync score" that builds confidence over sustained matching is more meaningful. | MEDIUM | Compute score based on how closely SPM has tracked BPM over the last 30-60 seconds. Simple formula: `score = max(0, 100 - avgDelta * 5)` where `avgDelta` is the average absolute difference between SPM and track BPM over the window. Display as a percentage or ring fill in ActiveRunView. No accelerometer work needed -- this uses existing CadenceService.currentSPM and track BPM. |
+| Adaptive window cadence smoothing | Instead of a fixed window, use a shorter window (2s) when cadence is changing rapidly and a longer window (4s) when steady. Gives fast response to real pace changes while filtering noise during steady running. | MEDIUM | Detect cadence variance: compute standard deviation of last 5 cadence samples. High stddev (>8 SPM) = use 2s window, low stddev = use 4s window. This is the approach used by research-grade running analysis. No competitor does this -- they all use fixed averaging. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Spotify queue API integration for skip | "Use Spotify's Add to Queue endpoint for seamless skipping" | Spotify queue API is append-only, buggy on iOS (documented community issues with queue truncation and skip-to-wrong-track), and does not support clearing/replacing queue. Playing a song after queuing skips to queued song unexpectedly. | Pre-compute matches locally and use `play(uri:)` directly. Current approach already works -- just pre-compute the next matches ahead of time. |
-| Floating action bar for scan | "Persistent scan button visible everywhere" | Covers list content, conflicts with tab bar, non-native iOS pattern. Apple's HIG has no floating action bar concept. | Contextual: swipe actions on rows, toolbar buttons in detail views, context menus on long-press. Actions appear where relevant. |
-| Custom animated transitions between all screens | "Page curl, slide, bounce for every navigation" | Over-animation causes motion sickness, slows perceived performance, makes app feel gimmicky. Apple's HIG: "Don't animate too many things at once." | Subtle spring animations on value changes. Default NavigationStack push/pop. `.matchedGeometryEffect` only for hero transitions (e.g., album art from card to run screen). |
-| Inline search with real-time API calls | "Search Spotify catalog from library screen" | Adds API rate limit pressure, scope creep (this is library management, not discovery), and network-dependent UX in a screen that should work with cached data. | Local-only search filtering the already-fetched playlist list. Discovery is a separate feature (already exists via BPMDiscoveryService during runs). |
-| Draggable/reorderable queue UI | "Let users manually reorder upcoming songs" | Contradicts core value -- BeatStep picks music that matches your stride. Manual ordering defeats automatic BPM matching. Adds complexity for a feature that undermines the product. | Show upcoming queue as read-only preview (next 2-3 songs). Users can skip, but ordering is algorithmic. |
+| Raw accelerometer cadence replacing CMPedometer | "CMPedometer is too slow, use raw accelerometer at 100Hz" | CMMotionManager gives raw data but requires building a step-detection algorithm (peak detection, low-pass filtering, stride classification). This is a deep signal-processing problem. False positives cause worse UX than slight lag. CMPedometer is Apple's battle-tested algorithm -- it exists precisely because raw accelerometer step detection is hard. | Keep CMPedometer as authoritative cadence source. Reduce the rolling window for faster response. Optionally supplement with accelerometer for trend-change detection only (detect that pace is changing before CMPedometer reports the new value). |
+| Real-time audio beat detection | "Detect beats from the actual audio stream for true phase alignment" | BeatStep does not have access to the raw audio stream -- Spotify Web API controls playback remotely. Even if audio were available, on-device beat detection introduces its own 100-500ms latency, and running outdoors with wind/noise degrades microphone input. | Use pre-analyzed BPM from GetSongBPM API (already working). BPM is known before the song plays -- more reliable than real-time detection. |
+| Full-screen expandable player (Apple Music style) | "Tap mini-player to see full album art, progress bar, lyrics" | BeatStep already has an 80pt album art player in ActiveRunView. A third player state (mini -> expanded -> full) creates navigation complexity. Outside of runs, the player's job is minimal -- show what's playing and provide play/skip. During runs, ActiveRunView IS the full player. | Two states only: expanded strip (current MiniPlayerView) and collapsed handle. No third state. |
+| Phase-aligned beat synchronization | Research shows footfalls 20-50ms before beats increases motivation (Buhmann et al., 2018). "Adjust playback timing to align beats with footstrikes." | Requires sub-millisecond audio timing control that Spotify Web API does not provide. Cannot adjust playback start position with ms precision. Even `play(uri:position_ms:)` has network round-trip jitter of 100-500ms. | Surface sync quality as information (existing badges). Runners naturally phase-synchronize when BPM matches within +/-2 SPM -- the research confirms this happens automatically without technical intervention. |
+| Persistent always-visible player during runs | "Keep the mini-player visible during ActiveRunView too" | ActiveRunView is already a full-screen player with all controls. Showing the mini-player AND the run view creates redundant controls, wastes screen real estate, and confuses which controls to use. | MiniPlayerView is already correctly hidden via `!RunEngineService.shared.isRunActive` check. Keep this behavior. |
 
 ## Feature Dependencies
 
 ```
-[Library Search]
-    (independent -- no dependencies)
+[Cadence responsiveness (<2s)]
+    |
+    +--enables--> [Accurate sync quality display in ActiveRunView]
+    |                 |
+    |                 +--enables--> [Beat accuracy confidence score]
+    |
+    +--enables--> [Faster song re-matching on pace change]
 
-[Library Filter]
-    (independent -- enhances search but works alone)
+[Player nav bar fix]
+    |
+    +--unblocks--> [Collapsible player strip]
+                       |
+                       +--requires--> [Dynamic safeAreaInset height]
 
-[Settings Restructure]
-    (independent -- no dependencies)
-
-[Contextual Scan Actions]
-    └──requires──> [Analysis Status Bug Fix]
-                       (fix must land first so scan results display correctly)
-
-[Playlist Card Redesign]
-    └──requires──> [Analysis Status Bug Fix]
-                       (card shows coverage data -- must be accurate)
-
-[Custom Zone Picker with Haptics]
-    (independent -- enhances existing ZonePickerView)
-
-[Run Menu Redesign]
-    └──requires──> [Custom Zone Picker with Haptics]
-                       (zone picker pattern informs reusable segment component)
-    └──enhances──> [Multi-Zone Selection]
-                       (redesigned components enable multi-select UX)
-
-[Multi-Zone Selection]
-    └──requires──> [Run Menu Redesign]
-                       (needs new multi-select capsule component)
-    └──requires──> RunEngineService tolerance changes
-
-[Micro-Interaction Pass]
-    └──requires──> [All UI features complete]
-                       (haptics/transitions added as final polish layer)
-
-[Skeleton Loading States]
-    (independent -- apply to any loading view)
-
-[Pre-Built Skip Queue]
-    (independent -- internal RunEngineService change, no UI dependency)
+[Analyzed state fix]
+    (independent -- no downstream dependencies in v1.7)
 ```
 
 ### Dependency Notes
 
-- **Contextual Scan Actions requires Analysis Status Bug Fix:** If scan results do not display correctly, contextual scan triggers will show wrong state and confuse users. Fix the data first.
-- **Playlist Card Redesign requires Analysis Status Bug Fix:** Card redesign adds visual coverage indicators. If underlying data is wrong, the visual indicators lie to the user.
-- **Run Menu Redesign requires Custom Zone Picker with Haptics:** The zone picker capsule pattern becomes the reusable `BeatStepSegmentedControl`. Build the pattern first, then extract and reuse.
-- **Multi-Zone Selection requires Run Menu Redesign:** Multi-select UX needs the new capsule component to support toggle behavior (tap to add/remove from selection set).
-- **Micro-Interaction Pass requires all UI features:** Adding animations to components that will be replaced or redesigned is wasted work. Polish last.
+- **Cadence responsiveness before beat accuracy score:** The confidence score depends on a responsive cadence signal. If cadence lags 5 seconds behind reality, any accuracy metric computed from it will be meaningless -- it would measure lag, not sync quality.
+- **Nav bar fix before collapsible player:** The overlap bug must be fixed first because the collapsible player modifies the same `safeAreaInset` layout system. Building collapse behavior on a broken foundation will compound bugs and make debugging harder.
+- **Analyzed state fix is independent:** Can be done in any order. It is a data-layer fix with no UI coupling to the other v1.7 features.
 
-## Phase Ordering Recommendation
+## v1.7 Scope Definition
 
-### Phase A: Foundations (bug fix + infrastructure)
+### Must Ship (P1)
 
-- [ ] Analysis status bug fix -- unblocks card redesign and contextual actions
-- [ ] Skeleton loading states -- applies across all views, no dependency on other features
-- [ ] Pre-built skip queue -- internal engine change, improves run experience immediately
+- [ ] Cadence responsiveness: reduce rolling window from 5s to 2-3s adaptive -- single most impactful change for the "Beat Perfect" promise
+- [ ] Nav bar overlap fix -- bug fix, prerequisite for player work
+- [ ] Analyzed state fix -- bug fix, restores filter functionality users depend on
+- [ ] Collapsible player strip -- expanded and collapsed states with swipe gesture
 
-### Phase B: Library Polish
+### Should Ship (P2)
 
-- [ ] Library search (`.searchable()`)
-- [ ] Library filter (segmented scope: All / Analyzed / Unanalyzed)
-- [ ] Contextual scan actions (swipe + context menu + toolbar, remove floating bar)
-- [ ] Playlist card redesign (coverage visualization, quality badges)
+- [ ] Beat accuracy confidence score -- rolling "sync score" displayed in ActiveRunView, computed from SPM-vs-BPM delta over time
+- [ ] Adaptive window smoothing -- variance-based window duration (2s when changing, 4s when steady)
 
-### Phase C: Run Tab Rebuild
+### Defer (Future Milestones)
 
-- [ ] Custom zone picker with haptics (`.sensoryFeedback()` on existing component)
-- [ ] Run menu redesign (reusable `BeatStepSegmentedControl`, replace system Picker)
-- [ ] Multi-zone selection (Set-based selection, merged BPM range)
-- [ ] Settings screen restructure (grouped sections)
-
-### Phase D: Final Polish
-
-- [ ] Micro-interaction pass (spring animations, transitions, haptics audit)
+- [ ] Accelerometer-supplemented trend detection -- use CMMotionManager to detect pace-change onset before CMPedometer reports it
+- [ ] True beat-phase alignment via per-step timestamps -- requires CMMotionManager peak detection pipeline
+- [ ] Post-run sync analysis report -- show how well-synced the run was over time
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Analysis status bug fix | HIGH | LOW | P1 |
-| Library search | HIGH | LOW | P1 |
-| Library filter | MEDIUM | LOW | P1 |
-| Pre-built skip queue | HIGH | MEDIUM | P1 |
-| Custom zone picker with haptics | MEDIUM | LOW | P1 |
-| Contextual scan actions | MEDIUM | MEDIUM | P1 |
-| Settings restructure | LOW | LOW | P1 |
-| Skeleton loading states | MEDIUM | MEDIUM | P2 |
-| Playlist card redesign | MEDIUM | MEDIUM | P2 |
-| Run menu redesign | MEDIUM | MEDIUM | P2 |
-| Micro-interaction pass | MEDIUM | MEDIUM | P2 |
-| Multi-zone selection | LOW | HIGH | P3 |
+| Cadence responsiveness (<2s) | HIGH | LOW | P1 |
+| Nav bar overlap fix | HIGH | LOW | P1 |
+| Analyzed state fix | MEDIUM | LOW | P1 |
+| Collapsible player strip | MEDIUM | MEDIUM | P1 |
+| Beat accuracy confidence score | MEDIUM | MEDIUM | P2 |
+| Adaptive window smoothing | MEDIUM | MEDIUM | P2 |
+| Accelerometer trend detection | HIGH | HIGH | Future |
 
 **Priority key:**
-- P1: Core polish that fixes pain points or is trivially cheap
-- P2: Meaningful improvement, build after P1 stabilizes
-- P3: Nice differentiator but high complexity relative to value
-
-## Implementation Notes
-
-### Library Search
-
-Use SwiftUI's `.searchable(text: $searchText)` on the List inside `PlaylistListView`. Filter with computed property:
-
-```swift
-var filteredPlaylists: [SpotifyPlaylist] {
-    let filtered = searchText.isEmpty ? playlists : playlists.filter {
-        $0.name.localizedCaseInsensitiveContains(searchText)
-    }
-    switch filterScope {
-    case .all: return filtered
-    case .analyzed: return filtered.filter { coverageMap[$0.id] != nil }
-    case .unanalyzed: return filtered.filter { coverageMap[$0.id] == nil }
-    }
-}
-```
-
-### Haptics Strategy
-
-Use `.sensoryFeedback()` (iOS 17+) exclusively -- no UIKit feedback generators needed. BeatStep already requires iOS 17 (uses @Observable). Apply to:
-
-- Zone capsule tap: `.sensoryFeedback(.selection, trigger: selectedZoneId)`
-- Tolerance change: `.sensoryFeedback(.selection, trigger: tolerance)`
-- Start Run button: `.sensoryFeedback(.impact(weight: .medium), trigger: showActiveRun)`
-- Long-press stop completion: `.sensoryFeedback(.success, trigger: runStopped)`
-- Skip song: `.sensoryFeedback(.impact(weight: .light), trigger: skipCount)`
-
-### Pre-Built Skip Queue
-
-Add to RunEngineService:
-
-```swift
-@ObservationIgnored
-private var upcomingQueue: [SpotifyTrack] = []
-
-private func refillQueue() {
-    let spm = effectiveBPM
-    upcomingQueue = (0..<3).compactMap { _ in
-        selectNextMatch(forSPM: spm)
-    }
-}
-
-func skipToNextMatch() async {
-    guard isRunActive, !isQueueingNext else { return }
-    if let next = upcomingQueue.first {
-        upcomingQueue.removeFirst()
-        await playTrack(next)
-        // Refill in background
-        Task { refillQueue() }
-    } else {
-        await queueNextMatch()
-    }
-}
-```
-
-### Contextual Actions Pattern
-
-Replace any floating scan bar with native iOS patterns:
-
-1. **PlaylistListView rows:** Already has `.swipeActions`. Add `.contextMenu` with Analyze + View Details.
-2. **PlaylistDetailView:** Already has toolbar Scan button. Add "Scan All" and "Clear All" to toolbar menu.
-3. **Long-press on playlist row:** `.contextMenu { Button("Analyze BPM") { ... } }`
-
-### Settings Organization
-
-Restructure into clear groups following Apple's Settings pattern:
-
-| Section | Contents |
-|---------|----------|
-| Account | Name, Plan, Disconnect |
-| Running | Zones (NavigationLink to zone editor), Default tolerance |
-| Playback | No-BPM track behavior, Tempo matching default |
-| Permissions | Motion, Health, Open Settings |
-| About | Version, Build, Sensor Lab (hidden toggle) |
+- P1: Must ship in v1.7 -- these define "Beat Perfect"
+- P2: Should ship if time allows -- enhances the core loop
+- Future: Needs dedicated R&D milestone
 
 ## Competitor Feature Analysis
 
-| Feature | Spotify | Apple Music | Nike Run Club | BeatStep Approach |
-|---------|---------|-------------|---------------|-------------------|
-| Library search | Full-text with suggestions | Full-text with categories | N/A (no music library) | Local filter on playlist name -- sufficient for 50-200 playlists |
-| Playlist status indicators | Download status icon | Download/sync badge | N/A | BPM coverage ring/bar -- unique to our domain |
-| Haptic feedback | Scrubber, skip, like | Scrubber, volume | Pace alerts | Zone selection, tolerance, run lifecycle events |
-| Settings organization | Grouped sections, deep navigation | Grouped sections | Simple list | Grouped sections -- Account, Running, Playback, Permissions, About |
-| Queue management | Full queue view, drag to reorder | Up Next with reorder | N/A | Read-only upcoming 2-3 songs, algorithmic ordering |
-| Skip responsiveness | ~100ms (pre-buffered audio) | ~100ms (pre-buffered) | N/A | Currently: ~500ms (API call). Target: ~100ms (pre-computed queue) |
+| Feature | TrailMix | RockMyRun | Weav Run | BeatStep (v1.7 target) |
+|---------|----------|-----------|----------|------------------------|
+| Cadence detection speed | ~1-2s (on-device beat detection of audio) | ~2-3s ("Body-Driven Music") | Real-time (audio tempo-stretching) | Target: <2s (adaptive rolling window on CMPedometer) |
+| Beat-step sync metric | None visible | None visible | None (stretches audio to match) | Sync quality badge + confidence score (differentiator) |
+| Collapsible player | No (static bar) | No (static bar) | No (integrated view) | Yes -- expanded/collapsed with swipe (differentiator) |
+| BPM source | On-device audio analysis | Pre-analyzed catalog | Pre-analyzed + real-time stretch | GetSongBPM API (pre-analyzed, via Cloudflare Worker) |
+| Song matching approach | Queue BPM-matched songs | Adaptive playlist ordering | Real-time tempo stretching | Queue + half/double BPM + danceability ranking |
+| Cadence sensor | Device motion sensors | Device motion sensors | Device motion sensors | CMPedometer (Apple's pedometer, battle-tested) |
+
+**Key insight:** Weav Run is the only competitor doing real-time tempo stretching, but they require specially prepared music from their own catalog -- users cannot use their own Spotify library. TrailMix and RockMyRun use queue-based matching like BeatStep. BeatStep's competitive edge in v1.7 is: (1) transparency -- showing a quantified sync score, (2) responsiveness -- adaptive window cadence, and (3) UX -- collapsible player. None of these exist in any competitor.
+
+## Implementation Notes
+
+### Cadence Responsiveness
+
+Current `CadenceService` bottleneck is the fixed 5-second `windowDuration` on line 23. CMPedometer delivers `currentCadence` roughly every 1 second during active movement. With a 5s window, it takes 5 updates before the rolling average fully reflects a pace change.
+
+**Recommended approach (two-step):**
+
+1. **Immediate win:** Reduce `windowDuration` from 5.0 to 3.0. This halves response time with minimal noise increase. Low risk, high impact.
+
+2. **Adaptive window (P2):** Track variance of recent cadence samples. If stddev of last 5 samples > 8 SPM (indicating the runner is changing pace), temporarily use a 2s window. When stddev drops below 5 SPM (steady pace), expand to 4s. This gives sub-2s response to real changes while smoothing noise at steady state.
+
+The step delta fallback in `handlePedometerData` (lines 126-139) already provides cadence when `currentCadence` is nil. This is good -- it covers devices or conditions where CMPedometer does not report cadence directly.
+
+### Collapsible Player Strip
+
+Current MiniPlayerView is 64pt (`DesignTokens.miniPlayerHeight`). The collapsible design:
+
+- **Expanded state (default):** Current layout -- BPM pill, track info (title + artist), play/pause, skip. Height: 64pt.
+- **Collapsed state:** Thin strip with subtle drag handle (3pt x 36pt rounded rect), truncated song title, and a small play/pause button. Height: ~28pt.
+- **Gesture:** Swipe down on expanded state to collapse. Tap anywhere on collapsed state to expand. Do NOT use DragGesture for this -- it conflicts with scroll gestures. Use a simple `onTapGesture` for expand and a swipe-down detection (threshold ~40pt vertical translation).
+- **Animation:** `matchedGeometryEffect` on the play/pause button so it morphs position between expanded and collapsed layouts. Use `BSAnimation.smooth` (existing spring preset) for the height transition.
+- **Layout:** Keep `.safeAreaInset(edge: .bottom)` -- just change the content height based on `@State private var isCollapsed: Bool`. SwiftUI automatically re-layouts surrounding content.
+- **Persistence:** `@AppStorage("playerCollapsed") var isCollapsed = false` so the preference survives app restarts.
+
+### Beat Accuracy Confidence Score (P2)
+
+Score formula without accelerometer work:
+
+```
+recentDeltas: rolling buffer of |currentSPM - trackBPM| values, sampled every 2 seconds, last 30 seconds (15 samples)
+avgDelta = mean(recentDeltas)
+syncScore = max(0, 100 - avgDelta * 5)
+```
+
+This means: perfect match (0 delta) = 100, 5 SPM off = 75, 10 SPM off = 50, 20+ SPM off = 0.
+
+Display in ActiveRunView as a small ring or arc next to the existing sync quality badge. The badge gives qualitative state (in-sync/drifting/mismatched), the score gives quantitative confidence.
+
+### Player Nav Bar Fix
+
+The MiniPlayerView is mounted via `.safeAreaInset(edge: .bottom)` on the TabView (ContentView.swift line 90). This should push tab content up, not cover the tab bar. Possible root causes:
+
+1. The `.safeAreaInset` is applied to the TabView rather than inside individual tab NavigationStacks. On some iOS versions, this can cause the inset to push into the tab bar area rather than above it.
+2. The conditional `if SpotifyPlayerService.shared.currentTrack != nil` may cause layout recalculation issues where the space is reserved but the view clips over the tab bar.
+
+Fix approach: move the MiniPlayerView into an overlay or VStack inside each tab's NavigationStack, or use `.toolbar(.visible, for: .tabBar)` to ensure the tab bar is always visible when the player is shown. Test on multiple iOS versions.
 
 ## Sources
 
-- [SwiftUI searchable modifier -- Hacking with Swift](https://www.hackingwithswift.com/quick-start/swiftui/how-to-add-a-search-bar-to-filter-your-data)
-- [SwiftUI searchScopes -- swiftyplace](https://www.swiftyplace.com/blog/how-to-use-search-scopes-in-swiftui-to-improve-search-on-ios-and-macos)
-- [SwiftUI sensoryFeedback -- Hacking with Swift](https://www.hackingwithswift.com/quick-start/swiftui/how-to-add-haptic-effects-using-sensory-feedback)
-- [Sensory feedback in SwiftUI -- Swift with Majid](https://swiftwithmajid.com/2023/10/10/sensory-feedback-in-swiftui/)
-- [SwiftUI context menus -- Hacking with Swift](https://www.hackingwithswift.com/quick-start/swiftui/how-to-show-a-context-menu)
-- [SwiftUI swipe actions -- Hacking with Swift](https://www.hackingwithswift.com/quick-start/swiftui/how-to-add-custom-swipe-action-buttons-to-a-list-row)
-- [SwiftUI shimmer/skeleton loading -- Medium](https://medium.com/@Ajay_iOS/swiftui-micro-interaction-shimmer-placeholder-animation-in-10-lines-61348d380863)
-- [SwiftUI Form/Settings patterns -- TDTrails](https://thedocutrails.com/2024/06/16/swiftui-settings-page-tutorial-organizing-options-with-sections-and-lists/)
-- [Spotify queue API limitations -- GitHub](https://github.com/spotify/web-api/issues/15)
-- [Spotify skip buffering architecture -- Medium](https://medium.com/@arpanp99/from-buffer-to-business-model-the-engineering-of-spotify-skips-c0f6dd36a554)
+- [CMPedometer Documentation](https://developer.apple.com/documentation/coremotion/cmpedometer) -- update frequency, cadence API
+- [CMPedometerData.currentCadence](https://developer.apple.com/documentation/coremotion/cmpedometerdata/currentcadence) -- steps/second measurement
+- [Core Motion Overview](https://developer.apple.com/documentation/coremotion/) -- CMMotionManager 100Hz alternative for raw accelerometer
+- [WWDC 2015: What's New in Core Motion](https://developer.apple.com/videos/play/wwdc2015/705/) -- cadence introduction, CMPedometer design rationale
+- [Buhmann et al. "Optimizing beat synchronized running to music" (PLOS ONE, 2018)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0208702) -- negative mean asynchrony, phase alignment effects on motivation and cadence
+- [Van Dyck et al. "Enhancing Running Performance by Coupling Cadence with the Right Beats" (PLOS ONE, 2013)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0070758) -- auditory-motor synchronization in running
+- [iOS 26.1 Apple Music MiniPlayer swipe gesture](https://www.macobserver.com/news/ios-26-1-beta-adds-swipe-gesture-to-apple-music-miniplayer/) -- Apple's latest mini-player UX direction
+- [MinimizableView SwiftUI library](https://github.com/DominikButz/MinimizableView) -- reference implementation for mini-player collapse/expand pattern
+- [SwiftUI safeAreaInset](https://www.hackingwithswift.com/quick-start/swiftui/how-to-inset-the-safe-area-with-custom-content) -- dynamic bottom inset for player bars
+- [matchedGeometryEffect](https://designcode.io/swiftui-handbook-matched-geometry-effect/) -- smooth element morphing between view states
+- [TrailMix](https://apps.apple.com/us/app/trailmix-step-to-the-beat/id647651691) -- competitor: on-device beat detection, ~1-2s response
+- [RockMyRun](https://www.rockmyrun.com/) -- competitor: Body-Driven Music adaptive tempo
+- [Runo](https://www.runoapp.com/) -- competitor: metronome-based cadence guidance
 
 ---
-*Feature research for: BeatStep v1.6 Little Big Things*
-*Researched: 2026-03-25*
+*Feature research for: BeatStep v1.7 Beat Perfect*
+*Researched: 2026-03-26*

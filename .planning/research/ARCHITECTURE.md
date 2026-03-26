@@ -1,262 +1,160 @@
-# Architecture Research: v1.6 Little Big Things Integration
+# Architecture Research: v1.7 Beat Perfect Integration
 
-**Domain:** iOS running music app -- UI polish milestone
-**Researched:** 2026-03-25
-**Confidence:** HIGH (full codebase read, all integration points verified against source)
+**Domain:** iOS running music app -- responsive cadence, beat sync validation, bug fixes, collapsible player
+**Researched:** 2026-03-26
+**Confidence:** HIGH (all analysis based on current codebase inspection)
 
-## Current Architecture Snapshot
+## System Overview: Current vs v1.7
 
 ```
-+---------------------------------------------------------------+
-|                         ContentView                            |
-|  AppState.resolve() -> .onboarding | .login | .authenticated  |
-+---------------------------------------------------------------+
-|                                                                |
-|  TabView (Library | Run | Settings)                            |
-|  +-------------------+  +----------------+  +---------------+  |
-|  | NavigationStack   |  | NavigationStack|  | NavigationStack| |
-|  | PlaylistListView  |  | RunTabView     |  | SettingsView  |  |
-|  |  -> PlaylistDetail|  |  -> ActiveRun  |  |  -> SensorLab |  |
-|  +-------------------+  +----------------+  +---------------+  |
-|                                                                |
-|  safeAreaInset: MiniPlayerView (when !isRunActive)             |
-+---------------------------------------------------------------+
-|                     Services (Singletons, @Observable)         |
-|  RunEngineService | SpotifyAPIService | SpotifyPlayerService   |
-|  CadenceService   | BPMCacheService   | LibraryScanService     |
-|  SpotifyAuthService | GetSongBPMService | BPMDiscoveryService  |
-+---------------------------------------------------------------+
-|                     Data Layer                                 |
-|  SwiftData: CachedBPM, ScannedPlaylist                         |
-|  UserDefaults: RunZone, BPMTolerance, ZeroBPMFallback, etc.   |
-|  Keychain: Spotify auth tokens                                 |
-+---------------------------------------------------------------+
+┌─────────────────────────────────────────────────────────────────┐
+│                        VIEW LAYER                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │ PlaylistList  │  │ ActiveRunView│  │ ContentView          │   │
+│  │ View [MOD]   │  │ [MOD]        │  │ [MOD: player dock]   │   │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘   │
+│         │                 │                      │               │
+│  ┌──────┴───────┐  ┌──────┴───────┐  ┌──────────┴───────────┐   │
+│  │ PlaylistRow   │  │ BeatSync     │  │ CollapsiblePlayer    │   │
+│  │ [UNCHANGED]   │  │ Badge [NEW]  │  │ View [NEW]           │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+├─────────────────────────────────────────────────────────────────┤
+│                      SERVICE LAYER                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │ CadenceService│  │ RunEngine    │  │ LibraryScanService   │   │
+│  │ [MOD]         │  │ Service [MOD]│  │ [MOD]                │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+│  ┌──────────────┐  ┌──────────────┐                              │
+│  │ SpotifyPlayer│  │ BPMCache     │                              │
+│  │ Service      │  │ Service      │                              │
+│  │ [UNCHANGED]  │  │ [UNCHANGED]  │                              │
+│  └──────────────┘  └──────────────┘                              │
+├─────────────────────────────────────────────────────────────────┤
+│                      DATA LAYER                                  │
+│  ┌──────────────┐  ┌──────────────┐                              │
+│  │ ScannedPlay- │  │ CachedBPM    │                              │
+│  │ list [UNCHG] │  │ [UNCHANGED]  │                              │
+│  └──────────────┘  └──────────────┘                              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Key patterns already established:**
-- Singletons with `@Observable` for reactive state (RunEngineService, LibraryScanService, etc.)
-- `SelectedTabKey` EnvironmentKey for cross-tab navigation
-- Design tokens in `DesignTokens.swift` (BSColors, BSFonts, BSSpacing, BSRadius, BSComponents)
-- `fullScreenCover` for ActiveRunView (prevents swipe-back, hides tab bar)
-- Private row structs inside list views (PlaylistRow, TrackRow)
+**Legend:** `[MOD]` = modify existing, `[NEW]` = new component, `[UNCHANGED]` = no changes needed
 
-## v1.6 Feature Integration Map
+## Component Change Map
 
-### Feature 1: Contextual Scan Actions (replaces floating scan bar)
+### UNCHANGED Components (no v1.7 work needed)
 
-**What changes:** The global scan progress banner in `PlaylistListView` (lines 44-54) becomes per-row contextual actions with richer feedback.
+| Component | Why Unchanged |
+|-----------|---------------|
+| SpotifyPlayerService | Playback control API works; polling interval unrelated to cadence responsiveness |
+| SpotifyAuthService | Auth flow unrelated to v1.7 features |
+| BPMCacheService | Cache reads/writes are correct; analyzed state bug is in scan+view layer |
+| ScannedPlaylist (model) | Schema is adequate; the bug is in how/when coverage data refreshes in views |
+| CachedBPM (model) | No schema changes needed |
+| BPMDiscoveryService | Discovery pipeline unrelated to v1.7 |
+| GetSongBPMService | BPM lookup API unrelated to v1.7 |
+| RunPlayerView | Existing in-run player is fine; collapsible player is for non-run state only |
+| PlaylistRow | Row rendering is correct; the data flow into it is the issue |
 
-**Existing touchpoints:**
-- `PlaylistListView` -- global `scanProgress` banner at top of list, `.swipeActions` on each row calling `scanService.scanPlaylistByID()`
-- `LibraryScanService` -- `scanningPlaylistID: String?` tracks active scan, `scanProgress: ScanProgress?` is observable
-- `PlaylistRow` -- already shows per-row scan progress when `isScanning` matches
+### MODIFIED Components
 
-**Integration:**
-- **Modify** `PlaylistListView`: Remove global scan banner (the `if let progress` HStack at lines 44-54). Row-level scan state already works via `scanService.scanningPlaylistID == playlist.id` comparison.
-- **Modify** `PlaylistRow`: Add visible scan button (not just swipe) as trailing content. Show inline progress indicator when scanning. The data hooks already exist -- `isScanning` and `scanProgress` params are already passed.
-- **No service changes.** `LibraryScanService` already exposes exactly the right observable state per-playlist.
+| Component | What Changes | Why |
+|-----------|-------------|-----|
+| CadenceService | Reduce windowDuration, increase update frequency | 5s rolling window + 2s inactivity check = sluggish response |
+| RunEngineService | Reduce cadence monitor polling, reduce debounce timer | 2s poll + 17s debounce = unresponsive cadence-to-song matching |
+| ContentView | Replace `safeAreaInset` MiniPlayer with docked CollapsiblePlayerView | Current safeAreaInset overlaps tab bar content |
+| PlaylistListView | Fix analyzed state reactivity after scan completes | Coverage data only updates on specific triggers, misses live scan completion |
+| ActiveRunView | Add beat sync accuracy badge | New feature: visual validation of BPM-to-cadence accuracy |
+| LibraryScanService | Publish scan completion to trigger view updates | Current completion path has gaps in notification |
 
-**New components:** None. View-layer reshuffling of existing scan UI.
+### NEW Components
 
-**Risk:** LOW.
+| Component | Responsibility | Location |
+|-----------|---------------|----------|
+| CollapsiblePlayerView | Expanded strip (title/BPM/controls) + collapsed thin handle | Views/Player/ |
+| BeatSyncBadge | Visual accuracy indicator for beat-to-step match quality | Views/Run/ |
+
+## Integration Analysis: Feature by Feature
+
+### Feature 1: Responsive Cadence Detection (<2s)
+
+**Root cause of current sluggishness:**
+
+1. `CadenceService.windowDuration = 5.0` -- rolling average over 5 seconds smooths too aggressively
+2. `CadenceService` inactivity timer checks every 2.0 seconds
+3. `RunEngineService.startCadenceMonitor()` polls `CadenceService.currentSPM` every 2 seconds via `Task.sleep(for: .seconds(2))`
+4. `RunEngineService.onCadenceChanged()` debounces with a 17-second `Task.sleep` before committing sustained change
+
+**Total worst-case latency:** 5s (window) + 2s (poll) + 17s (debounce) = 24 seconds from real cadence change to song match update.
+
+**Changes needed:**
+
+| Component | Property/Method | Current | Target | Rationale |
+|-----------|----------------|---------|--------|-----------|
+| CadenceService | windowDuration | 5.0s | 3.0s | Faster rolling avg while retaining smoothing |
+| CadenceService | inactivity timer interval | 2.0s | 2.0s (keep) | Inactivity detection timing is fine |
+| RunEngineService | cadence poll (startCadenceMonitor) | 2s sleep | 1s sleep | Halve poll interval for faster pickup |
+| RunEngineService | sustained debounce (onCadenceChanged) | 17s sleep | 8s sleep | Commit sustained changes sooner |
+
+**Expected result:** Worst-case drops from 24s to 12s. Typical case (CMPedometer delivers ~1Hz): 3s (window) + 1s (poll) = 4s from real change to screen update. The 8s debounce only gates *song switching*, not the displayed cadence.
+
+**Key insight:** Two separate responsiveness paths exist:
+1. **Display path** (fast): CMPedometer -> CadenceService.processCadenceSample() -> @Observable currentSPM -> ActiveRunView CadenceDisplayView. This is already ~1-3s. Reducing windowDuration to 3s makes it faster.
+2. **Song switch path** (slow): CadenceService -> RunEngineService poll -> debounce -> sustainedSPM commit -> buffer invalidation -> new song. This is the 24s path that drops to 12s.
+
+**What stays:** CadenceService's processCadenceSample() logic, trend calculation, state machine (idle/detecting/active/paused). RunEngineService's buffer/selection/matching logic. All unchanged.
 
 ---
 
-### Feature 2: Library Search and Filter
+### Feature 2: Beat-to-Step Accuracy Validation
 
-**What changes:** Search bar and filter chips (All / Analyzed / Unanalyzed) on `PlaylistListView`.
+**What it is:** A visual indicator showing how well the current song's BPM matches the runner's actual cadence.
 
-**Existing touchpoints:**
-- `PlaylistListView` -- `@State playlists: [SpotifyPlaylist]`, `coverageMap: [String: String]`, `coverageLoaded: Bool`
-- `.navigationTitle("Your Library")` on the List -- `.searchable` attaches here
+**Data already available (no service changes needed):**
+- `RunEngineService.cadenceDelta` -- signed delta between adjusted cadence and track BPM
+- `RunEngineService.syncQuality` -- enum derived from delta + tolerance (inSync/drifting/mismatched)
+- `RunEngineService.currentTrackBPM` -- from bpmMap lookup
+- `BPMCacheService` confidence field on CachedBPM -- verified/approximate/manual source
 
-**Integration:**
-- **Modify** `PlaylistListView`: Add `@State private var searchText = ""` and `@State private var filter: LibraryFilter = .all`. Add `.searchable(text: $searchText)` modifier. Replace `ForEach(playlists)` with `ForEach(filteredPlaylists)`.
-- **New** `LibraryFilter` enum (3 cases: `.all`, `.analyzed`, `.unanalyzed`). Filter logic uses `coverageMap` presence: key exists = analyzed, absent = unanalyzed.
-- **New** `LibraryFilterBar` view: Horizontal capsule row, same visual pattern as `ZonePickerView`. Placed above the list or as a list header.
+**New component: BeatSyncBadge**
 
-**Computed filtering:**
-```swift
-private var filteredPlaylists: [SpotifyPlaylist] {
-    playlists
-        .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
-        .filter { filter.matches(hasAnalysis: coverageMap[$0.id] != nil) }
-}
+Combines sync quality with BPM confidence to show accuracy. For known-BPM tracks (confidence: verified), the badge shows high-confidence sync state. For approximate/manual BPM tracks, it shows a qualified state.
+
+**Integration point in ActiveRunView:**
+
+```
+ActiveRunView body VStack
+  Zone 2: Hero cadence area
+    ├── RampPhaseIndicator (guided only)
+    ├── CadenceDisplayView (existing)
+    ├── BeatSyncBadge [NEW]
+    │     reads: runEngine.syncQuality, runEngine.currentTrackBPM,
+    │            BPMCacheService confidence for current track
+    └── ZoneBandView (guided only)
 ```
 
-**Risk:** LOW. `.searchable` is stable iOS 15+. Filter is client-side on loaded data.
+**Data flow:**
+```
+CadenceService.currentSPM
+    |  (polled by RunEngineService)
+RunEngineService.adjustedCadence  <->  RunEngineService.currentTrackBPM
+    |  (derived)
+RunEngineService.cadenceDelta -> SyncQuality
+    |  (read by view)
+BeatSyncBadge renders accuracy state
+```
+
+**What stays:** All RunEngineService computed properties. SyncQuality enum. CadenceDisplayView. Zero service-layer changes.
 
 ---
 
-### Feature 3: Run Menu Redesign with Custom Components
+### Feature 3: Analyzed State Fix
 
-**What changes:** `RunTabView` (323 lines) gets decomposed into cohesive sub-components. Multi-zone selection replaces single-zone.
+**Bug:** After scanning a playlist, the PlaylistListView filter (Analyzed/Unanalyzed) does not reliably update. Playlists may still show as "Not analyzed" after scan completion.
 
-**Existing touchpoints:**
-- `RunTabView` -- inline playlist display (cover art + name), `ZonePickerView` binding `selectedZoneId: Int?`, `TolerancePicker`, start button
-- `ZonePickerView` -- single-select via `@Binding var selectedZoneId: Int?`
-- `ActiveRunView` -- receives `selectedZoneId: Int?`
-- `RunEngineService` -- works with single `targetBPM: Int` + `tolerance: BPMTolerance`
+**Root cause analysis:**
 
-**Integration:**
-- **New** `RunPlaylistCard` view: Extract the playlist display (cover art, name, "Your last playlist" subtitle, tap-to-library) from `RunTabView.loadedContent()` lines 158-199. Standalone reusable component.
-- **Modify** `ZonePickerView`: Change binding from `Int?` to `Set<Int>`. Allow multiple capsule selections. Tapping a selected zone deselects it. Empty set = Free mode.
-- **Modify** `RunTabView`: Replace `@State private var selectedZoneId: Int?` with `@State private var selectedZoneIds: Set<Int> = ...`. Compute merged BPM from selected zones. Pass resolved single BPM + expanded tolerance to engine.
-- **Modify** `ActiveRunView`: Accept `selectedZoneIds: Set<Int>` instead of `Int?`. Display zone range label.
-
-**Multi-zone resolution strategy:**
-```
-Selected zones: Z2 (165), Z3 (174), Z4 (178)
-  -> targetBPM = midpoint = (165 + 178) / 2 = 171
-  -> tolerance covers full range: (178 - 165) / 2 + base_tolerance
-```
-RunEngineService needs zero changes -- it already works with `targetBPM` + `tolerance`. Multi-zone is purely a view-layer concept that resolves to these two values.
-
-**UserDefaults persistence:** Change `RunZone.selectedZoneId` (single Int?) to `RunZone.selectedZoneIds` (Set<Int>). Store as `[Int]` array in UserDefaults.
-
-**Risk:** MEDIUM. Multi-zone changes the `ZonePickerView` API contract and touches `RunTabView`, `ActiveRunView`, and `RunZone` persistence. Needs careful testing of BPM range resolution.
-
----
-
-### Feature 4: Playlist Card Redesign with Scan Quality Visibility
-
-**What changes:** `PlaylistRow` gets richer coverage visualization.
-
-**Existing touchpoints:**
-- `PlaylistRow` (private struct in `PlaylistListView`) -- shows `coverageText: String?` as "15/20 BPM"
-- `coverageMap: [String: String]` in `PlaylistListView`
-
-**Integration:**
-- **New** `CoverageInfo` struct: Replaces the string-based coverage. Contains `withBPM: Int, total: Int`, computed `ratio: Double`, computed `qualityColor: Color` (green >80%, yellow 40-80%, red <40%).
-- **New** `ScanQualityBadge` view: Small visual indicator (progress ring or filled capsule) showing coverage ratio with color coding. Used in both `PlaylistRow` and potentially `RunPlaylistCard`.
-- **Modify** `PlaylistListView`: Change `coverageMap: [String: String]` to `[String: CoverageInfo]`. Update `loadCoverageData()` to build richer data.
-- **Modify** `PlaylistRow`: Replace text coverage with `ScanQualityBadge`. Make it an internal (not private) struct for reuse.
-
-**Risk:** LOW. Visual redesign with slightly richer data model.
-
----
-
-### Feature 5: Haptic System
-
-**What changes:** Centralized haptic feedback definitions, applied across the app.
-
-**No existing haptics anywhere in the codebase.**
-
-**Integration:**
-- **New** `BSHaptics` enum in `DesignSystem/BSHaptics.swift`: Static methods wrapping `UIImpactFeedbackGenerator`, `UISelectionFeedbackGenerator`, `UINotificationFeedbackGenerator`.
-
-```swift
-enum BSHaptics {
-    static func selection() {
-        UISelectionFeedbackGenerator().selectionChanged()
-    }
-    static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
-        UIImpactFeedbackGenerator(style: style).impactOccurred()
-    }
-    static func success() {
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
-    }
-    static func warning() {
-        UINotificationFeedbackGenerator().notificationOccurred(.warning)
-    }
-}
-```
-
-- **Modify** views to call BSHaptics at interaction points:
-  - `ZonePickerView` capsule tap -> `BSHaptics.selection()`
-  - `RunTabView.startRun()` -> `BSHaptics.impact(.heavy)`
-  - `LongPressStopButton` progress milestones -> `BSHaptics.impact(.light)`
-  - `LongPressStopButton` completion -> `BSHaptics.success()`
-  - Scan completion -> `BSHaptics.success()`
-  - Filter/search interactions -> `BSHaptics.selection()`
-
-**Risk:** LOW. Purely additive. No architectural changes.
-
----
-
-### Feature 6: Animation System
-
-**What changes:** Standardized animation tokens and transitions.
-
-**Existing animations (ad-hoc):**
-- `RunTabView`: `.animation(.easeInOut(duration: 0.2), value: selectedZoneId)`
-- `SyncBackgroundModifier`: color shift animation
-- `LongPressStopButton`: progress ring animation
-
-**Integration:**
-- **New** `BSAnimation` enum in `DesignSystem/BSAnimation.swift`:
-```swift
-enum BSAnimation {
-    static let quick: Animation = .easeInOut(duration: 0.15)
-    static let standard: Animation = .easeInOut(duration: 0.25)
-    static let smooth: Animation = .spring(response: 0.35, dampingFraction: 0.8)
-    static let entrance: Animation = .spring(response: 0.4, dampingFraction: 0.75)
-}
-
-enum BSTransition {
-    static let fadeSlide: AnyTransition = .opacity.combined(with: .move(edge: .top))
-    static let scale: AnyTransition = .scale.combined(with: .opacity)
-}
-```
-- **New** `ShimmerModifier`: Skeleton loading shimmer for playlist/track loading states.
-- **Modify** existing views: Replace hardcoded `.animation(.easeInOut(duration: 0.2))` with `BSAnimation.standard`. Apply consistent transitions to state changes.
-
-**Risk:** LOW. Additive constants.
-
----
-
-### Feature 7: Settings Screen Structure
-
-**What changes:** `SettingsView` (136 lines, flat sections) reorganized into proper grouped sections.
-
-**Current sections:** Account, Running Zones, Playback, Permissions, Disconnect, Sensor Lab (hidden), Version footer.
-
-**Integration:**
-- **Modify** `SettingsView`: Restructure into: Account, Run Defaults (zones + playback), Permissions, Debug (Sensor Lab), About (version + credits).
-- **Extract** section views for clarity: `SettingsAccountSection`, `SettingsRunDefaultsSection`, `SettingsPermissionsSection`, `SettingsDebugSection`, `SettingsAboutSection`. These can be private structs within SettingsView or in a `Views/Settings/` subfolder.
-- **Fix** hardcoded "v1.4" version string (line 114) -> read from `Bundle.main.infoDictionary`.
-
-**Risk:** LOW. View-only reorganization.
-
----
-
-### Feature 8: Pre-built Skip Queue
-
-**What changes:** RunEngineService pre-computes the next track for instant skipping.
-
-**Existing flow:**
-```
-skipToNextMatch() -> queueNextMatch() -> selectNextMatch(forSPM:) -> playTrack()
-```
-`selectNextMatch` is already synchronous (in-memory bpmMap filtering). The only async part is `SpotifyPlayerService.play(uri:)` which fires a network call to Spotify Web API.
-
-**Integration:**
-- **Modify** `RunEngineService`: Add `@ObservationIgnored private var preQueuedTrack: SpotifyTrack?`.
-- **Modify** `playTrack()`: After playing current, compute and store next match: `preQueuedTrack = selectNextMatch(forSPM: effectiveBPM)`.
-- **Modify** `skipToNextMatch()`: If `preQueuedTrack` exists, play it immediately and pre-compute the next one. Otherwise fall back to current behavior.
-- **New** method on `SpotifyPlayerService`: `addToQueue(uri:)` using Spotify Web API `POST /me/player/queue?uri={uri}`. This pre-loads audio on Spotify's side for gapless transition.
-- **Modify** `SpotifyPlayerService`: Add the queue endpoint call. This is a fire-and-forget optimization -- if it fails, skip still works via direct `play(uri:)`.
-
-**Spotify queue API interaction concern:** When using `play(uri:)` to start a specific track, Spotify may or may not clear its internal queue. The safest approach: always use `play(uri:)` for the current track, use `addToQueue` only as a pre-loading hint. Never rely on Spotify's queue state for track selection.
-
-**Risk:** MEDIUM. Spotify queue API behavior with direct `play` calls needs verification. Pre-computation is safe; pre-queueing is the risky part.
-
----
-
-### Feature 9: Library Analysis Status Bug Fix
-
-**What changes:** Fix stale analysis status display in library.
-
-**Root cause analysis from code:**
-- `PlaylistListView.loadCoverageData()` fetches `ScannedPlaylist` records and builds `coverageMap`.
-- It runs on `.task` (initial load) and `.refreshable` (pull-to-refresh).
-- After a swipe-to-scan completes (`scanPlaylistByID`), `loadCoverageData()` is called in the `.swipeActions` Task closure.
-- BUT: if the user navigates away and back, or if a background scan completes (via `scanEnabledPlaylists` in ContentView `.task`), `coverageMap` is stale.
-- Missing: no observation of `LibraryScanService.scanningPlaylistID` changes. When scan finishes (`scanningPlaylistID` goes to nil), coverage should reload.
-
-**Fix:**
-- **Modify** `PlaylistListView`: Add `.onChange(of: scanService.scanningPlaylistID)` observer. When it transitions to `nil` (scan completed), call `loadCoverageData()`.
-
+PlaylistListView line 204-209 already has an onChange observer:
 ```swift
 .onChange(of: scanService.scanningPlaylistID) { oldValue, newValue in
     if oldValue != nil && newValue == nil {
@@ -265,7 +163,103 @@ skipToNextMatch() -> queueNextMatch() -> selectNextMatch(forSPM:) -> playTrack()
 }
 ```
 
-**Risk:** LOW. Single observer addition.
+This was added in v1.6 (Feature 9 from previous architecture research). However, the bug persists. Two remaining gaps:
+
+**Gap 1: Background scan path.** `ContentView.task { await LibraryScanService.shared.scanEnabledPlaylists() }` runs on app launch. This iterates enabled playlists, calling `scanPlaylistByID()` for each. Between scans, `scanningPlaylistID` transitions nil -> ID -> nil -> ID -> nil. If PlaylistListView is not yet mounted (user hasn't tapped Library tab), the onChange never fires. When the user later navigates to Library, `.task` calls `loadCoverageData()` -- BUT only when `playlists.isEmpty`. If playlists were already loaded from a previous session, `.task` does NOT re-run `loadCoverageData()`.
+
+**Gap 2: Timing race.** In `LibraryScanService.scanPlaylistByID()`, the sequence is:
+```swift
+await scanPlaylist(playlist, tracks: allTracks)  // writes SwiftData
+scanningPlaylistID = nil  // triggers onChange
+```
+The SwiftData `context.save()` inside `updateScannedPlaylistCoverage()` and the `@Observable` notification for `scanningPlaylistID = nil` are on the same main actor. However, `loadCoverageData()` in PlaylistListView does a fresh `context.fetch()`. If the save has not flushed, the fetch returns stale data.
+
+**Fix approach (two-part):**
+
+| Component | Change | Purpose |
+|-----------|--------|---------|
+| LibraryScanService | Add `var scanCompletionCount: Int = 0`, increment after each `scanPlaylist()` completes (after SwiftData save) | Reliable completion signal independent of scanningPlaylistID timing |
+| PlaylistListView | Add `.onChange(of: scanService.scanCompletionCount) { loadCoverageData() }` | Catches all scan completions including background scans |
+| PlaylistListView | In `.task`, always call `loadCoverageData()` (remove the `playlists.isEmpty` guard for coverage loading) | Ensures fresh coverage on every tab appearance |
+
+**What stays:** ScannedPlaylist model, BPMCacheService, PlaylistRow rendering, filter logic, existing onChange for scanningPlaylistID (keep as belt-and-suspenders).
+
+---
+
+### Feature 4: Player Covering Bottom Nav Bar
+
+**Current architecture:**
+```swift
+// ContentView.authenticatedView (line 90-94)
+TabView(selection: $selectedTab) { ... }
+    .safeAreaInset(edge: .bottom) {
+        if SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive {
+            MiniPlayerView()
+        }
+    }
+```
+
+**Problem:** `safeAreaInset(edge: .bottom)` is designed to inset content within the safe area. When applied to a TabView, it adds space above the tab bar and renders MiniPlayerView in that space. However, both the tab bar and MiniPlayerView use translucent materials (`.systemUltraThinMaterial` and `.ultraThinMaterial`), creating visual layering confusion. The mini player visually sits on top of the tab bar rather than above it, and the two blur layers compound.
+
+**Fix: Replace safeAreaInset with VStack docking.**
+
+```swift
+// ContentView.authenticatedView (after fix)
+VStack(spacing: 0) {
+    TabView(selection: $selectedTab) { ... }
+        .tint(Color.accent)
+
+    if SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive {
+        CollapsiblePlayerView()
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+}
+.animation(BSAnimation.smooth, value: SpotifyPlayerService.shared.currentTrack != nil)
+```
+
+**Why VStack over safeAreaInset:** The player is a docked UI element, not a safe area inset. VStack places it as a distinct layer between tab content and the tab bar. This matches the standard pattern used by Spotify and Apple Music.
+
+**Layout impact:** With VStack, the player no longer pushes tab content up via safe area. Tab content scrolls normally behind the tab bar. The player occupies its own vertical space. This is the correct behavior -- the player should not affect content layout.
+
+**Tab bar appearance:** The existing tab bar appearance config in `ContentView.init()` (lines 32-38) remains unchanged. The tab bar renders at the bottom as normal; CollapsiblePlayerView sits directly above it.
+
+---
+
+### Feature 5: Collapsible Player Strip
+
+**Two visual states:**
+
+| State | Height | Content | Trigger |
+|-------|--------|---------|---------|
+| Expanded | ~60pt | BPM badge, track title, artist, play/pause, skip | Default; swipe up from collapsed |
+| Collapsed | ~12pt | Thin capsule handle, optional progress dot | Swipe down from expanded; tap to expand |
+
+**New component: CollapsiblePlayerView**
+
+```
+CollapsiblePlayerView
+  @State isCollapsed: Bool = false
+  |
+  |- Expanded state (isCollapsed == false):
+  |    Same content as current MiniPlayerView:
+  |    HStack: BPM badge | VStack(title, artist) | Spacer | play/pause, skip
+  |    + DragGesture: swipe down (translation.height > 30) -> collapse
+  |
+  |- Collapsed state (isCollapsed == true):
+  |    Capsule handle (40pt wide, 4pt tall, centered)
+  |    Optional: tiny track name or animated progress dot
+  |    + Tap gesture -> expand
+  |    + DragGesture: swipe up (translation.height < -20) -> expand
+  |
+  |- Background: .ultraThinMaterial (expanded), Color.surfaceElevated (collapsed)
+  |- Animation: BSAnimation.snappy for state transitions
+```
+
+**Gesture approach:** Use DragGesture.onEnded with translation threshold, matching the existing project pattern (per key decision: "Timer-based progress over GestureState -- DragGesture.onEnded gives reliable cancel; GestureState resets too eagerly").
+
+**Data dependencies:** Same as MiniPlayerView -- reads `SpotifyPlayerService.shared` (currentTrack, isPaused) and `BPMCacheService.shared.getBPM()`. The skip action routes through `RunEngineService.shared.skipToNextMatch()` when run is active, otherwise `SpotifyPlayerService.shared.skipNext()`.
+
+**MiniPlayerView disposition:** Delete after CollapsiblePlayerView is verified. No other code references MiniPlayerView except ContentView.
 
 ---
 
@@ -273,135 +267,112 @@ skipToNextMatch() -> queueNextMatch() -> selectNextMatch(forSPM:) -> playTrack()
 
 | Component | File Location | Purpose |
 |-----------|---------------|---------|
-| `BSHaptics` | `DesignSystem/BSHaptics.swift` | Centralized haptic feedback |
-| `BSAnimation` | `DesignSystem/BSAnimation.swift` | Animation/transition tokens |
-| `ShimmerModifier` | `DesignSystem/ShimmerModifier.swift` | Loading skeleton effect |
-| `LibraryFilter` | `Models/LibraryFilter.swift` | All/Analyzed/Unanalyzed enum |
-| `CoverageInfo` | `Models/CoverageInfo.swift` | Rich coverage data struct |
-| `LibraryFilterBar` | `Views/Library/LibraryFilterBar.swift` | Filter chip row |
-| `ScanQualityBadge` | `Views/Library/ScanQualityBadge.swift` | Visual coverage indicator |
-| `RunPlaylistCard` | `Views/Run/RunPlaylistCard.swift` | Extracted playlist card |
+| CollapsiblePlayerView | `Views/Player/CollapsiblePlayerView.swift` | Docked player with expand/collapse |
+| BeatSyncBadge | `Views/Run/BeatSyncBadge.swift` | Visual beat-to-step accuracy indicator |
 
 ## Modified Components Summary
 
 | Component | What Changes | Scope |
 |-----------|-------------|-------|
-| `PlaylistListView` | Search, filter, remove global banner, richer coverage data, scan completion observer | Major |
-| `PlaylistRow` | Extract to internal, inline scan button, `ScanQualityBadge` | Major |
-| `RunTabView` | Extract `RunPlaylistCard`, multi-zone binding, haptics | Major |
-| `ZonePickerView` | Multi-select `Set<Int>` binding | Medium |
-| `ActiveRunView` | Accept `Set<Int>` zone IDs | Small |
-| `RunEngineService` | `preQueuedTrack` pre-computation | Medium |
-| `SpotifyPlayerService` | `addToQueue(uri:)` endpoint | Small |
-| `SettingsView` | Section restructuring, dynamic version | Medium |
-| `RunZone` | `selectedZoneIds` persistence (Set<Int>) | Small |
-| `LongPressStopButton` | Haptic calls at progress milestones | Small |
-| `DesignTokens.swift` | No changes (new tokens go in separate files) | None |
-
-## Unchanged Components
-
-| Component | Reason |
-|-----------|--------|
-| `ContentView` / `AppState` | No routing changes |
-| `BPMCacheService` | No schema changes |
-| `CadenceService` | No cadence logic changes |
-| `GetSongBPMService` | No API changes |
-| `BPMDiscoveryService` | No discovery changes |
-| `Onboarding views` | Complete in v1.5 |
-| `TapBPMEngine` / `TapBPMView` | Complete in v1.4 |
-| `SensorLabView` / `SensorLabService` | Complete in v1.4 |
+| CadenceService | windowDuration 5->3, may adjust trend window | Small (constant changes) |
+| RunEngineService | Poll interval 2s->1s, debounce 17s->8s | Small (constant changes) |
+| ContentView | Replace safeAreaInset with VStack + CollapsiblePlayerView | Medium (layout restructure) |
+| PlaylistListView | Add scanCompletionCount observer, always load coverage | Small (observer addition) |
+| LibraryScanService | Add scanCompletionCount published property | Small (one property) |
+| ActiveRunView | Add BeatSyncBadge to Zone 2 | Small (one view addition) |
+| MiniPlayerView | Deprecated, deleted after CollapsiblePlayerView verified | Removal |
 
 ## Recommended Build Order
 
 ```
-Phase 1: Design System Foundation (BSHaptics, BSAnimation, ShimmerModifier)
-    No dependencies. All later features reference these tokens.
-        |
-Phase 2: Analysis Bug Fix
-    Add .onChange observer to PlaylistListView for scan completion.
-    Quick win. Ensures accurate coverage data for all later features.
-        |
-Phase 3: Coverage Data Model (CoverageInfo, LibraryFilter)
-    Foundation structs needed by library search AND playlist card redesign.
-        |
-    +---+---+
-    |       |
-Phase 4a: Library Search + Filter       Phase 4b: Playlist Card Redesign
-    .searchable + LibraryFilterBar          ScanQualityBadge + PlaylistRow rework
-    Uses CoverageInfo, LibraryFilter        Uses CoverageInfo
-    |       |
-    +---+---+
-        |
-Phase 5: Contextual Scan Actions
-    Per-row scan UI. Builds on redesigned PlaylistRow from 4b.
-        |
-Phase 6: Run Menu Redesign
-    RunPlaylistCard + multi-zone + layout. Independent of library work
-    but benefits from design tokens in Phase 1.
-        |
-Phase 7: Settings Screen Structure
-    Section reorganization. Independent, can be moved earlier.
-        |
-Phase 8: Pre-built Skip Queue
-    RunEngineService pre-queue + SpotifyPlayerService.addToQueue.
-    Highest risk (Spotify API behavior). Build last to allow investigation.
-        |
-Phase 9: Micro-interaction Pass
-    Sprinkle BSHaptics + BSAnimation across ALL modified views.
-    Must come last -- all views need to be in final form.
+Phase 1: Analyzed State Fix (LibraryScanService + PlaylistListView)
+   |  Pure bug fix, smallest scope, high trust impact
+   |  No dependencies on other features
+   |
+Phase 2: Player Dock Fix (ContentView layout restructure)
+   |  Fix the nav bar overlap bug
+   |  Creates the VStack layout that CollapsiblePlayerView needs
+   |
+Phase 3: Collapsible Player Strip (CollapsiblePlayerView replaces MiniPlayerView)
+   |  Depends on Phase 2 layout
+   |  Delete MiniPlayerView after verification
+   |
+Phase 4: Responsive Cadence Detection (CadenceService + RunEngineService tuning)
+   |  Should be done after player layout is stable
+   |  so testing during runs is not confounded by UI bugs
+   |
+Phase 5: Beat Sync Accuracy Badge (BeatSyncBadge + ActiveRunView)
+   |  Purely additive view component
+   |  Benefits from responsive cadence (Phase 4) being in place
+   |  to validate the badge updates promptly
 ```
 
 **Ordering rationale:**
-- **Phase 1 first:** Design system tokens are referenced by everything else.
-- **Phase 2 early:** Bug fix ensures data correctness before building features that depend on coverage data.
-- **Phase 3 before 4a/4b:** Both library features need the shared data model.
-- **4a and 4b can parallel:** Search and card redesign are independent views that share the data model.
-- **Phase 5 after 4b:** Contextual scan actions build on the redesigned `PlaylistRow`.
-- **Phase 6 independent:** Run menu work does not depend on library features.
-- **Phase 8 last (before 9):** Skip queue is the riskiest feature and is isolated from other work.
-- **Phase 9 strictly last:** Haptic/animation pass touches every view and must happen after all views are finalized to avoid rework.
+- **Phase 1 first:** Bug fix with zero risk, unblocks Library tab trust. Small scope means quick win.
+- **Phase 2 before 3:** Collapsible player depends on the VStack dock layout. Fix the structural bug first, then build the new component.
+- **Phase 3 before 4:** Get the player UI finalized before tuning cadence responsiveness, so run testing can use the final player layout.
+- **Phase 4 before 5:** The beat sync badge is most meaningful when cadence is responsive. Testing the badge with sluggish cadence would give misleading UX impressions.
+- **Phase 5 last:** Purely additive, read-only view. Lowest risk, highest dependency on other features being stable.
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: God ViewModifier for Haptics
+### Anti-Pattern 1: Replacing @Observable Polling with Combine Publishers
 
-**What people do:** Create a `.hapticFeedback(type:)` modifier that tries to detect interaction context.
-**Why it is wrong:** SwiftUI modifiers cannot reliably distinguish tap vs. long-press vs. selection. Wrong feedback or missed triggers.
-**Do this instead:** Explicit `BSHaptics.selection()` calls at action sites. Haptics are intentional design choices.
+**What people do:** Refactor the CadenceService -> RunEngineService polling to use Combine publishers for "reactive" cadence flow.
+**Why it is wrong:** The app uses @Observable consistently. Mixing Combine publishers creates two observation systems with different lifecycle semantics.
+**Do this instead:** Keep the polling pattern. Reduce the interval. The 1s poll is well within acceptable overhead.
 
-### Anti-Pattern 2: Multi-Zone as RunEngine Concept
+### Anti-Pattern 2: SwiftData @Query for Coverage Data
 
-**What people do:** Push zone IDs and multi-zone logic into `RunEngineService`.
-**Why it is wrong:** RunEngine works with `targetBPM: Int` + `tolerance: BPMTolerance`. Zones are a UI concept. Adding zone awareness to the engine couples it to the view model.
-**Do this instead:** Resolve multi-zone to a single BPM + tolerance at the `RunTabView` layer. Pass resolved values to the engine. Same pattern as current single-zone implementation.
+**What people do:** Replace manual `loadCoverageData()` with @Query in PlaylistListView.
+**Why it is wrong:** @Query requires the model container in the SwiftUI environment. Current architecture accesses SwiftData through `BPMCacheService.shared.context`. Adding @Query requires threading the container through ContentView -- a larger refactor with no proportional benefit.
+**Do this instead:** Keep pull-based pattern but trigger it reliably via scanCompletionCount.
 
-### Anti-Pattern 3: Spotify Queue as Source of Truth
+### Anti-Pattern 3: Complex Gesture State for Collapsible Player
 
-**What people do:** Use Spotify's queue API to track "next track" and read it back.
-**Why it is wrong:** Spotify's queue is opaque. User actions in Spotify app, other devices, or Connect sessions can modify it unpredictably.
-**Do this instead:** Keep `preQueuedTrack` in `RunEngineService` as the source of truth. Use queue API only as an audio pre-loading optimization. Always fall back to direct `play(uri:)`.
+**What people do:** Use GestureState or complex drag tracking for collapse/expand.
+**Why it is wrong:** Per existing key decision: "DragGesture.onEnded gives reliable cancel; GestureState resets too eagerly."
+**Do this instead:** Simple @State Bool + DragGesture.onEnded with translation threshold. Use `withAnimation(BSAnimation.snappy)` for transitions.
 
-### Anti-Pattern 4: Observable Service for Animation State
+### Anti-Pattern 4: Reducing Debounce Below 5 Seconds
 
-**What people do:** Create an `AnimationService` singleton that views observe.
-**Why it is wrong:** Animations are view-local concerns. Centralizing creates unnecessary re-renders and coupling.
-**Do this instead:** Use `BSAnimation` as a namespace of constants. Each view applies its own `.animation()` using these tokens.
+**What people do:** Set the sustained change debounce to 3s or less for "instant" responsiveness.
+**Why it is wrong:** CMPedometer cadence fluctuates naturally by +/-5 SPM within a single stride cycle. Sub-5s debounce triggers song changes on normal running variance.
+**Do this instead:** Use 8s debounce. Fast enough to feel responsive, slow enough to filter natural variance.
 
-### Anti-Pattern 5: Modifying DesignTokens.swift for New Token Types
+### Anti-Pattern 5: Pushing Collapse State Into a Service
 
-**What people do:** Add haptic and animation tokens to the existing `DesignTokens.swift` file.
-**Why it is wrong:** `DesignTokens.swift` (84 lines) contains Color, Font, Spacing, Radius, and ComponentSize tokens. Adding unrelated categories bloats it and makes it hard to navigate.
-**Do this instead:** Create separate files: `BSHaptics.swift`, `BSAnimation.swift`. Same folder (`DesignSystem/`), separate concerns.
+**What people do:** Create a `PlayerStateService` or add `isCollapsed` to SpotifyPlayerService to centralize player state.
+**Why it is wrong:** Collapse/expand is a view-local interaction concern. No other component needs to know whether the player is collapsed. Centralizing it creates unnecessary coupling.
+**Do this instead:** Keep `@State isCollapsed` local to CollapsiblePlayerView. If ContentView needs to expand the player on track change, use `.onChange(of: playerService.currentTrack)` to reset the state.
+
+## Integration Points
+
+### External Services
+
+| Service | Integration Impact | Notes |
+|---------|-------------------|-------|
+| Spotify Web API | None | No v1.7 changes to playback or auth |
+| GetSongBPM API | None | BPM lookup unchanged |
+| CMPedometer | Indirect | CadenceService reads it same way; window tuning is internal |
+
+### Internal Boundaries
+
+| Boundary | Communication | v1.7 Change |
+|----------|---------------|-------------|
+| CadenceService -> RunEngineService | Polling (read currentSPM) | Poll interval: 2s -> 1s |
+| CadenceService -> ActiveRunView | @Observable reads (currentSPM, trend) | Unchanged; faster updates from shorter window |
+| RunEngineService -> ActiveRunView | @Observable reads (syncQuality, cadenceDelta, etc.) | New: BeatSyncBadge reads same properties |
+| LibraryScanService -> PlaylistListView | @Observable scanningPlaylistID + manual loadCoverageData() | Add: scanCompletionCount trigger |
+| ContentView -> Player | safeAreaInset conditional rendering | Replace: VStack + CollapsiblePlayerView |
+| SpotifyPlayerService -> CollapsiblePlayerView | @Observable reads (currentTrack, isPaused) | New view consumer, same data |
 
 ## Sources
 
-- Full codebase read: all 65 Swift files in `/Users/stijngragt/Projects/beatstep/BeatStep/`
-- `.planning/PROJECT.md`: v1.6 requirements and architectural decisions
-- SwiftUI `.searchable`: stable since iOS 15, works with NavigationStack (HIGH confidence)
-- `UIFeedbackGenerator` APIs: stable since iOS 10 (HIGH confidence)
-- Spotify Web API `POST /me/player/queue`: documented endpoint (MEDIUM confidence -- interaction with direct `play` calls needs verification)
-- SwiftUI `@Observable` singleton pattern: established throughout codebase, verified working (HIGH confidence)
+- Direct codebase inspection: CadenceService.swift (182 lines), RunEngineService.swift (620 lines), ContentView.swift (99 lines), MiniPlayerView.swift (94 lines), PlaylistListView.swift (312 lines), LibraryScanService.swift (173 lines), ScannedPlaylist.swift (25 lines), SpotifyPlayerService.swift (200 lines), ActiveRunView.swift (162 lines)
+- PROJECT.md key decisions and architecture context (166 lines of validated decisions)
+- SwiftUI safeAreaInset behavior: Apple Developer documentation (HIGH confidence)
 
 ---
-*Architecture research for: BeatStep v1.6 Little Big Things*
-*Researched: 2026-03-25*
+*Architecture research for: BeatStep v1.7 Beat Perfect*
+*Researched: 2026-03-26*

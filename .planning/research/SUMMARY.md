@@ -1,198 +1,179 @@
 # Project Research Summary
 
-**Project:** BeatStep v1.6 — Little Big Things
-**Domain:** iOS running music app — UI polish, custom components, micro-interactions
-**Researched:** 2026-03-25
+**Project:** BeatStep v1.7 — Beat Perfect
+**Domain:** iOS running music sync app — cadence responsiveness, beat-sync accuracy, collapsible player UX
+**Researched:** 2026-03-26
 **Confidence:** HIGH
 
 ## Executive Summary
 
-BeatStep v1.6 is a pure UI polish milestone with zero new external dependencies. The existing stack (Swift 6 / SwiftUI + `@Observable`, iOS 17.0 target, Spotify Web API, SwiftData) already contains every API needed: `.sensoryFeedback()` for haptics, `.searchable()` for search, `.redacted()` + custom shimmer for skeletons, spring presets for animations, and `matchedGeometryEffect` for selection indicators. The work is extracting components, adding polish modifiers, and restructuring views — not adding packages.
+BeatStep v1.7 is an algorithmic tuning and UI pattern milestone, not a dependency milestone. Every feature in scope — responsive cadence, beat-sync accuracy display, collapsible player, and the analyzed-state bug fix — is achievable by modifying existing service classes and adding two small new components. Zero new Swift packages, frameworks, or APIs are required. The app's existing stack (Swift 6 / SwiftUI / @Observable / CMPedometer / SwiftData / GetSongBPM API) covers all requirements, and the recommended approach is surgical: tune constants, split code paths, and add components that read from already-published observable properties.
 
-The recommended approach is to build in 9 sequential phases with a strict dependency order: foundation work (design system tokens, API audit, bug fix) before feature work (library polish, run tab rebuild), and micro-interaction polish strictly last. The most important structural decision is keeping multi-zone selection as a view-layer concept that resolves to `targetBPM + tolerance` before reaching `RunEngineService`, preserving the engine's clean API contract. Similarly, the skip queue must be a local `[SpotifyTrack]` buffer using `play(uri:)` — never Spotify's append-only queue API.
+The primary technical challenge is understanding the two distinct responsiveness pipelines that must be improved separately. The *display* path (CMPedometer → CadenceService → ActiveRunView) already updates in roughly 1-3 seconds; reducing `windowDuration` from 5s to 3s will tighten this to under 2s. The *song selection* path has a stacked worst-case latency of 24 seconds (5s window + 2s poll + 17s debounce); reducing those three values in concert (3s window, 1s poll, 8s debounce) drops worst-case to approximately 12s and typical to under 5s. These are different objectives and must both be scoped explicitly in the roadmap rather than treating "cadence responsiveness" as a single metric.
 
-The top risks are: (1) using Spotify's queue API for the skip buffer (no remove endpoint — stale songs cannot be cleared), (2) animation jank on the run screen from unscoped `.animation()` modifiers over frequently-updating `@Observable` state, and (3) haptic fatigue from over-hapticizing a fitness app where the Taptic Engine runs for 45+ minutes. All three are preventable with explicit inventory and scoping rules defined before writing code.
+The highest-risk area is the analyzed-state bug fix, which has two distinct root causes: a background scan timing gap (PlaylistListView may not be mounted when scans run at app launch) and a data-path architecture issue (`@State coverageData` is a manual copy that does not auto-update from SwiftData writes). The fix requires adding a `scanCompletionCount` signal to LibraryScanService and always refreshing coverage data on that signal, not just on initial view appearance. The collapsible player carries moderate UX risk: `safeAreaInset` must be replaced with a VStack dock to avoid iOS 17.4+ stacking bugs, and gesture scope must be restricted to the drag handle to prevent conflicts with ScrollView.
 
 ## Key Findings
 
 ### Recommended Stack
 
-v1.6 requires no new dependencies. All capabilities come from SwiftUI APIs available on iOS 17.0 — the app's current deployment target. The existing `DesignTokens.swift` token system extends cleanly to animation and component size tokens via new sibling files (`BSHaptics.swift`, `BSAnimation.swift`) rather than adding to the existing file.
+The existing stack requires no changes. Swift 6 / SwiftUI + @Observable is the reactive spine; CMPedometer is the authoritative step source (CMMotionManager raw accelerometer cadence is a deep signal-processing problem unsuitable for v1.7); SwiftData persists BPM cache and scanned playlist coverage; and the GetSongBPM API via Cloudflare Worker provides pre-analyzed BPM — more reliable than real-time audio beat detection, which is architecturally unavailable because Spotify controls the audio stream.
 
 **Core technologies:**
-- `.sensoryFeedback()` (iOS 17+): Haptic feedback on zone selection, tolerance change, run lifecycle — declarative, trigger-based, replaces `UIImpactFeedbackGenerator` for new v1.6 haptics. Exception: keep `UIImpactFeedbackGenerator` in `TapBPMView` where imperative firing is required.
-- `.searchable()` + computed filter (iOS 15+): Client-side playlist search and filter — no Spotify API calls, library already loaded via paginated fetch.
-- `.redacted(reason: .placeholder)` + `ShimmerModifier`: Loading skeleton states — ~20 lines of custom `ViewModifier` with `LinearGradient`, no library needed.
-- `matchedGeometryEffect` + `@Namespace`: Sliding selection indicator in zone picker — smooth capsule highlight without frame calculations.
-- Named spring presets (`.bouncy`, `.snappy`) (iOS 17+): Physical-feel transitions for selection and insertion.
-- Local `[SpotifyTrack]` buffer: Pre-built skip queue using `play(uri:)` — zero Spotify queue API involvement.
+- **CMPedometer (CadenceService)**: Step cadence source — Apple's battle-tested algorithm; reduce rolling window 5s → 3s for display responsiveness; song-selection window can stay at 5s for stability
+- **@Observable + Task.sleep polling (RunEngineService)**: Cadence monitor and song-selection pipeline — reduce poll 2s → 1s, reduce debounce 17s → 8s to improve song-selection latency
+- **SwiftUI DragGesture + @State (CollapsiblePlayerView)**: Collapse/expand interaction — matches existing LongPressStopButton pattern (DragGesture.onEnded threshold), use @State Bool local to view
+- **SwiftData + scanCompletionCount signal (LibraryScanService)**: Analyzed state fix — add explicit completion counter to trigger manual coverage refresh reliably
+- **Existing RunEngineService properties (BeatSyncBadge)**: Beat accuracy display — reads `syncQuality`, `cadenceDelta`, and `currentTrackBPM` already published; no new computation required
+
+**Version compatibility:** All changes compatible with iOS 17+ deployment target. No new minimums introduced.
 
 ### Expected Features
 
-**Must have (table stakes):**
-- Library search — users with 50+ playlists cannot navigate without it; `.searchable()` is 15 lines
-- Library filter (All / Analyzed / Unanalyzed) — needed to find playlists to scan; computed from existing `coverageMap`
-- Skeleton loading states — shimmer placeholders show layout shape, far better UX than spinners for list items
-- Analysis status bug fix — stale `coverageMap` after background scans; single `.onChange` observer on `scanService.scanningPlaylistID`
-- Settings screen structure — current flat list mixes account, zones, playback, debug; groups into Account / Run Defaults / Permissions / About
+**Must have (table stakes — define "Beat Perfect"):**
+- Sub-2s cadence display response — current 5s rolling window creates perceptible lag; competitors respond in 1-2s
+- Player not overlapping tab bar — basic layout correctness; prerequisite for collapsible player work
+- Analyzed state updates after scan — broken filter erodes user trust; Analyzed/Unanalyzed counts must update immediately after scan
+- Collapsible player strip — two-state (expanded ~60pt / collapsed ~12pt) with swipe-down and tap gestures
 
-**Should have (differentiators):**
-- Contextual scan actions replacing floating bar — swipe + context menu + toolbar, native iOS patterns instead of content-covering overlay
-- Custom zone picker with haptics — `.sensoryFeedback(.selection)` makes zone switching feel physical
-- Playlist card redesign with scan quality visualization — `ScanQualityBadge` with color-coded coverage ratio (green/yellow/red)
-- Pre-built skip queue — reduce skip latency from ~500ms to ~100ms via local pre-computation
-- Run menu redesign with custom components — reusable `BeatStepSegmentedControl` from zone picker pattern
-- Micro-interaction pass — spring animations, transitions, haptics audit across all modified views
+**Should have (competitive differentiators — P2):**
+- Beat accuracy confidence score — rolling sync score (SPM vs BPM delta over 30s) shown in ActiveRunView; no competitor surfaces this metric
+- Adaptive window smoothing — variance-based window (2s when pace is changing rapidly, 4s when steady); no competitor implements this
 
-**Defer (v2+):**
-- Multi-zone selection — highest complexity (HIGH), low relative value (P3); changes `ZonePickerView` API contract and `RunEngineService` BPM range logic; defer unless time permits after all P1/P2 features are complete
-- Spotify catalog search — scope creep; library filter is sufficient for v1.6
-- Draggable/reorderable queue — contradicts core BPM-matching value proposition
+**Defer to future milestones:**
+- Accelerometer-supplemented trend detection — CMMotionManager peak detection pipeline, high complexity
+- True phase-aligned beat haptics — requires sub-50ms timing; Spotify progress_ms has 200-500ms latency; would feel wrong
+- Post-run sync analysis report
+- Full-screen expandable player — third player state creates navigation complexity; ActiveRunView already serves this role during runs
+
+**Anti-features confirmed:** Real-time audio beat detection is architecturally unavailable (Spotify controls playback). Raw accelerometer cadence replacement requires months of signal-processing R&D. Phase-aligned playback start is blocked by Spotify Web API network jitter (100-500ms round trip).
 
 ### Architecture Approach
 
-The architecture remains unchanged at the service layer. All v1.6 changes are view-layer reshuffling with two new design system files and 8 new component/model files. Key principle: multi-zone selection resolves to `targetBPM + tolerance` at the `RunTabView` layer before reaching `RunEngineService` — the engine never needs to understand zones. New `@Observable` properties on `RunEngineService` (skip queue) must use `@ObservationIgnored` to prevent `ActiveRunView` re-renders on every cadence poll.
+v1.7 modifies six existing components and adds two new ones, with three components deliberately left unchanged (SpotifyPlayerService, BPMCacheService, data models). The build order is strictly dependency-driven: analyzed-state fix is independent and highest trust-impact so it goes first; player layout restructure (VStack dock replacing safeAreaInset) must precede the collapsible player component because the new component depends on the new layout; cadence tuning follows stable player UI so run testing is not confounded by UI bugs; and the BeatSyncBadge goes last as a read-only additive view that benefits from responsive cadence being in place.
 
 **Major components:**
-1. `DesignSystem/BSHaptics.swift` + `BSAnimation.swift` — token files for haptic types and animation constants; all later features reference these
-2. `Views/Library/` (LibraryFilterBar, ScanQualityBadge) + modified PlaylistListView/PlaylistRow — search, filter, skeleton, contextual scan, card redesign
-3. `Views/Run/RunPlaylistCard.swift` + modified RunTabView/ZonePickerView — run menu rebuild, multi-zone (if in scope)
-4. Modified `RunEngineService` — `@ObservationIgnored private var skipBuffer: [SpotifyTrack]` for pre-built queue
-5. Modified `SettingsView` — extracted section structs, dynamic version string from `Bundle.main.infoDictionary`
+1. **LibraryScanService + PlaylistListView** — add `scanCompletionCount: Int`, always refresh coverage on that signal; fixes analyzed state bug
+2. **ContentView** — replace `safeAreaInset` conditional with VStack dock; creates structural slot for CollapsiblePlayerView
+3. **CollapsiblePlayerView** — two-state player (expanded/collapsed) with DragGesture.onEnded on handle only; replaces and deletes MiniPlayerView
+4. **CadenceService + RunEngineService** — constant tuning (windowDuration 5→3, poll 2s→1s, debounce 17s→8s); split display path from song-selection path
+5. **BeatSyncBadge + ActiveRunView** — reads existing `syncQuality` / `cadenceDelta` / `currentTrackBPM` from RunEngineService; purely additive view
 
 ### Critical Pitfalls
 
-1. **Spotify queue API for skip buffer** — `POST /me/player/queue` is append-only with no remove/clear endpoint. Pre-queued wrong-BPM songs cannot be removed when cadence changes. Use local `[SpotifyTrack]` buffer with `play(uri:)` exclusively; recovery cost is HIGH if built wrong.
+1. **Cadence jitter from over-reducing window** — Dropping `windowDuration` below 3s produces fewer than 2 samples per averaging window (CMPedometer fires at 1-3s intervals), causing >10 SPM jumps during steady running. Use 3s not 2s. Consider dual-window: 3s for display, 5s for song selection.
 
-2. **Animation jank on ActiveRunView** — `ActiveRunView` reads `RunEngineService.shared` directly; any property change triggers full body evaluation. Bare `.animation(.default)` without `value:` parameter animates all state changes including rapid cadence updates. Always scope with `animation(_:value:)` on specific triggers; use `drawingGroup()` on animated subviews; never animate cadence/BPM number text.
+2. **17s debounce is the real song-selection bottleneck** — Reducing `windowDuration` alone has almost no effect on how quickly songs change. The 17-second `sustainedChangeTask` debounce in RunEngineService is the dominant latency. Must address all three latency sources (window, poll, debounce) as a system; must also distinguish "display responsiveness" from "song-selection responsiveness" in scope.
 
-3. **Haptic fatigue during runs** — `.sensoryFeedback` is trivially easy to add, making it tempting to sprinkle everywhere. 45-minute runs with frequent haptics drain battery and annoy users. Define a haptic inventory (tiered budget) before writing any haptic code; restrict run-screen haptics to ~5-10 events per session.
+3. **safeAreaInset stacking bug on iOS 17.4+** — Animating `safeAreaInset` height for collapse/expand causes content jumps and known tab-bar stacking issues on iOS 17.4+. Resolution: replace entirely with VStack dock (player sits in its own vertical slot between tab content and tab bar).
 
-4. **Search causing AsyncImage reload flicker** — naive computed `filteredPlaylists` rebuilds on every keystroke, destroying cell identity and causing 50+ album art images to re-fetch. Debounce with `Task.sleep(300ms)` and use `ForEach(id: \.id)` identity-stable rows.
+4. **DragGesture conflicts with ScrollView** — Applying DragGesture to the entire player strip blocks list scrolling when a user's drag begins near the player. Apply DragGesture only to the drag handle element (the small capsule indicator); use tap gesture for expand.
 
-5. **Spotify February 2026 API changes** — search `limit` max reduced from 50 to 10; playlist response field `tracks` renamed to `items`; `product` field removed from user profile. Audit all API endpoints before building new features; verify `BPMDiscoveryService` search limit and `SpotifyPlaylist` decoding.
+5. **Beat sync false positives from BPM source mismatch** — GetSongBPM sometimes returns half-time or double-time values. The BeatSyncBadge must reuse the existing `SyncQuality.from(delta:tolerance:)` logic which already handles half/double octave matching — do not build a parallel validation system with tighter thresholds.
+
+6. **Analyzed state gap: background scan path** — The existing `onChange(of: scanningPlaylistID)` fix misses the case where PlaylistListView is not yet mounted during background scan at app launch. `scanCompletionCount: Int` on LibraryScanService provides a reliable signal that works regardless of mounting state.
 
 ## Implications for Roadmap
 
-Based on combined research, the features naturally fall into 9 build phases with strict dependency ordering.
+All five phases are implementation phases. No phase requires external API research or new framework evaluation — all research is complete and implementation-ready.
 
-### Phase 1: Design System Foundation
-**Rationale:** `BSHaptics`, `BSAnimation`, and `ShimmerModifier` are referenced by every later feature. Must exist before components are built.
-**Delivers:** `BSHaptics.swift`, `BSAnimation.swift`, `ShimmerModifier.swift`; design token comment header in `DesignTokens.swift`
-**Addresses:** Design token drift (PITFALLS #7) — establishes the vocabulary before any new components are written
-**Avoids:** Hardcoded `Color(red:`, raw spacing values in all subsequent phases
+### Phase 1: Analyzed State Fix
 
-### Phase 2: API Audit + Bug Fix
-**Rationale:** Spotify Feb 2026 changes may break existing functionality silently. Analysis status bug corrupts coverage data that all library features depend on. Both must be verified/fixed before building on top of them.
-**Delivers:** Verified API models (`SpotifyPlaylist`, `BPMDiscoveryService` search limit), `.onChange` observer fix in `PlaylistListView`
-**Addresses:** Analysis Status Bug Fix (FEATURES P1), Spotify Feb 2026 pitfall (PITFALLS #9)
-**Avoids:** Building library features on stale or broken coverage data
+**Rationale:** Zero dependencies on other features; highest trust-impact per LOC changed. Smallest scope — two files, one new property. Independent fix that can go first in any ordering.
+**Delivers:** Reliable Analyzed/Unanalyzed filter counts that update immediately after scan, including background scans on app launch without requiring navigation away and back.
+**Addresses:** Table stakes — "analyzed state updates after scan"
+**Avoids:** Pitfall 6 (background scan path gap) — `scanCompletionCount` signal fires regardless of PlaylistListView mounting state
+**Files:** LibraryScanService.swift (add `scanCompletionCount`), PlaylistListView.swift (observe it, always-refresh coverage)
 
-### Phase 3: Coverage Data Model
-**Rationale:** `CoverageInfo` struct and `LibraryFilter` enum are shared by both library search/filter and playlist card redesign. Shared model extracted once, referenced by both parallel features.
-**Delivers:** `Models/CoverageInfo.swift`, `Models/LibraryFilter.swift`; `loadCoverageData()` updated to emit `CoverageInfo` instead of raw strings
-**Uses:** SwiftData `ScannedPlaylist` (existing), `coverageMap` logic (existing)
-**Implements:** Foundation for both Phase 4a and 4b
+### Phase 2: Player Dock Fix (Layout Restructure)
 
-### Phase 4a: Library Search and Filter
-**Rationale:** Independent of playlist card work; shares Phase 3 data model. Can be executed in parallel with 4b.
-**Delivers:** `.searchable()` on `PlaylistListView`, `LibraryFilterBar` component, `filteredPlaylists` computed property with 300ms debounce
-**Uses:** SwiftUI `.searchable()` (iOS 15+), `LibraryFilter` enum from Phase 3
-**Avoids:** Search keystroke lag pitfall (PITFALLS #4) — debounce required
+**Rationale:** Hard prerequisite for Phase 3. CollapsiblePlayerView requires the VStack dock slot to exist. Building the collapsible player on the broken safeAreaInset layout will compound bugs and require rework.
+**Delivers:** Correct player placement — player sits above tab bar without overlap, no double-padding, no gap. VStack slot ready for CollapsiblePlayerView.
+**Addresses:** Table stakes — "player not overlapping tab bar"
+**Avoids:** Pitfall 3 (safeAreaInset stacking) — VStack dock eliminates the animated-inset-height approach entirely
+**Files:** ContentView.swift (replace safeAreaInset with VStack + placeholder slot)
 
-### Phase 4b: Playlist Card Redesign
-**Rationale:** Independent of search; shares Phase 3 data model. Can be executed in parallel with 4a.
-**Delivers:** `ScanQualityBadge` component, redesigned `PlaylistRow` with visual coverage indicator (green/yellow/red), `PlaylistRow` extracted from private to internal struct for reuse
-**Uses:** `CoverageInfo` struct from Phase 3, `BSAnimation` tokens from Phase 1
-**Implements:** `Views/Library/ScanQualityBadge.swift`
+### Phase 3: Collapsible Player Strip
 
-### Phase 5: Contextual Scan Actions
-**Rationale:** Depends on redesigned `PlaylistRow` from Phase 4b being in its final form. Removes global scan banner, adds per-row inline scan state.
-**Delivers:** Removed global `scanProgress` banner, inline scan button on rows, `.contextMenu` with Analyze + View Details, toolbar actions on `PlaylistDetailView`
-**Uses:** Existing `.swipeActions` (already in place), `.contextMenu` modifier
-**Avoids:** Swipe gesture conflicts pitfall (PITFALLS #5) — use only native `.swipeActions` + `.contextMenu`, no custom gesture recognizers
+**Rationale:** Depends on Phase 2 layout. CollapsiblePlayerView takes the VStack slot introduced in Phase 2 and replaces MiniPlayerView entirely.
+**Delivers:** Expanded/collapsed two-state player with swipe-down to collapse, tap to expand. MiniPlayerView deleted after verification. `@AppStorage` persists collapse preference across restarts.
+**Addresses:** Table stakes — "collapsible player strip"
+**Avoids:** Pitfall 4 (gesture/scroll conflict) — DragGesture scoped to handle only; Pitfall 3 (height animation) — collapsed height is fixed, no safeAreaInset animation
+**Files:** Views/Player/CollapsiblePlayerView.swift (new), Views/Player/CollapsedPlayerBar.swift (new), MiniPlayerView.swift (deleted), ContentView.swift (wire up new component)
 
-### Phase 6: Run Menu Redesign
-**Rationale:** Independent of all library phases. `ZonePickerView` capsule pattern becomes the reusable `BeatStepSegmentedControl`. Multi-zone selection (if in scope) depends on this component.
-**Delivers:** `RunPlaylistCard` extracted from `RunTabView`, `BeatStepSegmentedControl` reusable component, haptics on zone selection (`.sensoryFeedback`), `ToleranceSelector` extracted as standalone component
-**Uses:** `BSHaptics.swift` from Phase 1, `matchedGeometryEffect` for selection indicator
-**Implements:** Multi-zone foundation (Set-based ZonePickerView binding) — full multi-zone deferred to v2 unless time permits after phases 1-8 complete
+### Phase 4: Responsive Cadence Detection
 
-### Phase 7: Settings Screen Structure
-**Rationale:** Fully independent; can be moved earlier but placed here to not delay higher-value library and run tab work. Low risk, quick win.
-**Delivers:** Restructured `SettingsView` with extracted section structs (Account, Run Defaults, Permissions, Debug, About), dynamic version string from `Bundle.main.infoDictionary`
-**Avoids:** Settings over-engineering pitfall (PITFALLS #6) — explicit section views only, no `SettingsItem` model layer, total restructure under 200 LOC
+**Rationale:** Player UI must be finalized before cadence-testing during real runs. Cadence tuning touches RunEngineService timing — the core loop — and needs clean test conditions without confounding UI bugs from an unsettled player layout.
+**Delivers:** Sub-2s cadence display updates (3s window). Song selection latency drops from 24s worst-case to ~12s (1s poll, 8s debounce). Display path separated from song-selection path so UI shows current cadence even while debounce is still running.
+**Addresses:** Table stakes — "sub-2s cadence response"; both display AND selection responsiveness
+**Avoids:** Pitfall 1 (jitter from over-reducing window) — 3s not 2s; Pitfall 2 (debounce bottleneck) — addresses window, poll, and debounce as a system; Pitfall 6 (display vs selection distinction) — explicitly separates the two paths
+**Files:** CadenceService.swift (windowDuration 5→3, expose display-path), RunEngineService.swift (poll 2s→1s, debounce 17s→8s, split display update)
 
-### Phase 8: Pre-Built Skip Queue
-**Rationale:** Highest-risk feature (Spotify API behavior), kept last among feature phases so it does not block or destabilize other work. `RunEngineService` changes are isolated.
-**Delivers:** `@ObservationIgnored private var skipBuffer: [SpotifyTrack]` in `RunEngineService`, `replenishBuffer()` on track start, instant skip from buffer with background refill
-**Avoids:** Spotify queue API misuse (PITFALLS #3, critical) — zero calls to `POST /me/player/queue`, exclusively `play(uri:)`; `@ObservationIgnored` prevents `ActiveRunView` re-render churn (PITFALLS #8)
+### Phase 5: Beat Sync Accuracy Badge
 
-### Phase 9: Micro-Interaction Pass
-**Rationale:** Strictly last — all views must be in final form before adding animations and haptics. Sprinkling polish on components that get restructured later wastes work.
-**Delivers:** `BSAnimation` tokens applied to all modified views, `BSHaptics` calls at all defined interaction points (haptic inventory enforced), `.transition()` on all conditional view appearances, verified no bare `.animation(.default)` in run view hierarchy
-**Avoids:** Haptic fatigue (PITFALLS #1) and run screen animation jank (PITFALLS #2) — haptic budget defined as first task of phase, all run-view animations scoped with `value:` parameter, device-tested during actual run
+**Rationale:** Purely additive read-only view component. No upstream dependencies on the bug fixes, but the badge is most meaningful when cadence is already responsive (Phase 4 complete). Testing it with 5-second-lagging cadence gives misleading impressions of the feature's value.
+**Delivers:** BeatSyncBadge in ActiveRunView Zone 2 showing rolling sync quality and confidence. Reads existing `syncQuality`, `cadenceDelta`, `currentTrackBPM` from RunEngineService — zero service changes.
+**Addresses:** Differentiator — beat accuracy confidence score (P2 in FEATURES.md)
+**Avoids:** Pitfall 5 (BPM octave mismatch) — reuses existing SyncQuality logic which already handles half/double-tempo tracks
+**Files:** Views/Run/BeatSyncBadge.swift (new), ActiveRunView.swift (add badge to Zone 2)
 
 ### Phase Ordering Rationale
 
-- Design system first because every component references it; token drift is a cross-cutting concern that compounds across phases
-- API audit and bug fix second because library features are built on `coverageMap` data — correctness must come before visualization
-- Shared data model before parallel library features to avoid duplicating the extraction work
-- Library features (4a + 4b) can run in parallel since they share only the data model, not views
-- Contextual scan actions after PlaylistRow is finalized to avoid rebuilding twice
-- Run tab work is independent of library; can start after Phase 1 with no library dependency
-- Skip queue last among feature phases — isolated, high risk, does not block anything
-- Micro-interactions strictly last — polish applied once, to final views
+- **Phases 1-2 fix the foundation** before new features are built. Bug fixes first builds user trust and provides clean test conditions.
+- **Phase 2 before 3** is a hard architectural dependency: CollapsiblePlayerView requires the VStack dock slot in ContentView.
+- **Phase 1 is fully independent** and could be parallelized with Phase 2 if two developers are available. Sequentially it goes first for immediate trust impact.
+- **Phase 4 before 5** is a logical dependency: responsive cadence gives the BeatSyncBadge meaningful, current data to display. With 5s-lagging cadence the badge would be misleading.
+- **Phase 5 is always last** — purely additive, zero risk, highest dependency on all prior work being stable.
 
 ### Research Flags
 
-Phases likely needing deeper investigation during planning:
-- **Phase 8 (Skip Queue):** Spotify `play(uri:)` behavior when called rapidly (skip during transition) needs verification on physical device. Rate limit guard (`isQueueingNext` flag) must be verified against actual Spotify API timing.
-- **Phase 6 (Run Menu Redesign):** Multi-zone BPM range resolution (midpoint + expanded tolerance) should be user-tested if brought into scope. The UX of multi-select capsules (tap to add/remove) vs single-select requires design validation before build.
+No phases require `/gsd:research-phase` — all research is complete and implementation-ready based on direct codebase analysis.
 
-Phases with well-documented patterns (standard implementation, can skip research-phase):
-- **Phase 1 (Design System):** Token file organization is established in codebase; additive-only
-- **Phase 2 (API Audit):** Single verification task against live API, not new development
-- **Phase 4a (Search + Filter):** `.searchable()` is stable iOS 15+, debounce pattern is standard async/await
-- **Phase 7 (Settings):** View restructuring with no service changes; zero unknowns
+Standard patterns — can proceed directly to planning:
+- **Phase 1 (Analyzed State Fix):** Root cause confirmed by architecture research. Two-part fix (scanCompletionCount + always-refresh) is straightforward.
+- **Phase 2 (Player Dock Fix):** VStack dock is the standard Spotify/Apple Music pattern. ARCHITECTURE.md has the exact code pattern.
+- **Phase 3 (Collapsible Player):** STACK.md has a complete implementation sketch. DragGesture.onEnded with threshold is an existing project pattern.
+- **Phase 4 (Cadence Tuning):** All target constants identified. Split of display vs song-selection path is explicitly specified. No new logic required.
+- **Phase 5 (Beat Sync Badge):** All data already published by RunEngineService. Badge is a read-only view. No new computation path required.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Zero new dependencies; all APIs are iOS 17 built-ins, verified against deployment target |
-| Features | HIGH | Patterns verified against SwiftUI docs and existing codebase; prioritization informed by competitor analysis |
-| Architecture | HIGH | Based on full codebase read of all 65 Swift files; all integration points verified against source |
-| Pitfalls | HIGH | Codebase-specific analysis + Spotify API documentation + verified SwiftUI behavior patterns |
+| Stack | HIGH | Zero new dependencies confirmed. All tuning targets identified from direct code analysis. CMPedometer callback frequency confirmed from Apple docs. |
+| Features | MEDIUM-HIGH | P1 features are clear and research-confirmed. P2 adaptive window has less codebase prior art but algorithm is standard signal-processing. |
+| Architecture | HIGH | Based on direct codebase inspection of all 7 affected files. Build order validated against real dependency graph. VStack dock approach confirmed against Apple safeAreaInset docs. |
+| Pitfalls | HIGH | All 6 pitfalls backed by Apple Developer Forum threads, official docs, or direct code path analysis with file/line identification. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Spotify `play(uri:)` + queued-track interaction:** When `play(uri:)` fires, does it reliably override any Spotify-internally-queued track? Documented behavior says yes, but verify on physical device before finalizing Phase 8 scope.
-- **Multi-zone UX:** The Set-based ZonePickerView UX (tap to add/tap to remove) has not been user-tested. Feature is already classified P3/defer-to-v2, but if included it needs design validation before implementation.
-- **`isQueueingNext` guard during rapid skips:** Current guard prevents double-fire. Verify it covers the gap between `play()` call and Spotify playback state update (typically 300-500ms).
+- **windowDuration sweet spot — 2.5s vs 3.0s:** STACK.md recommends 2.5s, ARCHITECTURE.md recommends 3.0s. Validate empirically during a real run at 170+ SPM using Sensor Lab. Start with 3.0s, reduce to 2.5s only if the waveform shows acceptable stability with no >10 SPM jumps between consecutive readings.
+
+- **Debounce tuning — 6s vs 8s:** STACK.md recommends 6s, ARCHITECTURE.md recommends 8s for the sustained-change debounce. Start with 8s and reduce only if real-run testing reveals users perceive lag after pace changes. Extract to a named constant (`RunEngineService.sustainedChangeDebounceDuration`) rather than leaving as a hardcoded literal, to enable easy tuning.
+
+- **Analyzed state timing race confirmation:** The two-part fix (scanCompletionCount + always-refresh-coverage) addresses both identified gaps, but the exact reproduction sequence of the timing race between `context.save()` and `scanningPlaylistID = nil` notification should be confirmed during Phase 1 implementation. If only the always-refresh approach is needed, the scanCompletionCount addition is still the right signal regardless.
+
+- **CollapsiblePlayerView vs MiniPlayerView reuse strategy:** ARCHITECTURE.md recommends deleting MiniPlayerView after CollapsiblePlayerView is verified. STACK.md suggests keeping MiniPlayerView unchanged as an internal component wrapped by CollapsiblePlayerView. The wrapper approach reduces risk; the replacement approach eliminates dead code. Decide during Phase 3 implementation based on how much internal MiniPlayerView content is directly reusable.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase inspection: all 65 Swift files in `/Users/stijngragt/Projects/beatstep/BeatStep/` — integration points, existing patterns
-- `.planning/PROJECT.md` — v1.6 requirements and architectural decisions
-- [SensoryFeedback modifier — Apple Docs](https://developer.apple.com/documentation/swiftui/view/sensoryfeedback(_:trigger:)) — API reference
-- [searchable modifier — Apple Docs](https://developer.apple.com/documentation/swiftui/view/searchable(text:placement:prompt:)) — API reference
-- [Spotify Add to Queue API](https://developer.spotify.com/documentation/web-api/reference/add-to-queue) — endpoint limitations confirmed
-- [Spotify February 2026 Changelog](https://developer.spotify.com/documentation/web-api/references/changes/february-2026) — breaking changes confirmed
-- [WWDC23: Demystify SwiftUI Performance](https://developer.apple.com/videos/play/wwdc2023/10160/) — observation tracking, animation scoping
+- Apple Developer Documentation: CMPedometer startUpdates callback frequency, safeAreaInset behavior, SwiftData context.save() / @Observable semantics
+- Direct codebase analysis: CadenceService.swift, RunEngineService.swift, ContentView.swift, MiniPlayerView.swift, PlaylistListView.swift, LibraryScanService.swift, ActiveRunView.swift, ScannedPlaylist.swift — all latency values, constant names, and code paths confirmed from source
+- PROJECT.md key decisions — DragGesture.onEnded pattern, @Observable polling pattern, BSAnimation.smooth
 
 ### Secondary (MEDIUM confidence)
-- [SwiftUI Redacted Magic — Medium](https://medium.com/@naqeeb-ahmed/swiftui-redacted-magic-achieve-shimmer-skeleton-loading-effect-with-just-one-line-of-code-5b203b540dad) — shimmer pattern validated against avanderlee.com
-- [Mastering SwiftUI Animations iOS 17+](https://medium.com/@sanjaychavare1/mastering-swiftui-animations-in-ios-17-smooth-transitions-matchedgeometryeffect-beyond-03b89be3f463) — spring presets and matchedGeometryEffect
-- [Spotify Queue endpoint issues — GitHub #921](https://github.com/spotify/web-api/issues/921) — community-reported queue API limitations (corroborates official docs)
-- [SwiftUI Searchable bugs — Medium](https://medium.com/@snowham/exploring-swiftui-learnings-and-bugs-with-searchable-c5110995c80e) — lifecycle edge cases
+- Apple Developer Forums: safeAreaInset + TabView stacking bug (iOS 17.4+), SwiftData model not propagating to view layer, DragGesture conflicts with ScrollView
+- Hacking with Swift: @Observable not always updating child views, SwiftData child views not updating on insertions
+- Buhmann et al. "Optimizing beat synchronized running to music" (PLOS ONE, 2018) — phase alignment and auditory-motor synchronization research
+- Van Dyck et al. "Enhancing Running Performance by Coupling Cadence with the Right Beats" (PLOS ONE, 2013)
 
-### Tertiary (LOW confidence)
-- [SwiftUI Scroll Performance: The 120FPS Challenge](https://blog.jacobstechtavern.com/p/swiftui-scroll-performance-the-120fps) — `drawingGroup()` usage; needs device profiling to confirm applies to BeatStep's specific view hierarchy
+### Tertiary (MEDIUM-LOW confidence)
+- Competitor analysis (TrailMix, RockMyRun, Weav Run) — cadence response time estimates and feature gap assessment; based on App Store observation and published documentation, not internal testing
+- iOS 26.1 Apple Music swipe gesture direction — directional confirmation for mini-player UX pattern
 
 ---
-*Research completed: 2026-03-25*
+*Research completed: 2026-03-26*
 *Ready for roadmap: yes*
