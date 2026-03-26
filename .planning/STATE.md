@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
-status: verifying
+status: executing
 stopped_at: Completed phase 31 (both plans)
-last_updated: "2026-03-26T11:39:17.956Z"
+last_updated: "2026-03-26T11:56:04.053Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 11
-  completed_plans: 10
+  completed_phases: 5
+  total_plans: 12
+  completed_plans: 12
   percent: 75
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 2: BPM Data Pipeline
+**Current focus:** Phase 31 — settings-skeleton-states
 
 ## Current Position
 
-Phase: 31 of 5 (settings + skeleton states)
+Phase: 32
 Plan: Not started
-Status: Phase complete — ready for verification
+Status: Executing Phase 31
 Last activity: 2026-03-26
 
 Progress: [████████░░] 75%
