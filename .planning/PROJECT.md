@@ -179,7 +179,7 @@ Known issues:
 
 ## Current State
 
-v1.6 in progress. 26 phases complete across 6 milestones. 9,482 LOC Swift.
+v1.6 in progress. Phase 30 complete — skip queue with 3-track pre-computed buffer for instant song transitions. 27 phases complete across 6 milestones.
 
 ---
-*Last updated: 2026-03-25 after v1.6 milestone start*
+*Last updated: 2026-03-26 after Phase 30 (skip-queue) completion*
