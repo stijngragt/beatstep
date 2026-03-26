@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
-stopped_at: Completed 29-01-PLAN.md (Multi-Zone Selection Model)
-last_updated: "2026-03-26T08:30:39.937Z"
+stopped_at: Completed 29-02-PLAN.md (Run Menu UI Rebuild)
+last_updated: "2026-03-26T08:35:46.488Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Progress (v1.6): [###.......] 2/6 phases (33%)
 | Phase 28-01 Pdata-model-filtering | 6min | 3 tasks | 7 files |
 | Phase 28-02 Plibrary-polish-ui | 2min | 1 task | 1 file |
 | Phase 29 P01 | 1min | 1 tasks | 3 files |
+| Phase 29 P02 | 2 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Full decision log in PROJECT.md Key Decisions table.
 - [Phase 28]: CoverageBar uses constrained GeometryReader (4pt height); FilterChipRow as first List item; .searchable on Group level
 - [Phase 29]: Set<Int> persisted as sorted Array<Int> for deterministic UserDefaults storage
 - [Phase 29]: Migration reads old selectedZoneId on-demand without eager write-back
+- [Phase 29]: buttonStyle(.plain) on all capsule buttons to prevent SwiftUI default highlight doubling
+- [Phase 29]: Midpoint BPM computed as (floor + ceiling) / 2 from selected zone set for guided mode
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T08:30:39.935Z
-Stopped at: Completed 29-01-PLAN.md (Multi-Zone Selection Model)
+Last session: 2026-03-26T08:35:46.485Z
+Stopped at: Completed 29-02-PLAN.md (Run Menu UI Rebuild)
 Resume file: None

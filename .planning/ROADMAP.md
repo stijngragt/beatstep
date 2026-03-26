@@ -80,7 +80,7 @@
 
 - [x] **Phase 27: Foundation + Fixes** - Design system tokens (haptics, animations), Spotify API audit, analysis status bug fix (completed 2026-03-25)
 - [x] **Phase 28: Library Polish** - Search, filter, playlist card redesign, contextual scan actions (completed 2026-03-26)
-- [ ] **Phase 29: Run Menu Rebuild** - Cohesive custom components with haptics and multi-zone selection
+- [x] **Phase 29: Run Menu Rebuild** - Cohesive custom components with haptics and multi-zone selection (completed 2026-03-26)
 - [ ] **Phase 30: Skip Queue** - Pre-built local track buffer for instant song skipping
 - [ ] **Phase 31: Settings + Skeleton States** - Settings screen structure and shimmer loading states
 - [ ] **Phase 32: Micro-Interaction Pass** - Haptics, spring animations, and transitions on all interactions
@@ -126,7 +126,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 29-01-PLAN.md -- Multi-zone selection model (Set<Int> persistence, mergedBPMRange, migration, tests)
-- [ ] 29-02-PLAN.md -- UI rebuild (multi-select zone picker, custom tolerance capsules, haptics, engine wiring)
+- [x] 29-02-PLAN.md -- UI rebuild (multi-select zone picker, custom tolerance capsules, haptics, engine wiring)
 
 ### Phase 30: Skip Queue
 **Goal**: Skipping a song during a run feels instant with no perceptible delay
@@ -196,7 +196,7 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 26. Onboarding Analysis Step | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 27. Foundation + Fixes | 2/2 | Complete    | 2026-03-25 | - |
 | 28. Library Polish | 2/2 | Complete    | 2026-03-26 | - |
-| 29. Run Menu Rebuild | v1.6 | 1/2 | In Progress|  |
+| 29. Run Menu Rebuild | v1.6 | 2/2 | Complete   | 2026-03-26 |
 | 30. Skip Queue | v1.6 | 0/? | Not started | - |
 | 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
 | 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |
