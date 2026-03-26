@@ -107,7 +107,9 @@
   1. After scanning a playlist, the Library view shows the updated analyzed/unanalyzed state without navigating away and back
   2. The Analyzed filter shows only playlists that have been scanned, and the Unanalyzed filter shows only playlists that have not
   3. Background scans triggered at app launch update the filter counts when the user reaches the Library tab
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
 
 ### Phase 34: Player Dock Fix
 **Goal**: Mini player sits in the correct vertical position -- above tab bar, no overlap, no double-padding
@@ -117,7 +119,9 @@
   1. Mini player is visually docked directly above the tab bar with no gap and no overlap on any screen size
   2. Tab bar items remain fully tappable with the player visible
   3. Scrollable content in Library and Settings does not get clipped behind the player
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
 **UI hint**: yes
 
 ### Phase 35: Collapsible Player Strip
@@ -129,7 +133,9 @@
   2. User can swipe up or tap the handle to expand the player back to full strip with title, BPM, and controls
   3. Collapsed handle does not obstruct tab bar taps or list scrolling
   4. Collapse/expand state persists across app restarts
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
 **UI hint**: yes
 
 ### Phase 36: Responsive Cadence
@@ -140,7 +146,9 @@
   1. When the runner changes pace, the cadence number on the run screen updates within 2 seconds
   2. After a sustained pace change, a new BPM-matched song begins playing within 12 seconds (down from 24s)
   3. During steady-state running at a constant pace, the cadence display does not jitter by more than 5 SPM between consecutive readings
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
 
 ### Phase 37: Beat Sync Badge
 **Goal**: Runners can see at a glance how well their current stride matches the playing track's beat
@@ -150,7 +158,9 @@
   1. The active run screen displays a beat sync confidence badge showing the match quality between SPM and track BPM
   2. The badge updates in real time as the runner's cadence changes or a new track starts playing
   3. The badge correctly handles half-tempo and double-tempo track matches without showing false mismatches
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — Fix upsert + reactive state propagation
 **UI hint**: yes
 
 ## Progress
