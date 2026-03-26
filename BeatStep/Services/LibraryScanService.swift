@@ -133,6 +133,18 @@ final class LibraryScanService {
         }
     }
 
+    // MARK: - Delete Scan
+
+    func deleteScan(playlistID: String) {
+        let context = BPMCacheService.shared.context
+        let descriptor = FetchDescriptor<ScannedPlaylist>(
+            predicate: #Predicate { $0.spotifyPlaylistID == playlistID }
+        )
+        guard let existing = try? context.fetch(descriptor).first else { return }
+        context.delete(existing)
+        try? context.save()
+    }
+
     // MARK: - ScannedPlaylist Updates
 
     private func updateScannedPlaylist(playlistID: String, name: String, totalTracks: Int) {

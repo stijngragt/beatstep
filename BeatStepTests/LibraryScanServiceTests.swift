@@ -116,11 +116,30 @@ final class LibraryScanServiceTests: XCTestCase {
     // MARK: - Delete Scan
 
     func testDeleteScan() {
-        // Stub: Will test that deleteScan removes ScannedPlaylist from SwiftData context
-        // 1. Insert a ScannedPlaylist into the in-memory container
-        // 2. Call scanService.deleteScan(playlistID:)
-        // 3. Verify the ScannedPlaylist no longer exists
-        XCTFail("Wave 0 stub — implement deleteScan method first")
+        // Insert a ScannedPlaylist into the in-memory container
+        let context = container.mainContext
+        let scannedPlaylist = ScannedPlaylist(
+            spotifyPlaylistID: "pl_delete_test",
+            name: "Delete Test Playlist",
+            totalTracks: 10,
+            tracksWithBPM: 5
+        )
+        context.insert(scannedPlaylist)
+        try? context.save()
+
+        // Verify it exists
+        let beforeDescriptor = FetchDescriptor<ScannedPlaylist>(
+            predicate: #Predicate { $0.spotifyPlaylistID == "pl_delete_test" }
+        )
+        let beforeCount = (try? context.fetch(beforeDescriptor).count) ?? 0
+        XCTAssertEqual(beforeCount, 1, "ScannedPlaylist should exist before delete")
+
+        // Delete it
+        scanService.deleteScan(playlistID: "pl_delete_test")
+
+        // Verify it's gone
+        let afterCount = (try? context.fetch(beforeDescriptor).count) ?? 0
+        XCTAssertEqual(afterCount, 0, "ScannedPlaylist should be removed after deleteScan")
     }
 
     // MARK: - Helpers
