@@ -31,7 +31,6 @@ Declared values from `DesignTokens.swift Spacing` enum:
 
 | Token | Value | Usage in this phase |
 |-------|-------|---------------------|
-| xxs | 2pt | Pill handle corner detail |
 | xs | 4pt | Pill handle height |
 | sm | 8pt | Vertical padding in expanded player, internal element gaps |
 | md | 16pt | Horizontal padding in both states, HStack spacing |
@@ -53,10 +52,10 @@ Existing tokens used in this phase (from `DesignTokens.swift`):
 |------|------|--------|-------------|-------|-------|
 | Body | 16pt | semibold (600) | 1.25 | `.bodyBold` | Track name in expanded state |
 | Caption | 13pt | regular (400) | 1.3 | `.captionText` | Artist name in expanded state |
-| Caption Bold | 13pt | medium (500) | 1.3 | `.captionBold` | BPM number in expanded state |
-| Label | 11pt | medium (500) | 1.2 | `.labelText` | "BPM" label in expanded state |
+| Caption Bold | 13pt | semibold (600) | 1.3 | `.captionBold` | BPM number in expanded state |
+| Label | 11pt | semibold (600) | 1.2 | `.labelText` | "BPM" label in expanded state |
 
-No new font tokens needed. Collapsed state shows no text (D-05: pill bar only).
+Weights used: regular (400) and semibold (600). No new font tokens needed. Collapsed state shows no text (D-05: pill bar only).
 
 ---
 
@@ -104,6 +103,7 @@ Current layout preserved. Height: `ComponentSize.miniPlayerHeight` (64pt).
 - Background: `.ultraThinMaterial` full-width (same as expanded, D-06)
 - Top shadow: same as expanded (D-07)
 - Pill handle: centered capsule, 36pt wide x 4pt tall (D-05)
+- Pill corner radius: 2pt (capsule shape via `dragHandleCornerRadius`)
 - Pill color: `Color.textTertiary` (white 35%) -- subtle but visible against material
 - Hit target: 44pt tall invisible overlay centered on pill for tap-to-expand
 
@@ -210,6 +210,7 @@ Tokens to add to `DesignTokens.swift`:
 static let miniPlayerCollapsedHeight: CGFloat = 20
 static let dragHandleWidth: CGFloat = 36
 static let dragHandleHeight: CGFloat = 4
+static let dragHandleCornerRadius: CGFloat = 2
 ```
 
 No new color, font, spacing, radius, or animation tokens needed. All values derive from existing tokens.
