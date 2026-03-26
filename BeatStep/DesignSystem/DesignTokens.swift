@@ -76,6 +76,7 @@ enum ComponentSize {
     static let miniPlayerHeight: CGFloat = 64
     static let buttonHeight: CGFloat = 52
     static let coverArtSmall: CGFloat = 44
+    static let coverArtMedium: CGFloat = 56
     static let coverArtLarge: CGFloat = 200
     static let iconSmall: CGFloat = 24
     static let iconMedium: CGFloat = 44

@@ -1,17 +1,67 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Data Types
+
+struct PlaylistCoverage {
+    let tracksWithBPM: Int
+    let totalTracks: Int
+
+    var percentage: Double {
+        guard totalTracks > 0 else { return 0 }
+        return Double(tracksWithBPM) / Double(totalTracks)
+    }
+
+    var statusColor: Color {
+        switch percentage {
+        case 0.8...: return .stateSuccess
+        case 0.4...: return .stateWarning
+        default:     return .stateError
+        }
+    }
+
+    var text: String { "\(tracksWithBPM)/\(totalTracks) BPM" }
+}
+
+enum PlaylistFilter: String, CaseIterable {
+    case all = "All"
+    case analyzed = "Analyzed"
+    case unanalyzed = "Unanalyzed"
+}
+
+// MARK: - PlaylistListView
+
 struct PlaylistListView: View {
     @State private var playlists: [SpotifyPlaylist] = []
     @State private var isLoading = false
     @State private var hasMore = true
     @State private var offset = 0
     @State private var error: String?
-    @State private var coverageMap: [String: String] = [:]
+    @State private var coverageData: [String: PlaylistCoverage] = [:]
     @State private var coverageLoaded = false
+    @State private var searchText = ""
+    @State private var activeFilter: PlaylistFilter = .all
 
     private let limit = 50
     private var scanService: LibraryScanService { .shared }
+
+    private var filteredPlaylists: [SpotifyPlaylist] {
+        var result = playlists
+
+        switch activeFilter {
+        case .all: break
+        case .analyzed:
+            result = result.filter { coverageData[$0.id] != nil }
+        case .unanalyzed:
+            result = result.filter { coverageData[$0.id] == nil }
+        }
+
+        if !searchText.isEmpty {
+            result = result.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+
+        return result
+    }
 
     var body: some View {
         Group {
@@ -57,7 +107,7 @@ struct PlaylistListView: View {
                 NavigationLink(value: playlist) {
                     PlaylistRow(
                         playlist: playlist,
-                        coverageText: coverageMap[playlist.id],
+                        coverage: coverageData[playlist.id],
                         coverageLoaded: coverageLoaded,
                         isScanning: scanService.scanningPlaylistID == playlist.id,
                         scanProgress: scanService.scanningPlaylistID == playlist.id ? scanService.scanProgress : nil
@@ -157,14 +207,16 @@ struct PlaylistListView: View {
             uniquingKeysWith: { first, _ in first }
         )
 
-        var newCoverageMap: [String: String] = [:]
+        var newCoverageData: [String: PlaylistCoverage] = [:]
         for playlist in playlists {
             if let sp = scannedMap[playlist.id] {
-                newCoverageMap[playlist.id] = "\(sp.tracksWithBPM)/\(sp.totalTracks) BPM"
+                newCoverageData[playlist.id] = PlaylistCoverage(
+                    tracksWithBPM: sp.tracksWithBPM,
+                    totalTracks: sp.totalTracks
+                )
             }
-            // nil means "Not analyzed" -- absence from map signals unanalyzed
         }
-        coverageMap = newCoverageMap
+        coverageData = newCoverageData
         coverageLoaded = true
     }
 }
@@ -173,7 +225,7 @@ struct PlaylistListView: View {
 
 private struct PlaylistRow: View {
     let playlist: SpotifyPlaylist
-    var coverageText: String? = nil
+    var coverage: PlaylistCoverage? = nil
     var coverageLoaded: Bool = false
     var isScanning: Bool = false
     var scanProgress: ScanProgress? = nil
@@ -228,11 +280,11 @@ private struct PlaylistRow: View {
                                 .font(.captionText)
                                 .foregroundStyle(Color.textSecondary)
                         }
-                    } else if let coverageText {
+                    } else if let coverage {
                         Text("\u{00B7}")
                             .font(.captionText)
                             .foregroundStyle(Color.textSecondary)
-                        Text(coverageText)
+                        Text(coverage.text)
                             .font(.captionText)
                             .foregroundStyle(Color.accent)
                     } else if coverageLoaded {
