@@ -3,7 +3,7 @@ import SwiftUI
 struct ActiveRunView: View {
     let playlist: SpotifyPlaylist
     let tracks: [SpotifyTrack]
-    var selectedZoneId: Int?
+    var selectedZoneIds: Set<Int> = []
 
     @Environment(\.dismiss) private var dismiss
 
@@ -14,15 +14,18 @@ struct ActiveRunView: View {
     // MARK: - Derived State
 
     private var zoneName: String? {
-        guard let zoneId = selectedZoneId,
-              let zone = RunZone.saved.first(where: { $0.id == zoneId }) else { return nil }
-        return zone.displayLabel
+        let zones = RunZone.saved.filter { selectedZoneIds.contains($0.id) }
+        guard !zones.isEmpty else { return nil }
+        if zones.count == 1 { return zones[0].displayLabel }
+        return "\(zones.first!.displayLabel)-\(zones.last!.displayLabel)"
     }
 
     private var targetBPM: Int {
-        if let zoneId = selectedZoneId,
-           let zone = RunZone.saved.first(where: { $0.id == zoneId }) { return zone.bpm }
-        return RunMode.savedTargetBPM
+        let zones = RunZone.saved.filter { selectedZoneIds.contains($0.id) }
+        guard !zones.isEmpty else { return RunMode.savedTargetBPM }
+        let floor = zones.map(\.bpm).min()!
+        let ceiling = zones.map(\.bpm).max()!
+        return (floor + ceiling) / 2
     }
 
     // MARK: - Body
@@ -140,6 +143,6 @@ struct ActiveRunView: View {
             owner: PlaylistOwner(displayName: "Spotify")
         ),
         tracks: [],
-        selectedZoneId: nil
+        selectedZoneIds: []
     )
 }

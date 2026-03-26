@@ -8,7 +8,7 @@ struct RunTabView: View {
     @State private var isLoading = false
     @State private var loadError: String?
     @State private var showActiveRun = false
-    @State private var selectedZoneId: Int? = RunZone.selectedZoneId
+    @State private var selectedZoneIds: Set<Int> = RunZone.selectedZoneIds
     @State private var tolerance: BPMTolerance = .saved
     @State private var lastFetchedPlaylistId: String?
 
@@ -38,15 +38,18 @@ struct RunTabView: View {
         .navigationTitle("Run")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            selectedZoneId = RunZone.selectedZoneId
+            selectedZoneIds = RunZone.selectedZoneIds
             tolerance = .saved
             fetchPlaylistIfNeeded()
         }
-        .onChange(of: selectedZoneId) { _, newValue in
-            RunZone.selectedZoneId = newValue
-            if let zoneId = newValue,
-               let zone = RunZone.saved.first(where: { $0.id == zoneId }) {
-                RunMode.savedTargetBPM = zone.bpm
+        .onChange(of: selectedZoneIds) { _, newValue in
+            RunZone.selectedZoneIds = newValue
+            if !newValue.isEmpty {
+                let zones = RunZone.saved.filter { newValue.contains($0.id) }
+                let floor = zones.map(\.bpm).min() ?? 160
+                let ceiling = zones.map(\.bpm).max() ?? 160
+                let midpoint = (floor + ceiling) / 2
+                RunMode.savedTargetBPM = midpoint
                 RunMode.guided.save()
             } else {
                 RunMode.free.save()
@@ -54,7 +57,7 @@ struct RunTabView: View {
         }
         .fullScreenCover(isPresented: $showActiveRun) {
             if let playlist {
-                ActiveRunView(playlist: playlist, tracks: tracks, selectedZoneId: selectedZoneId)
+                ActiveRunView(playlist: playlist, tracks: tracks, selectedZoneIds: selectedZoneIds)
                     .interactiveDismissDisabled(true)
             }
         }
@@ -65,7 +68,7 @@ struct RunTabView: View {
                 cadenceService.stopDetecting()
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: selectedZoneId)
+        .animation(BSAnimation.snappy, value: selectedZoneIds)
     }
 
     // MARK: - No Playlist State
@@ -217,13 +220,19 @@ struct RunTabView: View {
                     }
 
                     // Zone picker
-                    ZonePickerView(selectedZoneId: $selectedZoneId)
+                    ZonePickerView(selectedZoneIds: $selectedZoneIds)
 
-                    // Conditional tolerance picker
-                    if selectedZoneId != nil {
+                    // Conditional tolerance picker + merged BPM range
+                    if !selectedZoneIds.isEmpty {
                         TolerancePicker(tolerance: $tolerance)
                             .padding(.horizontal, Spacing.xl)
                             .transition(.opacity.combined(with: .move(edge: .top)))
+
+                        if let range = RunZone.mergedBPMRange(for: selectedZoneIds) {
+                            Text("\(range.lowerBound)-\(range.upperBound) BPM")
+                                .font(.captionText)
+                                .foregroundStyle(Color.textSecondary)
+                        }
                     }
                 }
             }
@@ -259,11 +268,14 @@ struct RunTabView: View {
         guard let playlist else { return }
 
         // Configure engine mode
-        if let zoneId = selectedZoneId,
-           let zone = RunZone.saved.first(where: { $0.id == zoneId }) {
+        if !selectedZoneIds.isEmpty {
+            let zones = RunZone.saved.filter { selectedZoneIds.contains($0.id) }
+            let floor = zones.map(\.bpm).min() ?? 160
+            let ceiling = zones.map(\.bpm).max() ?? 160
+            let midpoint = (floor + ceiling) / 2
             runEngine.runMode = .guided
             runEngine.tolerance = tolerance
-            RunMode.savedTargetBPM = zone.bpm
+            RunMode.savedTargetBPM = midpoint
         } else {
             runEngine.runMode = .free
             runEngine.tolerance = tolerance
