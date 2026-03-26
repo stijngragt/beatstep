@@ -185,7 +185,7 @@ Known issues:
 
 ## Current State
 
-v1.7 in progress. Phase 33 complete — analyzed state bug fixed (upsert + reactive observer). Remaining: algorithm responsiveness, player overlap fix, collapsible player strip.
+v1.7 in progress. Phases 33-34 complete — analyzed state bug fixed, mini player docked above tab bar. Remaining: collapsible player strip, responsive cadence, beat sync badge.
 
 ---
-*Last updated: 2026-03-26 after Phase 33 (Analyzed State Fix) completion*
+*Last updated: 2026-03-26 after Phase 34 (Player Dock Fix) completion*
