@@ -77,7 +77,16 @@ When you run, your music should move with you — every footstrike landing on th
 
 ### Active
 
-(No active requirements — next milestone not yet planned)
+**Current Milestone: v1.7 Beat Perfect**
+
+**Goal:** Make the core loop trustworthy — responsive cadence, accurate beat sync, reliable library state, and a player that stays out of the way.
+
+**Target features:**
+- Responsive cadence detection (<2s from real change to screen update)
+- 1:1 beat-to-step accuracy validation with known-BPM tracks
+- Fix: analyzed state updates after scan (root cause for broken filter)
+- Fix: player covering bottom nav bar — dock above, not overlap
+- Collapsible player strip (title/BPM/controls, swipe-down to thin handle)
 
 ### Out of Scope
 
@@ -176,7 +185,7 @@ Known issues:
 
 ## Current State
 
-v1.6 complete. All 6 phases shipped, 58/58 must-haves verified. Every screen has haptic feedback, spring animations, and smooth transitions. Next milestone not yet planned.
+v1.7 in progress. Focus: algorithm responsiveness, bug fixes (analyzed state, player overlap), and collapsible player strip.
 
 ---
-*Last updated: 2026-03-26 after v1.6 (Little Big Things) milestone completion*
+*Last updated: 2026-03-26 after v1.7 (Beat Perfect) milestone start*
