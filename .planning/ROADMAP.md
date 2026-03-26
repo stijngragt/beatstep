@@ -131,7 +131,7 @@ Plans:
 ### Phase 30: Skip Queue
 **Goal**: Skipping a song during a run feels instant with no perceptible delay
 **Depends on**: Phase 29 (run tab must be in final form before modifying engine)
-**Requirements**: RUN-03
+**Requirements**: SKIP-01
 **Success Criteria** (what must be TRUE):
   1. Tapping skip plays the next song within ~100ms (no spinner, no pause)
   2. Skipping multiple times in quick succession works reliably without playback errors
