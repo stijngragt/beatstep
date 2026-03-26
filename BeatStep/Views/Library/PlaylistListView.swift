@@ -207,6 +207,9 @@ struct PlaylistListView: View {
                 loadCoverageData()
             }
         }
+        .onChange(of: scanService.scanCompletionCount) { _, _ in
+            loadCoverageData()
+        }
     }
 
     private func errorView(message: String) -> some View {
