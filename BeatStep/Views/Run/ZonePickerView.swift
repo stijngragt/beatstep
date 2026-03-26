@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ZonePickerView: View {
-    @Binding var selectedZoneId: Int?
+    @Binding var selectedZoneIds: Set<Int>
 
     private var zones: [RunZone] {
         RunZone.saved
@@ -22,9 +22,16 @@ struct ZonePickerView: View {
     // MARK: - Zone Capsule
 
     private func zoneCapsule(_ zone: RunZone) -> some View {
-        let isSelected = selectedZoneId == zone.id
+        let isSelected = selectedZoneIds.contains(zone.id)
         return Button {
-            selectedZoneId = zone.id
+            BSHaptics.selection()
+            withAnimation(BSAnimation.snappy) {
+                if selectedZoneIds.contains(zone.id) {
+                    selectedZoneIds.remove(zone.id)
+                } else {
+                    selectedZoneIds.insert(zone.id)
+                }
+            }
         } label: {
             VStack(spacing: Spacing.xxs) {
                 Text(zone.displayLabel)
@@ -44,14 +51,18 @@ struct ZonePickerView: View {
                 isSelected ? Color.textPrimary : Color.textSecondary
             )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Free Capsule
 
     private var freeCapsule: some View {
-        let isSelected = selectedZoneId == nil
+        let isSelected = selectedZoneIds.isEmpty
         return Button {
-            selectedZoneId = nil
+            BSHaptics.selection()
+            withAnimation(BSAnimation.snappy) {
+                selectedZoneIds.removeAll()
+            }
         } label: {
             Text("Free")
                 .font(.captionBold)
@@ -67,5 +78,6 @@ struct ZonePickerView: View {
                     isSelected ? Color.textPrimary : Color.textSecondary
                 )
         }
+        .buttonStyle(.plain)
     }
 }
