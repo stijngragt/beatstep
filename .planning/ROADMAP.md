@@ -135,7 +135,7 @@ Plans:
   4. Collapse/expand state persists across app restarts
 **Plans**: 1 plan
 Plans:
-- [ ] 35-01-PLAN.md — [To be planned]
+- [ ] 35-01-PLAN.md — Collapsible player with interactive drag, cross-fade, and state persistence
 **UI hint**: yes
 
 ### Phase 36: Responsive Cadence
