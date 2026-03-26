@@ -70,8 +70,8 @@ When you run, your music should move with you — every footstrike landing on th
 
 - [ ] Contextual scan actions replacing floating scan bar
 - [ ] Library search and filter (All / Analyzed / Unanalyzed)
-- [ ] Run menu redesign with cohesive custom components
-- [ ] Multi-zone selection with merged BPM range
+- ✓ Run menu redesign with cohesive custom components — v1.6
+- ✓ Multi-zone selection with merged BPM range — v1.6
 - [ ] Playlist card redesign with scan quality visibility
 - [ ] Micro-interaction pass (haptics, transitions, loading states)
 - [ ] Settings screen structure (account, defaults, debug, about)
