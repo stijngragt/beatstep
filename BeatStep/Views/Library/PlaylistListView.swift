@@ -32,6 +32,7 @@ enum PlaylistFilter: String, CaseIterable {
 // MARK: - PlaylistListView
 
 struct PlaylistListView: View {
+    @Environment(\.selectedTab) private var selectedTab
     @State private var playlists: [SpotifyPlaylist] = []
     @State private var isLoading = false
     @State private var hasMore = true
@@ -74,6 +75,7 @@ struct PlaylistListView: View {
                 playlistList
             }
         }
+        .searchable(text: $searchText, prompt: "Search playlists")
         .navigationTitle("Your Library")
         .task {
             if playlists.isEmpty {
@@ -91,6 +93,11 @@ struct PlaylistListView: View {
 
     private var playlistList: some View {
         List {
+            // Filter chips
+            FilterChipRow(activeFilter: $activeFilter)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: Spacing.xs, leading: Spacing.md, bottom: Spacing.xs, trailing: Spacing.md))
+
             // Scan progress banner
             if let progress = scanService.scanProgress, scanService.scanningPlaylistID == nil {
                 HStack(spacing: Spacing.sm) {
@@ -103,11 +110,21 @@ struct PlaylistListView: View {
                 .listRowSeparator(.hidden)
             }
 
-            ForEach(playlists) { playlist in
+            if filteredPlaylists.isEmpty && !playlists.isEmpty {
+                Text("No playlists match your search")
+                    .font(.captionText)
+                    .foregroundStyle(Color.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, Spacing.xl)
+                    .listRowSeparator(.hidden)
+            }
+
+            ForEach(filteredPlaylists) { playlist in
+                let coverage = coverageData[playlist.id]
                 NavigationLink(value: playlist) {
                     PlaylistRow(
                         playlist: playlist,
-                        coverage: coverageData[playlist.id],
+                        coverage: coverage,
                         coverageLoaded: coverageLoaded,
                         isScanning: scanService.scanningPlaylistID == playlist.id,
                         scanProgress: scanService.scanningPlaylistID == playlist.id ? scanService.scanProgress : nil
@@ -115,16 +132,53 @@ struct PlaylistListView: View {
                 }
                 .swipeActions(edge: .trailing) {
                     Button {
+                        BSHaptics.medium()
                         Task {
                             await scanService.scanPlaylistByID(playlist.id, name: playlist.name)
                             loadCoverageData()
                         }
                     } label: {
-                        Label("Analyze", systemImage: "waveform.badge.magnifyingglass")
+                        Label(coverage != nil ? "Re-scan" : "Analyze", systemImage: "waveform.badge.magnifyingglass")
                     }
                     .tint(Color.accent)
                 }
+                .contextMenu {
+                    if coverage != nil {
+                        Button {
+                            BSHaptics.medium()
+                            Task {
+                                await scanService.scanPlaylistByID(playlist.id, name: playlist.name)
+                                loadCoverageData()
+                            }
+                        } label: {
+                            Label("Re-scan", systemImage: "arrow.clockwise")
+                        }
+                        Button(role: .destructive) {
+                            BSHaptics.warning()
+                            scanService.deleteScan(playlistID: playlist.id)
+                            loadCoverageData()
+                        } label: {
+                            Label("Delete Scan", systemImage: "trash")
+                        }
+                    } else {
+                        Button {
+                            BSHaptics.medium()
+                            Task {
+                                await scanService.scanPlaylistByID(playlist.id, name: playlist.name)
+                                loadCoverageData()
+                            }
+                        } label: {
+                            Label("Analyze BPM", systemImage: "waveform.badge.magnifyingglass")
+                        }
+                    }
+                    Button {
+                        selectedTab.wrappedValue = .run
+                    } label: {
+                        Label("Select for Run", systemImage: "figure.run")
+                    }
+                }
                 .onAppear {
+                    // Pagination trigger uses unfiltered playlists.last to avoid mismatch
                     if playlist.id == playlists.last?.id && hasMore && !isLoading {
                         Task { await loadPlaylists() }
                     }
@@ -221,6 +275,64 @@ struct PlaylistListView: View {
     }
 }
 
+// MARK: - Filter Chip Row
+
+private struct FilterChipRow: View {
+    @Binding var activeFilter: PlaylistFilter
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            ForEach(PlaylistFilter.allCases, id: \.self) { filter in
+                Button {
+                    BSHaptics.selection()
+                    withAnimation(BSAnimation.snappy) {
+                        activeFilter = filter
+                    }
+                } label: {
+                    Text(filter.rawValue)
+                        .font(.captionBold)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.xs)
+                        .background(
+                            activeFilter == filter ? Color.accent : Color.surfaceOverlay,
+                            in: Capsule()
+                        )
+                        .foregroundStyle(
+                            activeFilter == filter ? Color.textOnAccent : Color.textSecondary
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Coverage Bar
+
+private struct CoverageBar: View {
+    let coverage: PlaylistCoverage
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.surfaceOverlay)
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(coverage.statusColor)
+                        .frame(width: geometry.size.width * coverage.percentage)
+                }
+            }
+            .frame(height: 4)
+
+            Text(coverage.text)
+                .font(.captionText)
+                .foregroundStyle(Color.textSecondary)
+        }
+    }
+}
+
 // MARK: - Playlist Row
 
 private struct PlaylistRow: View {
@@ -243,61 +355,48 @@ private struct PlaylistRow: View {
                     RoundedRectangle(cornerRadius: Radius.sm)
                         .fill(Color.surfaceOverlay)
                 }
-                .frame(width: ComponentSize.coverArtSmall, height: ComponentSize.coverArtSmall)
+                .frame(width: ComponentSize.coverArtMedium, height: ComponentSize.coverArtMedium)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             } else {
                 RoundedRectangle(cornerRadius: Radius.sm)
                     .fill(Color.surfaceOverlay)
-                    .frame(width: ComponentSize.coverArtSmall, height: ComponentSize.coverArtSmall)
+                    .frame(width: ComponentSize.coverArtMedium, height: ComponentSize.coverArtMedium)
                     .overlay {
                         Image(systemName: "music.note.list")
                             .foregroundStyle(Color.textTertiary)
                     }
             }
 
-            // Text
+            // Text + Coverage
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(playlist.name)
                     .font(.bodyText)
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
-                HStack(spacing: Spacing.xs) {
-                    if let count = playlist.trackCount {
-                        Text("\(count) tracks")
-                            .font(.captionText)
-                            .foregroundStyle(Color.textSecondary)
-                    }
+                if let count = playlist.trackCount {
+                    Text("\(count) tracks")
+                        .font(.captionText)
+                        .foregroundStyle(Color.textSecondary)
+                }
 
-                    if isScanning, let progress = scanProgress {
-                        Text("\u{00B7}")
+                if isScanning, let progress = scanProgress {
+                    HStack(spacing: Spacing.xs) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                        Text("Analyzing \(progress.scanned)/\(progress.total)")
                             .font(.captionText)
                             .foregroundStyle(Color.textSecondary)
-                        HStack(spacing: Spacing.xs) {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                            Text("Analyzing \(progress.scanned)/\(progress.total)")
-                                .font(.captionText)
-                                .foregroundStyle(Color.textSecondary)
-                        }
-                    } else if let coverage {
-                        Text("\u{00B7}")
-                            .font(.captionText)
-                            .foregroundStyle(Color.textSecondary)
-                        Text(coverage.text)
-                            .font(.captionText)
-                            .foregroundStyle(Color.accent)
-                    } else if coverageLoaded {
-                        Text("\u{00B7}")
-                            .font(.captionText)
-                            .foregroundStyle(Color.textSecondary)
-                        Text("Not analyzed")
-                            .font(.captionText)
-                            .foregroundStyle(Color.stateWarning)
                     }
+                } else if let coverage {
+                    CoverageBar(coverage: coverage)
+                } else if coverageLoaded {
+                    Text("Not analyzed")
+                        .font(.captionText)
+                        .foregroundStyle(Color.textTertiary)
                 }
             }
         }
-        .frame(height: 50)
+        .frame(height: 70)
     }
 }
