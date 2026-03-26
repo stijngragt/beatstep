@@ -85,8 +85,6 @@ struct MiniPlayerView: View {
             .onAppear {
                 currentBPM = BPMCacheService.shared.getBPM(forTrackID: track.id)
             }
-            .transition(.opacity)
         }
-        .animation(BSAnimation.smooth, value: playerService.currentTrack != nil)
     }
 }

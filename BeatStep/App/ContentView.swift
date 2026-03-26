@@ -90,8 +90,10 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom) {
             if SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive {
                 MiniPlayerView()
+                    .transition(.opacity)
             }
         }
+        .animation(BSAnimation.smooth, value: SpotifyPlayerService.shared.currentTrack != nil)
         .task {
             await LibraryScanService.shared.scanEnabledPlaylists()
         }
