@@ -169,7 +169,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [ ] 32-01-PLAN.md -- Run screen animation scoping + token migration (raw haptics/animations to BSHaptics/BSAnimation)
-- [ ] 32-02-PLAN.md -- Haptic additions across Settings, RunTab, Player, and Onboarding views
+- [x] 32-02-PLAN.md -- Haptic additions across Settings, RunTab, Player, and Onboarding views
 - [ ] 32-03-PLAN.md -- Transition sweep (.transition(.opacity)) on all conditional views + POL-02 requirement
 
 ## Progress
@@ -211,4 +211,4 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 29. Run Menu Rebuild | v1.6 | 2/2 | Complete    | 2026-03-26 |
 | 30. Skip Queue | v1.6 | 2/3 | Complete    | 2026-03-26 |
 | 31. Settings + Skeleton States | v1.6 | 2/3 | Complete    | 2026-03-26 |
-| 32. Micro-Interaction Pass | v1.6 | 0/3 | Not started | - |
+| 32. Micro-Interaction Pass | v1.6 | 1/3 | In Progress|  |
