@@ -123,7 +123,10 @@ Plans:
   2. Selecting a zone or changing tolerance triggers appropriate haptic feedback
   3. User can select multiple zones and the displayed BPM range merges from lowest floor to highest ceiling
   4. Starting a run with multiple zones selected uses the merged BPM range for song matching
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 29-01-PLAN.md -- Multi-zone selection model (Set<Int> persistence, mergedBPMRange, migration, tests)
+- [ ] 29-02-PLAN.md -- UI rebuild (multi-select zone picker, custom tolerance capsules, haptics, engine wiring)
 
 ### Phase 30: Skip Queue
 **Goal**: Skipping a song during a run feels instant with no perceptible delay
@@ -193,7 +196,7 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 26. Onboarding Analysis Step | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 27. Foundation + Fixes | 2/2 | Complete    | 2026-03-25 | - |
 | 28. Library Polish | 2/2 | Complete    | 2026-03-26 | - |
-| 29. Run Menu Rebuild | v1.6 | 0/? | Not started | - |
+| 29. Run Menu Rebuild | v1.6 | 0/2 | Not started | - |
 | 30. Skip Queue | v1.6 | 0/? | Not started | - |
 | 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
 | 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |
