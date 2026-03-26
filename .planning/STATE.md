@@ -4,13 +4,13 @@ milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
 stopped_at: Completed 30-02-PLAN.md (Fix Requirements Traceability)
-last_updated: "2026-03-26T10:19:53.354Z"
+last_updated: "2026-03-26T10:27:18.399Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 75
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 2 of 5 (BPM Data Pipeline) -- IN PROGRESS
-Plan: 2 of 2 in current phase (plan 02-01 complete)
+Phase: 31 of 5 (settings + skeleton states)
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-03-26
 
