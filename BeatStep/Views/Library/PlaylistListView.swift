@@ -67,14 +67,14 @@ struct PlaylistListView: View {
     var body: some View {
         Group {
             if isLoading && playlists.isEmpty {
-                ProgressView("Loading playlists...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                PlaylistListSkeleton()
             } else if let error, playlists.isEmpty {
                 errorView(message: error)
             } else {
                 playlistList
             }
         }
+        .animation(BSAnimation.smooth, value: isLoading)
         .searchable(text: $searchText, prompt: "Search playlists")
         .navigationTitle("Your Library")
         .task {

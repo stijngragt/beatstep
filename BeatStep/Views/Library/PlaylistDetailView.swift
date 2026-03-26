@@ -20,14 +20,14 @@ struct PlaylistDetailView: View {
     var body: some View {
         Group {
             if isLoading && tracks.isEmpty {
-                ProgressView("Loading tracks...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                PlaylistDetailSkeleton()
             } else if let error, tracks.isEmpty {
                 errorView(message: error)
             } else {
                 trackList
             }
         }
+        .animation(BSAnimation.smooth, value: isLoading)
         .navigationTitle(playlist.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
