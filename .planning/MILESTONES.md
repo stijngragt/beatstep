@@ -1,5 +1,29 @@
 # Milestones
 
+## v1.6 Little Big Things (Shipped: 2026-03-26)
+
+**Phases completed:** 6 phases, 15 plans, 26 tasks
+
+**Key accomplishments:**
+
+- Backward-compatible PlaylistTrackItem decoder, Dev Mode isPremium default, /items endpoint, and search limit cap
+- BSHaptics (7 methods) and BSAnimation (5 presets) design tokens with reactive scan-completion coverage reload in PlaylistListView
+- PlaylistCoverage struct, PlaylistFilter enum, filteredPlaylists compound search, deleteScan service method, and coverArtMedium design token for Library Polish UI
+- Searchable playlist list with filter chips, color-coded coverage bars, contextual swipe actions, and context menu for scan management
+- Multi-zone selection model with Set<Int> UserDefaults persistence, on-read migration from single selectedZoneId, and mergedBPMRange floor...ceiling computation
+- Multi-select zone toggle grid and custom capsule tolerance picker with haptics, merged BPM range display, and full Set<Int> wiring through RunTabView to ActiveRunView
+- 3-track pre-computed buffer in RunEngineService enabling instant skip via array pop with 1-second cooldown, buffer invalidation on cadence/tempo changes
+- Added SKIP-01 requirement for instant skip buffer and corrected Phase 30 traceability from misattributed RUN-03
+- Replaced 4 XCTAssertTrue(true) stub assertions with real buffer state checks using existing ForTesting helpers
+- Restructured Settings into 5 grouped sections (Account, Run Defaults, Permissions, Debug, About) with SF Symbol icons in heartbeat red and RunDefaultsView sub-page
+- Shimmer skeleton placeholders replacing ProgressView spinners in PlaylistListView and PlaylistDetailView with content-matched shapes and smooth crossfade transitions
+- Explicit .transition(.opacity) on skeleton/content branches for guaranteed crossfade, POL-03/POL-04 added to REQUIREMENTS.md
+- BSAnimation/BSHaptics token migration across 10 view files with run screen animation scoping -- numbers snap instantly, chrome animates smoothly, zero raw values remaining
+- BSHaptics calls added to all 10 target view files with contextual haptic mapping: warning for destructive, success for confirmations, light for standard taps, selection for pickers
+- Added .transition(.opacity) to all conditional view appearances across 11 view files with scoped BSAnimation drivers and defined POL-02 requirement
+
+---
+
 ## v1.5 One Way In (Shipped: 2026-03-25)
 
 **Phases completed:** 3 phases, 3 plans
@@ -10,6 +34,7 @@
 **Delivered:** Unified run flow — Run tab is the single entry point for all runs, old duplicate screen deleted, Library routes to Run tab, and onboarding now includes first-playlist BPM analysis.
 
 **Key accomplishments:**
+
 - Run tab Start Run button works reliably with last-used playlist, zone, and tolerance pre-loaded
 - Old RunView.swift deleted — single entry point via Run tab enforced
 - Library "Run with this playlist" CTA navigates to Run tab via SelectedTabKey EnvironmentKey
@@ -28,6 +53,7 @@
 **Delivered:** BPM data quality layer — confidence tracking, tap-to-correct input, zero-BPM fallback, and developer Sensor Lab for debugging cadence detection.
 
 **Key accomplishments:**
+
 - BPM confidence model (verified/approximate/manual) with lazy backfill migration
 - Confidence badges in playlist view (green/yellow/blue capsules)
 - Tap BPM input with rolling 8-interval average and outlier rejection
@@ -47,6 +73,7 @@
 **Delivered:** Full active run experience — a focused full-screen view composing cadence feedback, zone indicators, music player, and long-press stop, all driven by a reactive sync quality engine.
 
 **Key accomplishments:**
+
 - Reactive sync quality engine: SyncQuality/TempoMode models with cadenceDelta → syncQuality → color token chain
 - Color-coded cadence display with signed delta indicator, zone band visualization, and ramp phase progress
 - Subtle sync-state background color shift as subconscious feedback during runs
@@ -69,6 +96,7 @@
 **Delivered:** Overhauled onboarding, playlist UX, and run setup — making the app feel intentional from first launch through starting a run.
 
 **Key accomplishments:**
+
 - Zone-based running (Z1-Z5 + Free) replacing effort labels, with configurable BPM per zone in Settings
 - Library playlists show analyzed/unanalyzed state with inline swipe-to-analyze
 - Value-framed 3-screen onboarding flow (Spotify, Health/Motion, Zones) gated at app root via AppState enum
@@ -90,6 +118,7 @@
 **Delivered:** Dark-only visual identity with design system, tab navigation, and brand assets — every screen uses design tokens, no hardcoded colors remain.
 
 **Key accomplishments:**
+
 - Design token system: 10 color tokens (#FF4545 accent), 9 font tokens, 7 spacing values, 4 radii, 7 component sizes
 - Global dark mode enforcement via Info.plist + window-level override (belt-and-suspenders)
 - Tab navigation shell with Library/Run/Settings tabs, per-tab NavigationStack, global MiniPlayer
@@ -111,6 +140,7 @@
 **Delivered:** A music-sync running app that detects your cadence in real-time and queues Spotify tracks whose BPM matches your stride.
 
 **Key accomplishments:**
+
 - Spotify OAuth + background playback with lock screen controls
 - BPM data pipeline via GetSongBPM with Cloudflare Worker proxy (bypassing bot protection)
 - Real-time cadence detection via CMPedometer with rolling average smoothing
@@ -121,4 +151,3 @@
 **Git range:** 81138cb → 6a9a248
 
 ---
-

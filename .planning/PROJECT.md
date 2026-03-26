@@ -2,7 +2,7 @@
 
 ## What This Is
 
-BeatStep is an iOS app that syncs your running music to your stride. It detects cadence in real-time via CoreMotion, then queues Spotify tracks whose BPM matches your running rhythm. Supports both free run mode (music adapts to your pace) and guided mode (you set a target BPM with warm-up/cool-down ramps). Smart song selection ranks matches by danceability. The app has a dark-only UI with a cohesive heartbeat red (#FF4545) design system and tab-based navigation.
+BeatStep is an iOS app that syncs your running music to your stride. It detects cadence in real-time via CoreMotion, then queues Spotify tracks whose BPM matches your running rhythm. Supports both free run mode (music adapts to your pace) and guided mode (you set a target BPM with warm-up/cool-down ramps). Smart song selection ranks matches by danceability. Every interaction has haptic feedback and spring animations, with shimmer loading states and instant song skipping. The app has a dark-only UI with a cohesive heartbeat red (#FF4545) design system and tab-based navigation.
 
 ## Core Value
 
@@ -64,20 +64,20 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Onboarding includes first-playlist BPM analysis step before completion — v1.5
 - ✓ Quick start for returning users: last playlist, zone, tolerance pre-loaded on Run tab — v1.5
 
-### Active
-
-<!-- v1.6 Little Big Things -->
-
-- [ ] Contextual scan actions replacing floating scan bar
-- [ ] Library search and filter (All / Analyzed / Unanalyzed)
+- ✓ Spotify API models updated for Feb 2026 endpoint changes — v1.6
+- ✓ BSHaptics (7 methods) and BSAnimation (5 presets) design system tokens — v1.6
+- ✓ Library search and filter (All / Analyzed / Unanalyzed) with coverage bars — v1.6
+- ✓ Contextual scan actions replacing floating scan bar — v1.6
 - ✓ Run menu redesign with cohesive custom components — v1.6
 - ✓ Multi-zone selection with merged BPM range — v1.6
-- [ ] Playlist card redesign with scan quality visibility
-- ✓ Micro-interaction pass (haptics, transitions, loading states) — v1.6
+- ✓ Pre-built skip queue for instant song skipping — v1.6
 - ✓ Settings screen organized into 5 grouped sections with SF Symbol icons and Run Defaults sub-page — v1.6
 - ✓ Shimmer skeleton loading states replacing ProgressView spinners in library views — v1.6
-- ✓ Pre-built skip queue for instant song skipping — v1.6
-- [ ] Fix library analysis status display bug
+- ✓ Micro-interaction pass (haptics, transitions, loading states) — v1.6
+
+### Active
+
+(No active requirements — next milestone not yet planned)
 
 ### Out of Scope
 
@@ -147,40 +147,36 @@ When you run, your music should move with you — every footstrike landing on th
 | SelectedTabKey EnvironmentKey | Avoids deep binding chains for tab switching; injected at NavigationStack level | ✓ Good — PlaylistDetailView reads cleanly |
 | No skip button on onboarding playlist step | First-run experience requires at least one analyzed playlist | ✓ Good — ensures data ready for first run |
 | Fetch 20 playlists for onboarding picker | Enough for selection, avoids pagination complexity in onboarding | ✓ Good — simple and sufficient |
+| Multi-zone Set<Int> over single zone ID | Users select multiple zones for wider BPM range | ✓ Good — mergedBPMRange floor...ceiling works cleanly |
+| Array-based 3-track skip buffer | Pre-computed buffer with removeFirst pop for instant skip | ✓ Good — zero-latency skipping, 1s cooldown prevents spam |
+| Buffer invalidation on cadence commit | tempoMode didSet invalidates buffer — simpler than explicit call | ✓ Good — always matches current pace |
+| BSHaptics/BSAnimation shared tokens | Single source of truth for haptics and animations across all views | ✓ Good — zero raw values in Views/ |
+| Scoped .animation(value:) on run screen | Prevents number jank from rapid cadence updates | ✓ Good — numbers snap, chrome animates |
+| ShimmerModifier with .linear repeatForever | Internal phase animation isolated from SwiftUI transition system | ✓ Good — no conflict with .transition(.opacity) |
+| Label-based section headers in Settings | SF Symbols + foregroundStyle(Color.accent) pattern | ✓ Good — consistent, discoverable sections |
 
 ## Context
 
-Shipped v1.5 with 9,482 LOC Swift across 26 phases (6 milestones). All 6 v1.5 requirements satisfied.
+Shipped v1.6 with 6,845 LOC Swift across 32 phases (7 milestones). 104 files changed in v1.6 alone (+10,927 lines).
 Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer + CMMotionManager), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache, Swift Charts for waveform visualization.
 
-Key architecture additions in v1.5:
-- `SelectedTabKey` — EnvironmentKey for cross-tab navigation (Library CTA → Run tab)
-- `OnboardingPlaylistView` — three-state onboarding view (loading/picker/analyzing) with inline BPM analysis
-- `RunView.swift` deleted — RunTabView is the sole run entry point
-- 4-page onboarding flow: Spotify → Health → Playlist Analysis → Zones
+Key architecture additions in v1.6:
+- `BSHaptics` / `BSAnimation` — design system tokens for haptics (7 types) and animations (5 spring presets)
+- `ShimmerModifier` — gradient sweep animation for skeleton loading states
+- `PlaylistCoverage` / `PlaylistFilter` — typed data models for library search and filtering
+- `SkipQueueBuffer` — pre-computed 3-track buffer for instant song skipping
+- `RunZone.selectedZoneIds` (Set<Int>) — multi-zone selection with merged BPM range
+- 41 `.transition(.opacity)` instances across all conditional views for crossfade transitions
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
 
 Known issues:
 - Pre-existing test failure: SpotifyAPIServiceTests.testPlaylistTrackDecoding (XCTUnwrap on SpotifyTrack)
-
-## Current Milestone: v1.6 Little Big Things
-
-**Goal:** Polish the UI, fix interaction pain points, and make every screen feel intentionally designed.
-
-**Target features:**
-- Contextual scan actions (replace floating bar)
-- Library search + filter
-- Run menu rebuild (custom components, haptics, multi-zone)
-- Playlist card redesign
-- Micro-interaction pass
-- Settings screen structure
-- Instant skip queue
-- Analysis status bug fix
+- "Select for Run" context menu in PlaylistListView doesn't set LastRunPlaylist (workaround: use PlaylistDetailView path)
 
 ## Current State
 
-v1.6 in progress. Phase 30 complete — skip queue with 3-track pre-computed buffer for instant song transitions. 27 phases complete across 6 milestones.
+v1.6 complete. All 6 phases shipped, 58/58 must-haves verified. Every screen has haptic feedback, spring animations, and smooth transitions. Next milestone not yet planned.
 
 ---
-*Last updated: 2026-03-26 after Phase 31 (settings-skeleton-states) completion*
+*Last updated: 2026-03-26 after v1.6 (Little Big Things) milestone completion*

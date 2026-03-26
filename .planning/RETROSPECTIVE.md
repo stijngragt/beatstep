@@ -270,6 +270,54 @@
 
 ---
 
+## Milestone: v1.6 — Little Big Things
+
+**Shipped:** 2026-03-26
+**Phases:** 6 | **Plans:** 15 | **Sessions:** ~3
+
+### What Was Built
+- Design system tokens: BSHaptics (7 methods) and BSAnimation (5 spring presets) shared across all views
+- Library overhaul: search, filter chips (All/Analyzed/Unanalyzed), color-coded coverage bars, contextual swipe/long-press menus
+- Run menu rebuild: multi-zone selection with Set<Int> persistence, merged BPM range, custom capsule components
+- Instant skip queue: pre-computed 3-track buffer with array pop, 1-second cooldown, automatic background refill
+- Settings restructure: 5 grouped sections (Account, Run Defaults, Permissions, Debug, About) with SF Symbol icons
+- Shimmer skeleton loading states replacing ProgressView spinners in library views
+- Micro-interaction pass: haptics on every button (41 BSHaptics calls), spring animations replacing all raw values, .transition(.opacity) on all 41 conditional views
+
+### What Worked
+- **Parallel worktree execution** — Wave 1 of Phase 32 ran 2 agents in isolated git worktrees simultaneously, completing in ~5 minutes. Merge conflicts were minimal and mechanical (STATE.md/ROADMAP.md only).
+- **Token-first approach** — Phase 27 created BSHaptics/BSAnimation tokens before any downstream phase used them. Phase 32 was then pure migration to tokens — no invention needed.
+- **Integration checker value** — Found the "Select for Run" wiring bug that all 6 phase-level verifications missed. Cross-phase perspective continues to justify its cost.
+- **Gap closure maturity** — Phases 30 and 31 each had gap-closure plans that ran cleanly. The pattern is now second nature.
+- **Wave-based dependency management** — Phase 32's wave structure (animation tokens before opacity transitions) prevented conflicts between agents modifying the same files.
+
+### What Was Inefficient
+- **Requirements traceability gap** — 7 requirement IDs (POL-01, INF-01, LIB-01-05) referenced in ROADMAP but never defined in REQUIREMENTS.md. RUN-01/RUN-02 traced to wrong phases. Should formalize all requirement IDs during roadmap creation, not after.
+- **Nyquist validation still incomplete** — Only Phase 31 achieved compliance (1/6). Systemic gap across 7 milestones now.
+- **"Select for Run" context menu wiring** — PlaylistListView's context menu action switches tabs but doesn't set LastRunPlaylist. This is a real bug that made it through all phases. Integration checker caught it but only at milestone audit — should have been caught during Phase 28 execution.
+- **SUMMARY one-liner fields** — Seventh milestone without populated one-liners. Now reliably populated by executor agents — trend has reversed.
+
+### Patterns Established
+- BSHaptics/BSAnimation as the single source of truth for all haptic and animation values — zero raw values in Views/
+- Scoped `.animation(value:)` on run screen to prevent number jank from rapid cadence updates
+- ShimmerModifier with `.linear.repeatForever()` internal animation isolated from SwiftUI's `.transition()` system
+- Label-based section headers with SF Symbols + foregroundStyle(Color.accent) for consistent Settings sections
+- Array-based buffer with removeFirst pop for instant resource availability (skip queue pattern)
+
+### Key Lessons
+1. **Formalize all requirement IDs during roadmap creation** — every REQ-ID in ROADMAP phase details must exist in REQUIREMENTS.md before execution begins. Catching 7 missing IDs at audit is too late.
+2. **Integration checker should run per-wave, not just per-milestone** — the "Select for Run" bug was introduced in Phase 28 but only found during milestone audit. Running integration checks between phases would catch wiring gaps earlier.
+3. **Worktree-based parallel execution works well** — isolated git worktrees prevent agent conflicts. Merge resolution is mechanical and fast. Worth the slightly higher disk usage.
+4. **Token-first architecture enables parallel polish passes** — when design tokens exist, multiple agents can independently add haptics/animations/transitions without coordination.
+5. **Scoped animations prevent cascading jank** — always use `.animation(value:)` instead of blanket `.animation()` when rapid data changes are possible.
+
+### Cost Observations
+- Model mix: ~60% opus (execution), ~30% sonnet (verification/integration), ~10% haiku
+- Sessions: ~3 in a single day
+- Notable: 15 plans across 6 phases completed in ~5 hours wall time. Largest milestone by plan count but efficient due to parallel execution.
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -282,6 +330,7 @@
 | v1.3 | ~3 | 5 | Component-first assembly, gap closure cycle, reactive chain |
 | v1.4 | ~2 | 6 | Pure-logic engine pattern, integration checker value, lazy backfill |
 | v1.5 | ~1 | 3 | Smallest milestone, delete-first approach, EnvironmentKey navigation |
+| v1.6 | ~3 | 6 | Largest milestone (15 plans), parallel worktree execution, token-first polish |
 
 ### Cumulative Quality
 
@@ -293,6 +342,7 @@
 | v1.3 | 70+ | Services + models + views + run screen | 0 (all SwiftUI native) |
 | v1.4 | 90+ | Services + models + views + engine + debug | 0 (Swift Charts is first-party) |
 | v1.5 | 90+ | Services + models + views + onboarding + navigation | 0 (no new deps) |
+| v1.6 | 90+ | Services + models + views + design system + polish | 0 (all SwiftUI native) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -312,3 +362,7 @@
 14. Delete the old path before wiring the new — structural enforcement via grep-for-zero-references (v1.5 — RunView deletion)
 15. EnvironmentKey beats deep binding chains for cross-tab navigation (v1.5 — SelectedTabKey)
 16. Small, tightly-scoped milestones ship fast and clean — zero gaps, zero rework (v1.2, v1.5)
+17. Formalize all requirement IDs in REQUIREMENTS.md during roadmap creation, not at audit time (v1.6 — 7 missing IDs)
+18. Token-first architecture enables parallel polish passes — agents can independently apply tokens (v1.6 — BSHaptics/BSAnimation)
+19. Worktree-based parallel execution works well with mechanical merge resolution (v1.6 — Phase 32 Wave 1)
+20. Always use scoped `.animation(value:)` over blanket `.animation()` when rapid data changes are possible (v1.6 — run screen jank prevention)
