@@ -37,6 +37,7 @@ struct SettingsView: View {
                     }
 
                     Button(role: .destructive) {
+                        BSHaptics.warning()
                         SpotifyPlayerService.shared.disconnect()
                         SpotifyAuthService.shared.disconnect()
                     } label: {
@@ -89,6 +90,7 @@ struct SettingsView: View {
                 }
 
                 Button("Open Settings") {
+                    BSHaptics.light()
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
@@ -120,6 +122,7 @@ struct SettingsView: View {
                     .foregroundStyle(Color.textSecondary)
                     .frame(maxWidth: .infinity)
                     .onTapGesture {
+                        BSHaptics.selection()
                         debugTapCount += 1
                         if debugTapCount >= 5 {
                             sensorLabEnabled.toggle()
