@@ -45,7 +45,7 @@ struct RunZone: Identifiable, Equatable {
         UserDefaults.standard.removeObject(forKey: key)
     }
 
-    // MARK: - Selected Zone Persistence
+    // MARK: - Selected Zone Persistence (Single — kept for migration)
 
     private static let selectedKey = "selectedRunZoneId"
 
@@ -57,5 +57,36 @@ struct RunZone: Identifiable, Equatable {
         set {
             UserDefaults.standard.set(newValue ?? 0, forKey: selectedKey)
         }
+    }
+
+    // MARK: - Multi-Zone Selection
+
+    private static let selectedIdsKey = "selectedRunZoneIds"
+
+    static var selectedZoneIds: Set<Int> {
+        get {
+            if let array = UserDefaults.standard.array(forKey: selectedIdsKey) as? [Int] {
+                return Set(array)
+            }
+            // Migration: check old single-select key
+            if let singleId = selectedZoneId {
+                return Set([singleId])
+            }
+            return Set()
+        }
+        set {
+            UserDefaults.standard.set(Array(newValue).sorted(), forKey: selectedIdsKey)
+        }
+    }
+
+    // MARK: - Merged BPM Range
+
+    static func mergedBPMRange(for zoneIds: Set<Int>) -> ClosedRange<Int>? {
+        let matchedZones = saved.filter { zoneIds.contains($0.id) }
+        guard let minBPM = matchedZones.map(\.bpm).min(),
+              let maxBPM = matchedZones.map(\.bpm).max() else {
+            return nil
+        }
+        return minBPM...maxBPM
     }
 }
