@@ -113,6 +113,16 @@ final class LibraryScanServiceTests: XCTestCase {
         XCTAssertNil(scanService.scanningPlaylistID, "scanningPlaylistID should be nil after scan completes")
     }
 
+    // MARK: - Delete Scan
+
+    func testDeleteScan() {
+        // Stub: Will test that deleteScan removes ScannedPlaylist from SwiftData context
+        // 1. Insert a ScannedPlaylist into the in-memory container
+        // 2. Call scanService.deleteScan(playlistID:)
+        // 3. Verify the ScannedPlaylist no longer exists
+        XCTFail("Wave 0 stub — implement deleteScan method first")
+    }
+
     // MARK: - Helpers
 
     private func makeSpotifyTrack(id: String, name: String, artist: String) -> SpotifyTrack {
