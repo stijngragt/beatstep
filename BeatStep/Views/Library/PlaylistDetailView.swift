@@ -21,10 +21,13 @@ struct PlaylistDetailView: View {
         Group {
             if isLoading && tracks.isEmpty {
                 PlaylistDetailSkeleton()
+                    .transition(.opacity)
             } else if let error, tracks.isEmpty {
                 errorView(message: error)
+                    .transition(.opacity)
             } else {
                 trackList
+                    .transition(.opacity)
             }
         }
         .animation(BSAnimation.smooth, value: isLoading)

@@ -68,10 +68,13 @@ struct PlaylistListView: View {
         Group {
             if isLoading && playlists.isEmpty {
                 PlaylistListSkeleton()
+                    .transition(.opacity)
             } else if let error, playlists.isEmpty {
                 errorView(message: error)
+                    .transition(.opacity)
             } else {
                 playlistList
+                    .transition(.opacity)
             }
         }
         .animation(BSAnimation.smooth, value: isLoading)
