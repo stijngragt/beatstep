@@ -151,10 +151,11 @@ Plans:
   2. Each section is visually distinct with clear headers and the user can find any setting within 2 taps
   3. Library playlist list shows shimmer skeleton placeholders while loading instead of a blank screen
   4. Any view that loads async data shows a skeleton state before content appears
-**Plans**: 2 plans
+**Plans**: 3 plans
 Plans:
 - [x] 31-01-PLAN.md -- Settings restructure (5 grouped sections, SF Symbol icons, RunDefaultsView sub-page, dynamic version)
 - [x] 31-02-PLAN.md -- Shimmer skeleton loading states (ShimmerModifier, PlaylistListSkeleton, PlaylistDetailSkeleton)
+- [ ] 31-03-PLAN.md -- Gap closure: explicit opacity crossfade transitions + POL requirement definitions
 
 ### Phase 32: Micro-Interaction Pass
 **Goal**: Every tap, selection, and state change in the app has appropriate haptic feedback and fluid spring animations
@@ -205,5 +206,5 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 28. Library Polish | 2/2 | Complete    | 2026-03-26 | - |
 | 29. Run Menu Rebuild | v1.6 | 2/2 | Complete    | 2026-03-26 |
 | 30. Skip Queue | v1.6 | 2/3 | Complete    | 2026-03-26 |
-| 31. Settings + Skeleton States | v1.6 | 1/2 | In Progress|  |
+| 31. Settings + Skeleton States | v1.6 | 2/3 | In Progress|  |
 | 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |
