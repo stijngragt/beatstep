@@ -68,7 +68,7 @@ struct TapBPMView: View {
                 }
             }
             .padding(.vertical, Spacing.sm)
-            .animation(.default, value: engine.isStable)
+            .animation(BSAnimation.smooth, value: engine.isStable)
 
             // MARK: - Tap Zone
             Rectangle()
@@ -91,8 +91,7 @@ struct TapBPMView: View {
                 .onTapGesture {
                     engine.tap()
                     if engine.lastTapWasOutlier {
-                        let generator = UINotificationFeedbackGenerator()
-                        generator.notificationOccurred(.error)
+                        BSHaptics.error()
                         withAnimation(.default.speed(6)) {
                             showShake = true
                         }
@@ -100,13 +99,12 @@ struct TapBPMView: View {
                             showShake = false
                         }
                     } else {
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        BSHaptics.light()
+                        withAnimation(BSAnimation.quick) {
                             showTapFlash = true
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                            withAnimation(.easeIn(duration: 0.1)) {
+                            withAnimation(BSAnimation.quick) {
                                 showTapFlash = false
                             }
                         }
@@ -117,6 +115,7 @@ struct TapBPMView: View {
             // MARK: - Bottom Bar
             HStack {
                 Button {
+                    BSHaptics.light()
                     engine.reset()
                 } label: {
                     Text("Reset")
@@ -164,8 +163,7 @@ struct TapBPMView: View {
             artist: track.artistName,
             bpm: bpm
         )
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        BSHaptics.success()
         onSave(bpm)
         dismiss()
     }

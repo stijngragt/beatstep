@@ -87,6 +87,7 @@ struct ActiveRunView: View {
 
                     // Tempo mode toggle
                     Button {
+                        BSHaptics.light()
                         let newMode: TempoMode = runEngine.tempoMode == .oneToOne ? .half : .oneToOne
                         runEngine.tempoMode = newMode
                         newMode.save()
@@ -103,6 +104,7 @@ struct ActiveRunView: View {
                     // Cool Down button (guided mode only, not during cool down)
                     if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
                         Button {
+                            BSHaptics.light()
                             runEngine.startCoolDown()
                         } label: {
                             Label("Cool Down", systemImage: "arrow.down.heart")

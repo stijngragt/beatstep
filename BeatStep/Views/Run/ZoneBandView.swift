@@ -40,7 +40,7 @@ struct ZoneBandView: View {
                     .fill(syncQuality.color)
                     .frame(width: 12, height: 12)
                     .offset(x: normalizedPosition * (geo.size.width - 12))
-                    .animation(.easeInOut(duration: 0.3), value: currentCadence)
+                    .animation(BSAnimation.smooth, value: currentCadence)
             }
         }
         .frame(height: 12)

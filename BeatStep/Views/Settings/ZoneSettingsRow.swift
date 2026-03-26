@@ -7,7 +7,8 @@ struct ZoneSettingsRow: View {
     var body: some View {
         VStack(spacing: 0) {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                BSHaptics.selection()
+                withAnimation(BSAnimation.snappy) {
                     isExpanded.toggle()
                 }
             } label: {
@@ -27,6 +28,9 @@ struct ZoneSettingsRow: View {
                     Text("\(zone.bpm) BPM")
                         .font(.subheading)
                         .monospacedDigit()
+                }
+                .onChange(of: zone.bpm) {
+                    BSHaptics.selection()
                 }
                 .padding(.top, Spacing.sm)
             }

@@ -35,7 +35,7 @@ struct OnboardingFlow: View {
     // MARK: - Navigation
 
     private func advanceTo(_ page: Int, proxy: ScrollViewProxy) {
-        withAnimation(.easeInOut(duration: 0.35)) {
+        withAnimation(BSAnimation.page) {
             proxy.scrollTo(page, anchor: .leading)
         }
         currentPage = page

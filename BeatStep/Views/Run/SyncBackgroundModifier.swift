@@ -12,7 +12,7 @@ struct SyncBackgroundModifier: ViewModifier {
             .background(
                 backgroundColor.opacity(0.08)
                     .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.6), value: syncQuality)
+                    .animation(BSAnimation.gentle, value: syncQuality)
             )
     }
 }

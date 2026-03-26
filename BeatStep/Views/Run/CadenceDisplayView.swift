@@ -53,6 +53,7 @@ struct CadenceDisplayView: View {
             }
         }
         .font(.system(size: 24, weight: .semibold))
+        .animation(BSAnimation.quick, value: trend)
     }
 }
 

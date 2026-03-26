@@ -42,7 +42,7 @@ struct RampPhaseIndicator: View {
                     Capsule()
                         .fill(Color.accent)
                         .frame(width: geo.size.width * currentProgress)
-                        .animation(.easeInOut(duration: 0.5), value: effectiveBPM)
+                        .animation(BSAnimation.smooth, value: effectiveBPM)
                 }
             }
             .frame(height: 4)

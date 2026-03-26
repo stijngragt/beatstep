@@ -34,7 +34,7 @@ private struct SyncBadge: View {
                 Capsule()
                     .fill(quality.color.opacity(0.15))
             )
-            .animation(.easeInOut(duration: 0.3), value: quality)
+            .animation(BSAnimation.gentle, value: quality)
     }
 }
 

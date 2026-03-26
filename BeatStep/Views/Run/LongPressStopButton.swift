@@ -58,6 +58,7 @@ struct LongPressStopButton: View {
                 pressTimer?.invalidate()
                 pressTimer = nil
                 pressStart = nil
+                BSHaptics.success()
                 onStop()
             }
         }
@@ -67,7 +68,7 @@ struct LongPressStopButton: View {
         pressTimer?.invalidate()
         pressTimer = nil
         pressStart = nil
-        withAnimation(.easeOut(duration: 0.2)) {
+        withAnimation(BSAnimation.quick) {
             currentProgress = 0
         }
     }
