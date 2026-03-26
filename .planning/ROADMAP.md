@@ -109,7 +109,10 @@ Plans:
   2. User can tap filter chips (All / Analyzed / Unanalyzed) and see only matching playlists
   3. Each playlist card displays a visual indicator showing how many tracks have BPM data vs total tracks
   4. User can swipe or long-press a playlist to scan or delete scan — no floating scan bar visible anywhere
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 28-01-PLAN.md -- Data model upgrade (PlaylistCoverage, PlaylistFilter, deleteScan, coverArtMedium token)
+- [ ] 28-02-PLAN.md -- Library UI overhaul (search, filter chips, coverage bar, context menu)
 
 ### Phase 29: Run Menu Rebuild
 **Goal**: The Run tab feels cohesive and intentional with custom-designed components, haptic feedback on every selection, and multi-zone BPM range support
@@ -189,7 +192,7 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 25. Consolidate Run Entry | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 26. Onboarding Analysis Step | v1.5 | 1/1 | Complete | 2026-03-25 |
 | 27. Foundation + Fixes | 2/2 | Complete    | 2026-03-25 | - |
-| 28. Library Polish | v1.6 | 0/? | Not started | - |
+| 28. Library Polish | v1.6 | 0/2 | Not started | - |
 | 29. Run Menu Rebuild | v1.6 | 0/? | Not started | - |
 | 30. Skip Queue | v1.6 | 0/? | Not started | - |
 | 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
