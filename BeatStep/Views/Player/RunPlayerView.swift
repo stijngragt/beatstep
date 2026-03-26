@@ -51,14 +51,20 @@ struct RunPlayerView: View {
 
             // Playback controls
             HStack(spacing: Spacing.lg) {
-                Button(action: onPlayPause) {
+                Button {
+                    BSHaptics.light()
+                    onPlayPause()
+                } label: {
                     Image(systemName: isPaused ? "play.fill" : "pause.fill")
                         .font(.system(size: 28))
                         .frame(width: 56, height: 56)
                         .background(Circle().fill(Color.surfaceOverlay))
                 }
 
-                Button(action: onSkip) {
+                Button {
+                    BSHaptics.light()
+                    onSkip()
+                } label: {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 28))
                         .frame(width: 56, height: 56)

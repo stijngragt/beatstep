@@ -51,6 +51,7 @@ struct OnboardingZonesView: View {
             // Action buttons
             VStack(spacing: Spacing.md) {
                 Button {
+                    BSHaptics.success()
                     onComplete()
                 } label: {
                     Text("Get Started")
@@ -63,6 +64,7 @@ struct OnboardingZonesView: View {
                 }
 
                 Button {
+                    BSHaptics.light()
                     onComplete()
                 } label: {
                     Text("Skip")
