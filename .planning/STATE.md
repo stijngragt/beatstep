@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
-stopped_at: Completed 31-01-PLAN.md (Settings grouped sections)
+stopped_at: Completed phase 31 (both plans)
 last_updated: "2026-03-26T11:39:17.956Z"
 last_activity: 2026-03-26
 progress:
@@ -57,6 +57,7 @@ Progress: [████████░░] 75%
 | Phase 30 P01 | 5 min | 2 tasks | 2 files |
 | Phase 30 P02 | 2min | 1 tasks | 2 files |
 | Phase 31-settings-skeleton-states P01 | 3 min | 2 tasks | 2 files |
+| Phase 31 P02 | 2 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Recent decisions affecting current work:
 - [Phase 30]: SKIP-01 as requirement ID for skip queue (category prefix + sequence number convention)
 - [Phase 31-01]: Disconnect Spotify moved into Account section with destructive role
 - [Phase 31-01]: Label-based section headers with SF Symbols + foregroundStyle(Color.accent) pattern established
+- [Phase 31]: Shimmer applied at container level for unified animation phase
 
 ### Pending Todos
 
@@ -100,5 +102,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26T11:39:17.954Z
-Stopped at: Completed 31-01-PLAN.md (Settings grouped sections)
+Stopped at: Completed phase 31 (both plans)
 Resume file: None
