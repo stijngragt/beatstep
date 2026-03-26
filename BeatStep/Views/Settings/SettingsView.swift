@@ -4,18 +4,22 @@ import SwiftUI
 
 struct SettingsView: View {
     private var authService: SpotifyAuthService { .shared }
-    @State private var zones: [RunZone] = RunZone.saved
-    @State private var zeroBPMFallback: ZeroBPMFallback = .saved
     @AppStorage("hasRequestedHealth") private var hasRequestedHealth = false
     @AppStorage("hasRequestedMotion") private var hasRequestedMotion = false
     @AppStorage("sensorLabEnabled") private var sensorLabEnabled = false
     @State private var debugTapCount = 0
 
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
     var body: some View {
         List {
-            // User info section
+            // 1. Account
             if let user = authService.currentUser {
-                Section("Account") {
+                Section {
                     if let name = user.displayName {
                         HStack {
                             Text("Name")
@@ -31,33 +35,39 @@ struct SettingsView: View {
                         Spacer()
                         Text(user.isPremium ? "Premium" : "Free")
                     }
-                }
-            }
 
-            // Running Zones section
-            Section("Running Zones") {
-                ForEach($zones) { $zone in
-                    ZoneSettingsRow(zone: $zone)
-                }
-
-                Button("Reset to Defaults") {
-                    zones = RunZone.defaults
-                    RunZone.resetToDefaults()
-                }
-                .foregroundStyle(Color.accent)
-            }
-
-            // Playback section
-            Section("Playback") {
-                Picker("No-BPM Tracks", selection: $zeroBPMFallback) {
-                    ForEach(ZeroBPMFallback.allCases, id: \.self) { option in
-                        Text(option.displayName).tag(option)
+                    Button(role: .destructive) {
+                        SpotifyPlayerService.shared.disconnect()
+                        SpotifyAuthService.shared.disconnect()
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Disconnect Spotify")
+                            Spacer()
+                        }
                     }
+                } header: {
+                    Label("Account", systemImage: "person.circle")
+                        .foregroundStyle(Color.accent)
+                        .font(.captionBold)
                 }
             }
 
-            // Permissions section
-            Section("Permissions") {
+            // 2. Run Defaults
+            Section {
+                NavigationLink {
+                    RunDefaultsView()
+                } label: {
+                    Text("Running Zones & Playback")
+                }
+            } header: {
+                Label("Run Defaults", systemImage: "figure.run")
+                    .foregroundStyle(Color.accent)
+                    .font(.captionBold)
+            }
+
+            // 3. Permissions
+            Section {
                 HStack {
                     Text("Motion Access")
                         .foregroundStyle(Color.textSecondary)
@@ -84,34 +94,28 @@ struct SettingsView: View {
                     }
                 }
                 .foregroundStyle(Color.accent)
+            } header: {
+                Label("Permissions", systemImage: "lock.shield")
+                    .foregroundStyle(Color.accent)
+                    .font(.captionBold)
             }
 
-            // Disconnect section
-            Section {
-                Button(role: .destructive) {
-                    SpotifyPlayerService.shared.disconnect()
-                    SpotifyAuthService.shared.disconnect()
-                } label: {
-                    HStack {
-                        Spacer()
-                        Text("Disconnect Spotify")
-                        Spacer()
-                    }
-                }
-            }
-
-            // Sensor Lab (hidden until activated)
+            // 4. Debug (only when enabled)
             if sensorLabEnabled {
                 Section {
                     NavigationLink("Sensor Lab") {
                         SensorLabView()
                     }
+                } header: {
+                    Label("Debug", systemImage: "wrench.and.screwdriver")
+                        .foregroundStyle(Color.accent)
+                        .font(.captionBold)
                 }
             }
 
-            // Version footer with hidden debug toggle
+            // 5. About
             Section {
-                Text("BeatStep v1.4")
+                Text("BeatStep v\(appVersion)")
                     .font(.captionText)
                     .foregroundStyle(Color.textSecondary)
                     .frame(maxWidth: .infinity)
@@ -122,15 +126,16 @@ struct SettingsView: View {
                             debugTapCount = 0
                         }
                     }
+            } header: {
+                Label("About", systemImage: "info.circle")
+                    .foregroundStyle(Color.accent)
+                    .font(.captionBold)
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.surfaceBase)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: zones) { _, newValue in
-            RunZone.saveAll(newValue)
-        }
-        .onChange(of: zeroBPMFallback) { _, newValue in
-            newValue.save()
-        }
     }
 }
