@@ -29,11 +29,10 @@ Source: DesignTokens.swift (existing project tokens)
 
 ## Spacing Scale
 
-Declared values from existing `Spacing` enum in DesignTokens.swift:
+Declared values from existing `Spacing` enum in DesignTokens.swift (multiples of 4 only):
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xxs | 2pt | Micro gaps (label-to-label) |
 | xs | 4pt | Icon gaps, inline padding |
 | sm | 8pt | Compact element spacing, MiniPlayer vertical padding |
 | md | 16pt | Default element spacing, MiniPlayer horizontal padding |
@@ -42,6 +41,8 @@ Declared values from existing `Spacing` enum in DesignTokens.swift:
 | xxl | 48pt | Major section breaks |
 
 Exceptions: none for this phase. The fix targets zero-gap docking between MiniPlayerView bottom edge and tab bar top edge (D-01). No new spacing tokens introduced.
+
+Note: The project's `Spacing` enum also defines `xxs` (2pt) which is not a multiple of 4. That token is not used in this phase and is omitted from this contract.
 
 ---
 
@@ -52,9 +53,11 @@ No typography changes in this phase. Existing tokens used by MiniPlayerView are 
 | Role | Size | Weight | Line Height | Token |
 |------|------|--------|-------------|-------|
 | Body Bold | 16pt | .semibold (600) | default | `.bodyBold` |
-| Caption Bold | 13pt | .medium (500) | default | `.captionBold` |
+| Caption Bold | 13pt | .semibold (600) | default | `.captionBold` |
 | Caption | 13pt | .regular (400) | default | `.captionText` |
-| Label | 11pt | .medium (500) | default | `.labelText` |
+| Label | 11pt | .regular (400) | default | `.labelText` |
+
+Weights used: `.regular (400)` and `.semibold (600)` (2 weights).
 
 Source: DesignTokens.swift Font extension
 
