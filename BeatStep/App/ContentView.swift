@@ -59,11 +59,24 @@ struct ContentView: View {
 
     // MARK: - Authenticated View
 
+    private var miniPlayerVisible: Bool {
+        SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive
+    }
+
+    @ViewBuilder
+    private var miniPlayerInset: some View {
+        if miniPlayerVisible {
+            MiniPlayerView()
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
     private var authenticatedView: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 PlaylistListView()
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) { miniPlayerInset }
             .environment(\.selectedTab, $selectedTab)
             .tag(Tab.library)
             .tabItem {
@@ -73,6 +86,7 @@ struct ContentView: View {
             NavigationStack {
                 RunTabView(selectedTab: $selectedTab)
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) { miniPlayerInset }
             .tag(Tab.run)
             .tabItem {
                 Label("Run", systemImage: "waveform.path.ecg")
@@ -81,19 +95,14 @@ struct ContentView: View {
             NavigationStack {
                 SettingsView()
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) { miniPlayerInset }
             .tag(Tab.settings)
             .tabItem {
                 Label("Settings", systemImage: "gearshape")
             }
         }
         .tint(Color.accent)
-        .safeAreaInset(edge: .bottom) {
-            if SpotifyPlayerService.shared.currentTrack != nil && !RunEngineService.shared.isRunActive {
-                MiniPlayerView()
-                    .transition(.opacity)
-            }
-        }
-        .animation(BSAnimation.smooth, value: SpotifyPlayerService.shared.currentTrack != nil)
+        .animation(BSAnimation.smooth, value: miniPlayerVisible)
         .task {
             await LibraryScanService.shared.scanEnabledPlaylists()
         }
