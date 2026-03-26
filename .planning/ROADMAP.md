@@ -138,8 +138,8 @@ Plans:
   3. The skip buffer refills automatically in the background after each skip
 **Plans**: 3 plans
 Plans:
-- [ ] 30-01-PLAN.md -- Buffer infrastructure + lifecycle wiring (buffer, pop, refill, invalidation, cooldown)
-- [ ] 30-02-PLAN.md -- Fix requirements traceability (add SKIP-01, correct ROADMAP references)
+- [x] 30-01-PLAN.md -- Buffer infrastructure + lifecycle wiring (buffer, pop, refill, invalidation, cooldown)
+- [x] 30-02-PLAN.md -- Fix requirements traceability (add SKIP-01, correct ROADMAP references)
 - [ ] 30-03-PLAN.md -- Replace stub test assertions with real buffer state checks
 
 ### Phase 31: Settings + Skeleton States
@@ -201,6 +201,6 @@ Note: Phases 28 and 29 depend only on 27 (not each other). Phase 31 depends only
 | 27. Foundation + Fixes | 2/2 | Complete    | 2026-03-25 | - |
 | 28. Library Polish | 2/2 | Complete    | 2026-03-26 | - |
 | 29. Run Menu Rebuild | v1.6 | 2/2 | Complete    | 2026-03-26 |
-| 30. Skip Queue | v1.6 | 1/3 | In progress | - |
+| 30. Skip Queue | v1.6 | 2/3 | In Progress|  |
 | 31. Settings + Skeleton States | v1.6 | 0/? | Not started | - |
 | 32. Micro-Interaction Pass | v1.6 | 0/? | Not started | - |
