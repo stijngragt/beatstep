@@ -18,6 +18,7 @@ final class LibraryScanService {
 
     var scanningPlaylistID: String?
     var scanProgress: ScanProgress?
+    var scanCompletionCount: Int = 0
 
     private init() {}
 
@@ -113,6 +114,7 @@ final class LibraryScanService {
         } catch {
             debugPrint("SCAN: Failed to scan playlist \(playlistID): \(error)")
         }
+        scanCompletionCount += 1
         scanningPlaylistID = nil
     }
 
@@ -155,6 +157,14 @@ final class LibraryScanService {
         if let existing = try? context.fetch(descriptor).first {
             existing.totalTracks = totalTracks
             existing.lastScanned = Date()
+        } else {
+            let newRecord = ScannedPlaylist(
+                spotifyPlaylistID: playlistID,
+                name: name,
+                totalTracks: totalTracks
+            )
+            newRecord.lastScanned = Date()
+            context.insert(newRecord)
         }
         try? context.save()
     }
