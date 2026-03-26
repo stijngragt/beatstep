@@ -33,11 +33,16 @@ struct OnboardingHealthView: View {
 
             // Action buttons
             VStack(spacing: Spacing.md) {
-                if permissionsRequested {
-                    continueButton
-                } else {
-                    allowButton
+                Group {
+                    if permissionsRequested {
+                        continueButton
+                            .transition(.opacity)
+                    } else {
+                        allowButton
+                            .transition(.opacity)
+                    }
                 }
+                .animation(BSAnimation.smooth, value: permissionsRequested)
 
                 Button {
                     BSHaptics.light()

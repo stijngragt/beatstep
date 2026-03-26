@@ -14,14 +14,19 @@ struct OnboardingPlaylistView: View {
         VStack(spacing: Spacing.xl) {
             if isLoading {
                 loadingState
+                    .transition(.opacity)
             } else if let selected = selectedPlaylist {
                 analyzingState(playlist: selected)
+                    .transition(.opacity)
             } else {
                 pickerState
+                    .transition(.opacity)
             }
         }
         .padding(.horizontal, Spacing.xl)
         .background(Color.surfaceBase)
+        .animation(BSAnimation.smooth, value: isLoading)
+        .animation(BSAnimation.smooth, value: selectedPlaylist != nil)
         .task {
             await loadPlaylists()
         }
@@ -149,24 +154,29 @@ struct OnboardingPlaylistView: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: ComponentSize.iconLarge))
                         .foregroundStyle(Color.stateSuccess)
+                        .transition(.opacity)
 
                     Text("Ready to Run!")
                         .font(.heading)
                         .foregroundStyle(Color.textPrimary)
+                        .transition(.opacity)
 
                     Text("\(playlist.name) has been analyzed. BeatStep can now match these songs to your running pace.")
                         .font(.bodyText)
                         .foregroundStyle(Color.textSecondary)
                         .multilineTextAlignment(.center)
+                        .transition(.opacity)
                 } else {
                     ProgressView()
                         .scaleEffect(1.5)
                         .padding(.bottom, Spacing.sm)
+                        .transition(.opacity)
 
                     Text("Analyzing \(playlist.name)")
                         .font(.heading)
                         .foregroundStyle(Color.textPrimary)
                         .multilineTextAlignment(.center)
+                        .transition(.opacity)
 
                     if let progress = scanService.scanProgress {
                         Text("Analyzing... \(progress.scanned)/\(progress.total) tracks")
@@ -179,6 +189,7 @@ struct OnboardingPlaylistView: View {
                     }
                 }
             }
+            .animation(BSAnimation.smooth, value: analysisComplete)
 
             Spacer()
 
@@ -195,6 +206,7 @@ struct OnboardingPlaylistView: View {
                         .foregroundStyle(Color.textOnAccent)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.pill))
                 }
+                .transition(.opacity)
             }
 
             Spacer()

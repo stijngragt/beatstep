@@ -27,16 +27,22 @@ struct OnboardingSpotifyView: View {
             Spacer()
 
             // Error / Loading
-            if authService.isCheckingAuth {
-                ProgressView("Connecting...")
-                    .padding()
-            } else if let error = authService.authError {
-                errorView(message: error)
+            Group {
+                if authService.isCheckingAuth {
+                    ProgressView("Connecting...")
+                        .padding()
+                        .transition(.opacity)
+                } else if let error = authService.authError {
+                    errorView(message: error)
+                        .transition(.opacity)
+                }
             }
+            .animation(BSAnimation.smooth, value: authService.isCheckingAuth)
 
             // Connect button
             if !authService.isCheckingAuth {
                 connectButton
+                    .transition(.opacity)
             }
 
             Spacer()

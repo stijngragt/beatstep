@@ -52,6 +52,7 @@ struct SettingsView: View {
                         .foregroundStyle(Color.accent)
                         .font(.captionBold)
                 }
+                .transition(.opacity)
             }
 
             // 2. Run Defaults
@@ -113,6 +114,7 @@ struct SettingsView: View {
                         .foregroundStyle(Color.accent)
                         .font(.captionBold)
                 }
+                .transition(.opacity)
             }
 
             // 5. About
@@ -138,6 +140,8 @@ struct SettingsView: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(Color.surfaceBase)
+        .animation(BSAnimation.smooth, value: authService.currentUser != nil)
+        .animation(BSAnimation.smooth, value: sensorLabEnabled)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
     }

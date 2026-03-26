@@ -38,6 +38,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Polish
 
+- [x] **POL-02**: All interactive elements provide haptic feedback (BSHaptics tokens) and view transitions use spring animations (BSAnimation tokens) with explicit .transition(.opacity) on conditional appearances
 - [x] **POL-03**: Loading states use shimmer skeleton placeholders instead of ProgressView spinners for library views
 - [x] **POL-04**: Settings screen organized into grouped sections (Account, Run Defaults, Permissions, Debug, About) with SF Symbol icons and discoverable structure
 
@@ -102,12 +103,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RUN-02 | Phase 5 | Pending |
 | RUN-03 | Phase 5 | Complete |
 | SKIP-01 | Phase 30 | Complete |
+| POL-02 | Phase 32 | Complete |
 | POL-03 | Phase 31 | Complete |
 | POL-04 | Phase 31 | Complete |
 
 **Coverage:**
-- v1 requirements: 20 total
-- Mapped to phases: 20
+- v1 requirements: 21 total
+- Mapped to phases: 21
 - Unmapped: 0
 
 ---

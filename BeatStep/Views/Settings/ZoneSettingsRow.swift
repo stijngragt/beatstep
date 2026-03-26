@@ -33,6 +33,7 @@ struct ZoneSettingsRow: View {
                     BSHaptics.selection()
                 }
                 .padding(.top, Spacing.sm)
+                .transition(.opacity)
             }
         }
     }
