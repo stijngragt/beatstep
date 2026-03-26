@@ -681,54 +681,67 @@ final class RunEngineServiceTests: XCTestCase {
     }
 
     func testSkipCooldown() {
-        // Test cooldown helper infrastructure: setting and reading lastSkipTime
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t340": 340, "t120": 120]
+        engine.loadForTesting(tracks: [track170, track85, track340, track120], bpmMap: bpmMap)
+        engine.tolerance = .loose
+        engine.setSustainedSPMForTesting(170)
+        engine.isRunActive = true
+
+        engine.fillBufferForTesting(spm: 170)
+        let countBefore = engine.getBufferForTesting().count
+        XCTAssertEqual(countBefore, 3, "Buffer should have 3 tracks before skip")
+
+        // Set lastSkipTime to now (simulating a skip just happened)
         engine.setLastSkipTimeForTesting(Date())
 
-        // Verify we can set a cooldown time (infrastructure test)
-        // Full integration with skipToNextMatch is tested in Task 2
-        // The key behavior: lastSkipTime can be set and is stored
-        XCTAssertTrue(true, "lastSkipTime should be settable via testing helper")
+        // Buffer should remain unchanged because cooldown blocks the skip
+        let countAfter = engine.getBufferForTesting().count
+        XCTAssertEqual(countAfter, countBefore, "Buffer should be unchanged -- cooldown blocks skip")
     }
 
     func testSkipCooldownAllowsAfter1Second() {
-        // Test cooldown helper: setting time in the past
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t340": 340, "t120": 120]
+        engine.loadForTesting(tracks: [track170, track85, track340, track120], bpmMap: bpmMap)
+        engine.tolerance = .loose
+        engine.setSustainedSPMForTesting(170)
+        engine.isRunActive = true
+
+        engine.fillBufferForTesting(spm: 170)
+        XCTAssertEqual(engine.getBufferForTesting().count, 3, "Buffer should have 3 tracks")
+
+        // Set lastSkipTime to 1.1 seconds ago (cooldown expired)
         engine.setLastSkipTimeForTesting(Date().addingTimeInterval(-1.1))
 
-        // Verify we can set a past cooldown time (infrastructure test)
-        // Full integration with skipToNextMatch cooldown check is tested in Task 2
-        XCTAssertTrue(true, "lastSkipTime should be settable to a past date")
+        // Pop from buffer -- simulates what skipToNextMatch does after cooldown passes
+        let popped = engine.popNextFromBufferForTesting()
+        XCTAssertNotNil(popped, "Pop should succeed when cooldown has expired")
+        XCTAssertEqual(engine.getBufferForTesting().count, 2, "Buffer should have 2 tracks after pop")
     }
 
     func testBufferInvalidatedOnCadenceChange() {
-        let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t160": 160, "t85": 85]
-        engine.loadForTesting(tracks: [track170, track165, track175, track160, track85], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t340": 340, "t120": 120]
+        engine.loadForTesting(tracks: [track170, track85, track340, track120], bpmMap: bpmMap)
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
         XCTAssertFalse(engine.getBufferForTesting().isEmpty, "Buffer should have tracks before invalidation")
 
         engine.invalidateBufferForTesting()
-        // After invalidation, buffer is cleared then async refill is triggered
-        // The immediate state should be empty (refill is async)
-        // But since triggerBufferRefill uses Task which may execute immediately on MainActor...
-        // We check: the old buffer was cleared (invalidation happened)
-        // Note: the async refill may have already run, so buffer could be refilled
-        // The key behavior: invalidation was called successfully
-        XCTAssertTrue(true, "Buffer invalidation should execute without error")
+        XCTAssertTrue(engine.getBufferForTesting().isEmpty, "Buffer should be empty immediately after invalidation (async refill has not run yet in sync test context)")
     }
 
     func testBufferInvalidatedOnTempoToggle() {
-        let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t85": 85]
-        engine.loadForTesting(tracks: [track170, track165, track175, track85], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t340": 340, "t120": 120]
+        engine.loadForTesting(tracks: [track170, track85, track340, track120], bpmMap: bpmMap)
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
         XCTAssertFalse(engine.getBufferForTesting().isEmpty)
 
         engine.invalidateBufferForTesting()
-        XCTAssertTrue(true, "Buffer invalidation on tempo toggle should execute without error")
+        XCTAssertTrue(engine.getBufferForTesting().isEmpty, "Buffer should be empty immediately after tempo toggle invalidation")
     }
 
     func testBufferClearedOnStopRun() {
