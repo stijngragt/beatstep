@@ -155,7 +155,7 @@ Plans:
 Plans:
 - [x] 31-01-PLAN.md -- Settings restructure (5 grouped sections, SF Symbol icons, RunDefaultsView sub-page, dynamic version)
 - [x] 31-02-PLAN.md -- Shimmer skeleton loading states (ShimmerModifier, PlaylistListSkeleton, PlaylistDetailSkeleton)
-- [ ] 31-03-PLAN.md -- Gap closure: explicit opacity crossfade transitions + POL requirement definitions
+- [x] 31-03-PLAN.md -- Gap closure: explicit opacity crossfade transitions + POL requirement definitions
 
 ### Phase 32: Micro-Interaction Pass
 **Goal**: Every tap, selection, and state change in the app has appropriate haptic feedback and fluid spring animations
