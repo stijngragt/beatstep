@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Little Big Things
 status: verifying
-stopped_at: Completed 30-02-PLAN.md (Fix Requirements Traceability)
-last_updated: "2026-03-26T10:27:18.399Z"
+stopped_at: Phase 31 context gathered
+last_updated: "2026-03-26T10:53:56.645Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
@@ -96,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:19:53.351Z
-Stopped at: Completed 30-02-PLAN.md (Fix Requirements Traceability)
-Resume file: None
+Last session: 2026-03-26T10:53:56.643Z
+Stopped at: Phase 31 context gathered
+Resume file: .planning/phases/31-settings-skeleton-states/31-CONTEXT.md
