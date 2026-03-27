@@ -20,7 +20,7 @@ final class CadenceService {
     @ObservationIgnored
     private var cadenceWindow: [(timestamp: Date, cadence: Double)] = []
     @ObservationIgnored
-    private let windowDuration: TimeInterval = 5.0
+    private let windowDuration: TimeInterval = 2.5
     @ObservationIgnored
     private var lastStepTime: Date?
     @ObservationIgnored
@@ -93,7 +93,12 @@ final class CadenceService {
         // Compute rolling average
         guard !cadenceWindow.isEmpty else { return }
         let avgSPM = cadenceWindow.map(\.cadence).reduce(0, +) / Double(cadenceWindow.count)
-        currentSPM = Int(avgSPM.rounded())
+        // Dead zone filter: only update displayed SPM when change is significant
+        let rounded = Int(avgSPM.rounded())
+        let deadZone = 3
+        if abs(rounded - currentSPM) >= deadZone || currentSPM == 0 {
+            currentSPM = rounded
+        }
 
         // Transition from detecting to active on first sample
         if state == .detecting {
