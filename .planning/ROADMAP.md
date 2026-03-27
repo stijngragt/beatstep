@@ -160,7 +160,7 @@ Plans:
   3. The badge correctly handles half-tempo and double-tempo track matches without showing false mismatches
 **Plans**: 1 plan
 Plans:
-- [ ] 37-01-PLAN.md — [To be planned]
+- [ ] 37-01-PLAN.md — Tempo normalization, SyncBadge icons, CadenceDisplayView simplification
 **UI hint**: yes
 
 ## Progress
@@ -206,4 +206,4 @@ Phases execute in numeric order: 33 -> 34 -> 35 -> 36 -> 37
 | 34. Player Dock Fix | v1.7 | 0/1 | Complete    | 2026-03-26 |
 | 35. Collapsible Player Strip | v1.7 | 1/1 | Complete    | 2026-03-27 |
 | 36. Responsive Cadence | v1.7 | 1/1 | Complete    | 2026-03-27 |
-| 37. Beat Sync Badge | v1.7 | 0/0 | Not started | - |
+| 37. Beat Sync Badge | v1.7 | 0/1 | Not started | - |
