@@ -9,9 +9,9 @@ Requirements for v1.7 Beat Perfect. Each maps to roadmap phases.
 
 ### Cadence
 
-- [ ] **CAD-01**: User sees cadence update on screen within 2 seconds of a real pace change
-- [ ] **CAD-02**: Song selection responds to sustained cadence changes within 12 seconds (reduced from 24s worst-case)
-- [ ] **CAD-03**: Cadence display remains stable during steady-state running (no jitter from reduced window)
+- [x] **CAD-01**: User sees cadence update on screen within 2 seconds of a real pace change
+- [x] **CAD-02**: Song selection responds to sustained cadence changes within 12 seconds (reduced from 24s worst-case)
+- [x] **CAD-03**: Cadence display remains stable during steady-state running (no jitter from reduced window)
 
 ### Beat Sync
 
@@ -52,9 +52,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAD-01 | Phase 36 | Pending |
-| CAD-02 | Phase 36 | Pending |
-| CAD-03 | Phase 36 | Pending |
+| CAD-01 | Phase 36 | Complete |
+| CAD-02 | Phase 36 | Complete |
+| CAD-03 | Phase 36 | Complete |
 | SYNC-01 | Phase 37 | Pending |
 | SYNC-02 | Phase 37 | Pending |
 | BUG-01 | Phase 33 | Complete |

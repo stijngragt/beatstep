@@ -94,7 +94,7 @@
 - [x] **Phase 33: Analyzed State Fix** - Library filters reflect actual scan state immediately (completed 2026-03-26)
 - [x] **Phase 34: Player Dock Fix** - Mini player docks above tab bar without overlap (completed 2026-03-26)
 - [x] **Phase 35: Collapsible Player Strip** - Two-state player with swipe collapse/expand (completed 2026-03-27)
-- [ ] **Phase 36: Responsive Cadence** - Sub-2s display updates and faster song selection
+- [x] **Phase 36: Responsive Cadence** - Sub-2s display updates and faster song selection (completed 2026-03-27)
 - [ ] **Phase 37: Beat Sync Badge** - Real-time sync confidence visible during runs
 
 ## Phase Details
@@ -148,7 +148,7 @@ Plans:
   3. During steady-state running at a constant pace, the cadence display does not jitter by more than 5 SPM between consecutive readings
 **Plans**: 1 plan
 Plans:
-- [ ] 36-01-PLAN.md — Window shrink, dead zone filter, and debounce reduction
+- [x] 36-01-PLAN.md — Window shrink, dead zone filter, and debounce reduction
 
 ### Phase 37: Beat Sync Badge
 **Goal**: Runners can see at a glance how well their current stride matches the playing track's beat
@@ -205,5 +205,5 @@ Phases execute in numeric order: 33 -> 34 -> 35 -> 36 -> 37
 | 33. Analyzed State Fix | v1.7 | 1/1 | Complete    | 2026-03-26 |
 | 34. Player Dock Fix | v1.7 | 0/1 | Complete    | 2026-03-26 |
 | 35. Collapsible Player Strip | v1.7 | 1/1 | Complete    | 2026-03-27 |
-| 36. Responsive Cadence | v1.7 | 0/1 | Not started | - |
+| 36. Responsive Cadence | v1.7 | 1/1 | Complete   | 2026-03-27 |
 | 37. Beat Sync Badge | v1.7 | 0/0 | Not started | - |
