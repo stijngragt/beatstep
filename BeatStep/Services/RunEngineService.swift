@@ -497,7 +497,7 @@ final class RunEngineService {
         // Outside tolerance -- start debounce
         sustainedChangeTask?.cancel()
         sustainedChangeTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(17))
+            try? await Task.sleep(for: .seconds(8))
             guard !Task.isCancelled else { return }
             // Commit sustained change
             self?.sustainedSPM = newSPM
