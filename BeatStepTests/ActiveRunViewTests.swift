@@ -3,7 +3,7 @@ import XCTest
 
 final class ActiveRunViewTests: XCTestCase {
 
-    /// Verify ActiveRunView can be instantiated with nil zone (free mode).
+    /// Verify ActiveRunView can be instantiated with empty zones (free mode).
     /// This is a build-verification test confirming the view compiles
     /// and all sub-component interfaces are satisfied.
     func testActiveRunViewInstantiatesWithNilZone() {
@@ -15,13 +15,13 @@ final class ActiveRunViewTests: XCTestCase {
         let view = ActiveRunView(
             playlist: playlist,
             tracks: [],
-            selectedZoneId: nil
+            selectedZoneIds: []
         )
         // View instantiated without crash -- free mode (no zone)
-        XCTAssertNil(view.selectedZoneId)
+        XCTAssertTrue(view.selectedZoneIds.isEmpty)
     }
 
-    /// Verify ActiveRunView accepts a zone ID for guided mode.
+    /// Verify ActiveRunView accepts zone IDs for guided mode.
     func testActiveRunViewInstantiatesWithZoneId() {
         let playlist = SpotifyPlaylist(
             id: "test", name: "Test", description: nil, images: nil,
@@ -31,9 +31,9 @@ final class ActiveRunViewTests: XCTestCase {
         let view = ActiveRunView(
             playlist: playlist,
             tracks: [],
-            selectedZoneId: 1
+            selectedZoneIds: [1]
         )
-        XCTAssertEqual(view.selectedZoneId, 1)
+        XCTAssertTrue(view.selectedZoneIds.contains(1))
     }
 
     // MARK: - Tempo Mode Toggle Logic

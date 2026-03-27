@@ -141,4 +141,73 @@ final class CadenceServiceTests: XCTestCase {
         service.stopDetecting()
         XCTAssertEqual(service.stepCount, 0)
     }
+
+    // MARK: - Dead Zone Filter
+
+    func testDeadZoneFiltersSmallFluctuations() {
+        let now = Date()
+        service.state = .detecting
+
+        // First sample sets currentSPM (initial bypass since currentSPM == 0)
+        service.processCadenceSample(170.0, at: now)
+        XCTAssertEqual(service.currentSPM, 170)
+
+        // Second sample: avg = (170+171)/2 = 170.5 -> 171, delta from 170 = 1 < 3
+        service.processCadenceSample(171.0, at: now.addingTimeInterval(1))
+        XCTAssertEqual(service.currentSPM, 170, "Delta of 1 SPM should be filtered by dead zone")
+
+        // Third sample: avg = (170+171+172)/3 = 171 -> 171, delta from 170 = 1 < 3
+        service.processCadenceSample(172.0, at: now.addingTimeInterval(2))
+        XCTAssertEqual(service.currentSPM, 170, "Delta of 1 SPM should still be filtered")
+    }
+
+    func testDeadZonePassesSignificantChanges() {
+        let now = Date()
+        service.state = .detecting
+
+        // First sample sets currentSPM (initial bypass)
+        service.processCadenceSample(170.0, at: now)
+        XCTAssertEqual(service.currentSPM, 170)
+
+        // Second sample: avg = (170+176)/2 = 173, delta from 170 = 3 >= 3, passes
+        service.processCadenceSample(176.0, at: now.addingTimeInterval(1))
+        XCTAssertEqual(service.currentSPM, 173, "Delta of 3 SPM should pass dead zone")
+    }
+
+    func testDeadZonePassesInitialReading() {
+        // currentSPM starts at 0 after stopDetecting
+        XCTAssertEqual(service.currentSPM, 0)
+
+        service.state = .detecting
+        service.processCadenceSample(170.0, at: Date())
+        XCTAssertEqual(service.currentSPM, 170, "Initial reading should bypass dead zone")
+    }
+
+    func testWindowPrunesAt2Point5Seconds() {
+        let now = Date()
+        service.state = .detecting
+
+        // Sample 3 seconds ago -- should be pruned with 2.5s window
+        service.processCadenceSample(150.0, at: now.addingTimeInterval(-3.0))
+        // Recent sample
+        service.processCadenceSample(180.0, at: now)
+
+        // The 150 sample is 3s old (>2.5s window), pruned. Only 180 remains.
+        XCTAssertEqual(service.currentSPM, 180)
+    }
+
+    func testTrendDetectsChangeThroughDeadZone() {
+        let now = Date()
+        service.state = .detecting
+
+        // Feed increasing samples: 160, 163, 166, 169, 172
+        // Overall delta = 12 SPM > 5 threshold -> trend should be .speedingUp
+        // Trend uses raw avgSPM, not dead-zone-filtered currentSPM
+        let samples: [Double] = [160, 163, 166, 169, 172]
+        for (i, spm) in samples.enumerated() {
+            service.processCadenceSample(spm, at: now.addingTimeInterval(Double(i)))
+        }
+
+        XCTAssertEqual(service.trend, .speedingUp, "Trend should detect change through dead zone using raw values")
+    }
 }

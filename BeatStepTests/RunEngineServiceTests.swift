@@ -646,7 +646,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testBufferFillsOnStart() {
         let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t160": 160, "t85": 85]
         engine.loadForTesting(tracks: [track170, track165, track175, track160, track85], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
@@ -656,7 +656,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testSkipPopsFromBuffer() {
         let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t160": 160, "t85": 85]
         engine.loadForTesting(tracks: [track170, track165, track175, track160, track85], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
@@ -668,7 +668,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testBufferRefillAfterPop() {
         let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t160": 160, "t85": 85]
         engine.loadForTesting(tracks: [track170, track165, track175, track160, track85], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
@@ -747,7 +747,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testBufferClearedOnStopRun() {
         let bpmMap: [String: Int] = ["t170": 170, "t165": 165, "t175": 175, "t160": 160]
         engine.loadForTesting(tracks: [track170, track165, track175, track160], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
@@ -778,7 +778,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testSkipUsesBufferNotOnDemandCompute() {
         let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t120": 120, "t200": 200]
         engine.loadForTesting(tracks: [track170, track85, track120, track200], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
 
         engine.fillBufferForTesting(spm: 170)
@@ -795,7 +795,7 @@ final class RunEngineServiceTests: XCTestCase {
     func testTempoModeDidSetInvalidatesBuffer() {
         let bpmMap: [String: Int] = ["t170": 170, "t85": 85, "t120": 120]
         engine.loadForTesting(tracks: [track170, track85, track120], bpmMap: bpmMap)
-        engine.tolerance = .wide
+        engine.tolerance = .loose
         engine.setSustainedSPMForTesting(170)
         engine.isRunActive = true
 
