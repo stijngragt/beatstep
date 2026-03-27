@@ -108,9 +108,10 @@ final class RunEngineService {
         return adjustedCadence - trackBPM
     }
 
-    /// Sync quality derived from cadenceDelta and tolerance
+    /// Sync quality derived from adjusted cadence and current track BPM with tempo normalization
     var syncQuality: SyncQuality {
-        SyncQuality.from(delta: cadenceDelta, tolerance: tolerance)
+        guard let trackBPM = currentTrackBPM else { return .mismatched }
+        return SyncQuality.from(spm: adjustedCadence, trackBPM: trackBPM, tolerance: tolerance)
     }
 
     // MARK: - Run Lifecycle
