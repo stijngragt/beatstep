@@ -81,4 +81,8 @@ enum ComponentSize {
     static let iconSmall: CGFloat = 24
     static let iconMedium: CGFloat = 44
     static let iconLarge: CGFloat = 60
+    static let miniPlayerCollapsedHeight: CGFloat = 20
+    static let dragHandleWidth: CGFloat = 36
+    static let dragHandleHeight: CGFloat = 4
+    static let dragHandleCornerRadius: CGFloat = 2
 }

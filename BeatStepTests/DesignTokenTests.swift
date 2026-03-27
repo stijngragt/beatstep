@@ -123,6 +123,10 @@ final class DesignTokenTests: XCTestCase {
         XCTAssertEqual(ComponentSize.iconSmall, 24)
         XCTAssertEqual(ComponentSize.iconMedium, 44)
         XCTAssertEqual(ComponentSize.iconLarge, 60)
+        XCTAssertEqual(ComponentSize.miniPlayerCollapsedHeight, 20)
+        XCTAssertEqual(ComponentSize.dragHandleWidth, 36)
+        XCTAssertEqual(ComponentSize.dragHandleHeight, 4)
+        XCTAssertEqual(ComponentSize.dragHandleCornerRadius, 2)
     }
 
     // MARK: - Haptic Tokens

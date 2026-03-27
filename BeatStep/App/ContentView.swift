@@ -66,7 +66,7 @@ struct ContentView: View {
     @ViewBuilder
     private var miniPlayerInset: some View {
         if miniPlayerVisible {
-            MiniPlayerView()
+            CollapsiblePlayerView()
                 .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
