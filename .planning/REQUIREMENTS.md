@@ -15,8 +15,8 @@ Requirements for v1.7 Beat Perfect. Each maps to roadmap phases.
 
 ### Beat Sync
 
-- [ ] **SYNC-01**: Run screen shows a beat sync confidence badge reflecting how closely SPM matches current track BPM
-- [ ] **SYNC-02**: Badge updates reactively as cadence or track changes
+- [x] **SYNC-01**: Run screen shows a beat sync confidence badge reflecting how closely SPM matches current track BPM
+- [x] **SYNC-02**: Badge updates reactively as cadence or track changes
 
 ### Bug Fixes
 
@@ -55,8 +55,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAD-01 | Phase 36 | Complete |
 | CAD-02 | Phase 36 | Complete |
 | CAD-03 | Phase 36 | Complete |
-| SYNC-01 | Phase 37 | Pending |
-| SYNC-02 | Phase 37 | Pending |
+| SYNC-01 | Phase 37 | Complete |
+| SYNC-02 | Phase 37 | Complete |
 | BUG-01 | Phase 33 | Complete |
 | BUG-02 | Phase 33 | Complete |
 | PLAY-01 | Phase 34 | Pending |
