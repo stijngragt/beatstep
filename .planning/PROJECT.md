@@ -75,18 +75,15 @@ When you run, your music should move with you — every footstrike landing on th
 - ✓ Shimmer skeleton loading states replacing ProgressView spinners in library views — v1.6
 - ✓ Micro-interaction pass (haptics, transitions, loading states) — v1.6
 
+- ✓ Fix: analyzed state updates after scan (root cause for broken filter) — v1.7
+- ✓ Fix: player docked above tab bar, not overlapping — v1.7
+- ✓ Collapsible player strip (title/BPM/controls, swipe-down to thin handle) — v1.7
+- ✓ Responsive cadence detection (<2s from real change to screen update) — v1.7
+- ✓ Beat sync badge with SF Symbol icons and half/double-tempo normalization — v1.7
+
 ### Active
 
-**Current Milestone: v1.7 Beat Perfect**
-
-**Goal:** Make the core loop trustworthy — responsive cadence, accurate beat sync, reliable library state, and a player that stays out of the way.
-
-**Target features:**
-- Responsive cadence detection (<2s from real change to screen update)
-- 1:1 beat-to-step accuracy validation with known-BPM tracks
-- Fix: analyzed state updates after scan (root cause for broken filter)
-- Fix: player covering bottom nav bar — dock above, not overlap
-- Collapsible player strip (title/BPM/controls, swipe-down to thin handle)
+None — v1.7 milestone complete.
 
 ### Out of Scope
 
@@ -185,7 +182,7 @@ Known issues:
 
 ## Current State
 
-v1.7 in progress. Phases 33-36 complete — analyzed state bug fixed, mini player docked above tab bar, responsive cadence tuned (2.5s window, dead zone filter, 8s debounce). Remaining: beat sync badge.
+v1.7 complete. All 5 phases (33-37) shipped — analyzed state bug fixed, mini player docked above tab bar, collapsible player strip, responsive cadence tuned (2.5s window, dead zone filter, 8s debounce), beat sync badge with SF Symbol icons and half/double-tempo normalization.
 
 ---
-*Last updated: 2026-03-27 after Phase 36 (Responsive Cadence) completion*
+*Last updated: 2026-03-27 after Phase 37 (Beat Sync Badge) completion*
