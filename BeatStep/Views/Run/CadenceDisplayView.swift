@@ -3,7 +3,6 @@ import SwiftUI
 struct CadenceDisplayView: View {
     let spm: Int
     let trend: CadenceTrend
-    let syncQuality: SyncQuality
     let cadenceDelta: Int
     let isGuidedMode: Bool
 
@@ -12,24 +11,14 @@ struct CadenceDisplayView: View {
             HStack(alignment: .firstTextBaseline, spacing: Spacing.md) {
                 Text("\(spm)")
                     .font(.displaySPM)
-                    .foregroundStyle(syncQuality.color)
+                    .foregroundStyle(Color.textPrimary)
 
                 trendArrow
             }
 
-            // Delta or sync label between SPM number and "SPM" label
-            Group {
-                if isGuidedMode {
-                    deltaLabel
-                        .transition(.opacity)
-                } else {
-                    Text(syncQuality.displayLabel)
-                        .font(.captionBold)
-                        .foregroundStyle(syncQuality.color)
-                        .transition(.opacity)
-                }
+            if isGuidedMode {
+                deltaLabel
             }
-            .animation(BSAnimation.smooth, value: isGuidedMode)
 
             Text("SPM")
                 .font(.displaySecondary)
@@ -40,7 +29,7 @@ struct CadenceDisplayView: View {
     private var deltaLabel: some View {
         Text(cadenceDelta >= 0 ? "+\(cadenceDelta)" : "\(cadenceDelta)")
             .font(.captionBold)
-            .foregroundStyle(syncQuality.color)
+            .foregroundStyle(Color.textSecondary)
     }
 
     private var trendArrow: some View {
@@ -68,7 +57,6 @@ struct CadenceDisplayView: View {
     CadenceDisplayView(
         spm: 174,
         trend: .steady,
-        syncQuality: .inSync,
         cadenceDelta: 2,
         isGuidedMode: true
     )
@@ -79,18 +67,16 @@ struct CadenceDisplayView: View {
     CadenceDisplayView(
         spm: 166,
         trend: .slowingDown,
-        syncQuality: .drifting,
         cadenceDelta: -8,
         isGuidedMode: true
     )
     .background(Color.surfaceBase)
 }
 
-#Preview("Free - Mismatched") {
+#Preview("Free - Steady") {
     CadenceDisplayView(
         spm: 152,
         trend: .slowingDown,
-        syncQuality: .mismatched,
         cadenceDelta: 0,
         isGuidedMode: false
     )
@@ -101,7 +87,6 @@ struct CadenceDisplayView: View {
     CadenceDisplayView(
         spm: 174,
         trend: .steady,
-        syncQuality: .inSync,
         cadenceDelta: 0,
         isGuidedMode: false
     )

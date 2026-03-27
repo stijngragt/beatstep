@@ -36,7 +36,7 @@ struct ActiveRunView: View {
 
             VStack(spacing: 0) {
                 // Zone 1: Status bar
-                RunStatusBar(zoneName: zoneName, syncQuality: runEngine.syncQuality)
+                RunStatusBar(zoneName: zoneName, syncQuality: runEngine.syncQuality, isTrackPlaying: runEngine.currentMatchedTrack != nil)
 
                 Spacer()
 
@@ -55,7 +55,6 @@ struct ActiveRunView: View {
                     CadenceDisplayView(
                         spm: cadenceService.currentSPM,
                         trend: cadenceService.trend,
-                        syncQuality: runEngine.syncQuality,
                         cadenceDelta: runEngine.cadenceDelta,
                         isGuidedMode: runEngine.runMode == .guided
                     )
@@ -77,16 +76,18 @@ struct ActiveRunView: View {
 
                 // Zone 3: Player + Controls + Stop
                 VStack(spacing: Spacing.md) {
-                    if let track = runEngine.currentMatchedTrack {
-                        RunPlayerView(
-                            track: track,
-                            isPaused: playerService.isPaused,
-                            trackBPM: runEngine.currentTrackBPM,
-                            onPlayPause: { playerService.togglePlayPause() },
-                            onSkip: { Task { await runEngine.skipToNextMatch() } }
-                        )
-                        .padding(.horizontal, Spacing.md)
-                        .transition(.opacity)
+                    Group {
+                        if let track = runEngine.currentMatchedTrack {
+                            RunPlayerView(
+                                track: track,
+                                isPaused: playerService.isPaused,
+                                trackBPM: runEngine.currentTrackBPM,
+                                onPlayPause: { playerService.togglePlayPause() },
+                                onSkip: { Task { await runEngine.skipToNextMatch() } }
+                            )
+                            .padding(.horizontal, Spacing.md)
+                            .transition(.opacity)
+                        }
                     }
                     .animation(BSAnimation.smooth, value: runEngine.currentMatchedTrack != nil)
 
@@ -107,20 +108,22 @@ struct ActiveRunView: View {
                     }
 
                     // Cool Down button (guided mode only, not during cool down)
-                    if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
-                        Button {
-                            BSHaptics.light()
-                            runEngine.startCoolDown()
-                        } label: {
-                            Label("Cool Down", systemImage: "arrow.down.heart")
-                                .font(.bodyBold)
-                                .foregroundStyle(Color.textPrimary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.md)
-                                .background(Capsule().fill(Color.stateWarning.opacity(0.8)))
-                                .padding(.horizontal, Spacing.xl)
+                    Group {
+                        if runEngine.runMode == .guided && runEngine.rampPhase != .coolDown {
+                            Button {
+                                BSHaptics.light()
+                                runEngine.startCoolDown()
+                            } label: {
+                                Label("Cool Down", systemImage: "arrow.down.heart")
+                                    .font(.bodyBold)
+                                    .foregroundStyle(Color.textPrimary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.md)
+                                    .background(Capsule().fill(Color.stateWarning.opacity(0.8)))
+                                    .padding(.horizontal, Spacing.xl)
+                            }
+                            .transition(.opacity)
                         }
-                        .transition(.opacity)
                     }
                     .animation(BSAnimation.smooth, value: runEngine.rampPhase)
 
