@@ -94,4 +94,55 @@ final class SyncQualityTests: XCTestCase {
     func testTempoModeIsCaseIterable() {
         XCTAssertEqual(TempoMode.allCases.count, 2)
     }
+
+    // MARK: - Tempo Normalization
+
+    func testHalfTempoTrackReturnsInSync() {
+        // Runner at 160 SPM, track at 80 BPM -> 2x track = 160, delta = 0
+        XCTAssertEqual(SyncQuality.from(spm: 160, trackBPM: 80, tolerance: .normal), .inSync)
+    }
+
+    func testDoubleTempoTrackReturnsInSync() {
+        // Runner at 85 SPM, track at 170 BPM -> 0.5x track = 85, delta = 0
+        XCTAssertEqual(SyncQuality.from(spm: 85, trackBPM: 170, tolerance: .normal), .inSync)
+    }
+
+    func testRawMatchReturnsInSync() {
+        // Runner at 174 SPM, track at 174 BPM -> delta = 0
+        XCTAssertEqual(SyncQuality.from(spm: 174, trackBPM: 174, tolerance: .normal), .inSync)
+    }
+
+    func testRawDeltaWithinToleranceReturnsInSync() {
+        // Runner at 174 SPM, track at 180 BPM -> delta 6 <= range 7
+        XCTAssertEqual(SyncQuality.from(spm: 174, trackBPM: 180, tolerance: .normal), .inSync)
+    }
+
+    func testDriftingWhenBeyondSingleRange() {
+        // Runner at 160 SPM, track at 150 BPM -> raw delta 10 > 7 but <= 14
+        XCTAssertEqual(SyncQuality.from(spm: 160, trackBPM: 150, tolerance: .normal), .drifting)
+    }
+
+    func testMismatchedWhenAllCandidatesFarOff() {
+        // Runner at 160 SPM, track at 120 BPM
+        // raw delta 40, half (60) delta 100, double (240) delta 80 -- all > 14
+        XCTAssertEqual(SyncQuality.from(spm: 160, trackBPM: 120, tolerance: .normal), .mismatched)
+    }
+
+    func testZeroBPMReturnsMismatched() {
+        XCTAssertEqual(SyncQuality.from(spm: 160, trackBPM: 0, tolerance: .normal), .mismatched)
+    }
+
+    // MARK: - Icon Names
+
+    func testIconNameInSync() {
+        XCTAssertEqual(SyncQuality.inSync.iconName, "waveform.path.ecg")
+    }
+
+    func testIconNameDrifting() {
+        XCTAssertEqual(SyncQuality.drifting.iconName, "waveform.badge.minus")
+    }
+
+    func testIconNameMismatched() {
+        XCTAssertEqual(SyncQuality.mismatched.iconName, "waveform.slash")
+    }
 }
