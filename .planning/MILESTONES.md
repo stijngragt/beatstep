@@ -1,5 +1,17 @@
 # Milestones
 
+## v1.7 Beat Perfect (Shipped: 2026-03-27)
+
+**Phases completed:** 5 phases, 5 plans, 6 tasks
+
+**Key accomplishments:**
+
+- Upsert logic in LibraryScanService for first-time scan records plus scanCompletionCount reactive observer in PlaylistListView
+- 2.5s rolling window + 3 SPM dead zone filter on cadence display, 8s debounce for song selection
+- Beat sync badge with SF Symbol icons (waveform.path.ecg/badge.minus/slash), half/double-tempo normalization, and simplified CadenceDisplayView showing only SPM + trend
+
+---
+
 ## v1.6 Little Big Things (Shipped: 2026-03-26)
 
 **Phases completed:** 6 phases, 15 plans, 26 tasks

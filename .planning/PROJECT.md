@@ -160,19 +160,25 @@ None — v1.7 milestone complete.
 | Scoped .animation(value:) on run screen | Prevents number jank from rapid cadence updates | ✓ Good — numbers snap, chrome animates |
 | ShimmerModifier with .linear repeatForever | Internal phase animation isolated from SwiftUI transition system | ✓ Good — no conflict with .transition(.opacity) |
 | Label-based section headers in Settings | SF Symbols + foregroundStyle(Color.accent) pattern | ✓ Good — consistent, discoverable sections |
+| Upsert logic for scan records | Insert-or-update prevents duplicate CachedBPM entries on re-scan | ✓ Good — root cause fix for analyzed state bug |
+| safeAreaInset for mini player | Docks above tab bar without overlapping — system respects inset | ✓ Good — clean layout, no manual offsets |
+| DragGesture for collapsible player | Swipe-down collapses to handle, swipe-up restores — with snap thresholds | ✓ Good — natural gesture, no accidental collapses |
+| 2.5s rolling cadence window | Balance between responsiveness and stability — CMPedometer updates | ✓ Good — <2s screen update from real change |
+| 3 SPM dead zone filter | Suppresses display jitter from ±1-2 SPM noise during steady running | ✓ Good — stable display without sacrificing responsiveness |
+| 8s song selection debounce | Prevents rapid re-queuing during pace transitions | ✓ Good — songs stick long enough to enjoy |
+| Half/double-tempo normalization in SyncQuality | Compares SPM against 1x, 0.5x, 2x of track BPM — picks smallest delta | ✓ Good — 170 BPM track at 85 SPM shows "In Sync" |
+| SF Symbol icons in SyncBadge | Visual glanceability — waveform.path.ecg / badge.minus / slash | ✓ Good — readable while running |
 
 ## Context
 
-Shipped v1.6 with 6,845 LOC Swift across 32 phases (7 milestones). 104 files changed in v1.6 alone (+10,927 lines).
+Shipped v1.7 with ~102k LOC Swift across 37 phases (8 milestones). 18 Swift files changed in v1.7 (+509 lines, -84 lines). Timeline: 2 days (2026-03-26 → 2026-03-27).
 Tech stack: Swift/SwiftUI, CoreMotion (CMPedometer + CMMotionManager), HealthKit (optional), Spotify Web API (PKCE auth), GetSongBPM API via Cloudflare Worker proxy, SwiftData for BPM cache, Swift Charts for waveform visualization.
 
-Key architecture additions in v1.6:
-- `BSHaptics` / `BSAnimation` — design system tokens for haptics (7 types) and animations (5 spring presets)
-- `ShimmerModifier` — gradient sweep animation for skeleton loading states
-- `PlaylistCoverage` / `PlaylistFilter` — typed data models for library search and filtering
-- `SkipQueueBuffer` — pre-computed 3-track buffer for instant song skipping
-- `RunZone.selectedZoneIds` (Set<Int>) — multi-zone selection with merged BPM range
-- 41 `.transition(.opacity)` instances across all conditional views for crossfade transitions
+Key architecture additions in v1.7:
+- `SyncQuality.from(spm:trackBPM:tolerance:)` — half/double-tempo normalization (compares 1x, 0.5x, 2x multiples)
+- `SyncBadge` with SF Symbol icons — waveform.path.ecg (in sync), waveform.badge.minus (drifting), waveform.slash (mismatched)
+- `CollapsiblePlayerStrip` — swipe-down to thin handle, swipe-up to restore
+- 2.5s rolling cadence window with 3 SPM dead zone filter and 8s song selection debounce
 
 BPM data sourced from GetSongBPM (not Spotify Audio Features, deprecated Nov 2024). Danceability field used for smart selection ranking.
 
@@ -182,7 +188,7 @@ Known issues:
 
 ## Current State
 
-v1.7 complete. All 5 phases (33-37) shipped — analyzed state bug fixed, mini player docked above tab bar, collapsible player strip, responsive cadence tuned (2.5s window, dead zone filter, 8s debounce), beat sync badge with SF Symbol icons and half/double-tempo normalization.
+v1.7 complete. All milestones through v1.7 shipped. Core running loop is now trustworthy — responsive cadence, accurate beat sync, reliable library state, and a player that stays out of the way. Ready for next milestone planning.
 
 ---
-*Last updated: 2026-03-27 after Phase 37 (Beat Sync Badge) completion*
+*Last updated: 2026-03-27 after v1.7 Beat Perfect milestone completion*

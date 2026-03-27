@@ -318,6 +318,50 @@
 
 ---
 
+## Milestone: v1.7 — Beat Perfect
+
+**Shipped:** 2026-03-27
+**Phases:** 5 | **Plans:** 5 | **Sessions:** ~2
+
+### What Was Built
+- Analyzed state fix: upsert logic in LibraryScanService + scanCompletionCount reactive observer
+- Player dock fix: safeAreaInset positioning above tab bar
+- Collapsible player strip: two-state DragGesture with cross-fade, snap thresholds, UserDefaults persistence
+- Responsive cadence: 2.5s rolling window, 3 SPM dead zone filter, 8s song selection debounce
+- Beat sync badge: SyncQuality.from(spm:trackBPM:tolerance:) with half/double-tempo normalization, SF Symbol icons in capsule badge
+
+### What Worked
+- **Bug-fix-first sequencing** — Phase 33 (analyzed state) and 34 (player dock) fixed root causes before building new features on top. Collapsible player (Phase 35) would have inherited the dock bug if 34 hadn't landed first.
+- **Research-driven implementation** — Phases 35-37 used gsd-phase-researcher, producing targeted RESEARCH.md files. The researcher identified the exact SF Symbol names, existing code patterns, and API signatures before the planner touched anything.
+- **TDD for model logic** — Phase 37 wrote 10 failing tests first (normalization edge cases, icon names), then made them pass. Caught a subtle half-tempo comparison bug before it reached the UI.
+- **Single-plan phases** — Every phase had exactly 1 plan. For focused fixes and incremental features, this eliminates wave coordination overhead entirely.
+- **Executor agent efficiency** — All 5 plans completed in single sessions with no checkpoint interruptions. Autonomous execution with clean TDD cycle.
+
+### What Was Inefficient
+- **PLAY-01 through PLAY-04 requirements left unchecked** — Phases 34 and 35 completed but their requirement checkboxes weren't ticked in REQUIREMENTS.md. Traceability table also showed "Pending" instead of "Complete." Caught during milestone completion, not during phase execution.
+- **Phase 34 plan checkbox unchecked** — ROADMAP.md showed `[ ] 34-01-PLAN.md` despite the phase being complete with a SUMMARY.md. gsd-tools plan progress tracking has a gap for phases completed without the standard executor flow.
+- **No milestone audit** — Skipped /gsd:audit-milestone before completing. For a 5-phase milestone with clear scope this was acceptable, but the requirements tracking gaps above would have been caught by an audit.
+- **SF Symbol name uncertainty** — Research flagged `waveform.badge.minus` as potentially `waveform.path.badge.minus` but couldn't verify without SF Symbols Mac app. Executor used the CONTEXT.md decision without verification.
+
+### Patterns Established
+- Half/double-tempo normalization: compare SPM against [0.5x, 1x, 2x] of track BPM, use smallest delta
+- Badge visibility gate: hide UI element when no track is playing (isTrackPlaying guard)
+- Dead zone filter: suppress display updates below threshold (3 SPM) to prevent jitter
+- Debounce stratification: different debounce values for display (fast) vs. song selection (slow)
+
+### Key Lessons
+1. **Phase completion should auto-check requirement boxes** — the gsd-tools `phase complete` command updates ROADMAP.md but doesn't touch REQUIREMENTS.md checkboxes or traceability status. This caused 4 requirements to appear incomplete at milestone time.
+2. **Single-plan phases execute fastest** — zero wave coordination, zero cross-plan dependency, zero merge conflicts. For features that don't justify multiple plans, resist the urge to split.
+3. **Research pays off for model/algorithm phases** — the researcher identified the exact normalization approach, existing method signatures, and test patterns. The planner produced a precise plan that needed zero revision.
+4. **SF Symbol names need device verification** — web research can't confirm SF Symbol availability. Include a "verify in SF Symbols app" task when plans reference specific symbol names.
+
+### Cost Observations
+- Model mix: ~60% opus (execution + research), ~30% sonnet (verification/checking), ~10% haiku
+- Sessions: ~2 across 2 days
+- Notable: 5 phases with 5 plans completed in ~2 hours wall time. Clean milestone with zero gap closure phases.
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -331,6 +375,7 @@
 | v1.4 | ~2 | 6 | Pure-logic engine pattern, integration checker value, lazy backfill |
 | v1.5 | ~1 | 3 | Smallest milestone, delete-first approach, EnvironmentKey navigation |
 | v1.6 | ~3 | 6 | Largest milestone (15 plans), parallel worktree execution, token-first polish |
+| v1.7 | ~2 | 5 | Bug-fix-first sequencing, research-driven plans, single-plan phases |
 
 ### Cumulative Quality
 
@@ -343,6 +388,7 @@
 | v1.4 | 90+ | Services + models + views + engine + debug | 0 (Swift Charts is first-party) |
 | v1.5 | 90+ | Services + models + views + onboarding + navigation | 0 (no new deps) |
 | v1.6 | 90+ | Services + models + views + design system + polish | 0 (all SwiftUI native) |
+| v1.7 | 115+ | Services + models + views + cadence + sync quality | 0 (all SwiftUI native) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -366,3 +412,6 @@
 18. Token-first architecture enables parallel polish passes — agents can independently apply tokens (v1.6 — BSHaptics/BSAnimation)
 19. Worktree-based parallel execution works well with mechanical merge resolution (v1.6 — Phase 32 Wave 1)
 20. Always use scoped `.animation(value:)` over blanket `.animation()` when rapid data changes are possible (v1.6 — run screen jank prevention)
+21. Phase completion should auto-update requirement checkboxes and traceability status (v1.7 — 4 requirements appeared incomplete)
+22. Single-plan phases execute fastest for focused fixes and incremental features (v1.7 — zero coordination overhead)
+23. Research-driven planning produces plans that need zero revision (v1.7 — Phase 37 research → plan → check all passed first try)

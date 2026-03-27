@@ -2,46 +2,46 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Beat Perfect
-status: verifying
-stopped_at: Completed 37-01-PLAN.md
-last_updated: "2026-03-27T19:23:17.078Z"
+status: milestone_complete
+stopped_at: Milestone v1.7 complete
+last_updated: "2026-03-27"
 last_activity: 2026-03-27
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 5
   completed_plans: 5
-  percent: 0
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-26)
+See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** When you run, your music should move with you -- every footstrike landing on the beat.
-**Current focus:** Phase 37 — beat-sync-badge
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 37
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: All complete (v1.7)
+Plan: All complete
+Status: Milestone v1.7 shipped — ready for next milestone
 Last activity: 2026-03-27
 
-Progress: [░░░░░░░░░░] 0% (v1.7)
+Progress: [████████████████████] 100% (v1.7)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 60 (across v1.0-v1.6)
-- Total execution time: 8 days (2026-03-19 to 2026-03-26)
+- Total plans completed: 65 (across v1.0-v1.7)
+- Total execution time: 9 days (2026-03-19 to 2026-03-27)
 
-**Recent Trend (v1.6):**
+**Recent Trend (v1.7):**
 
-- 15 plans across 6 phases in 1 day
+- 5 plans across 5 phases in 2 days
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -53,18 +53,16 @@ Progress: [░░░░░░░░░░] 0% (v1.7)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [v1.6]: BSHaptics/BSAnimation shared tokens -- zero raw values in Views/
-- [v1.3]: safeAreaInset for MiniPlayer -- being replaced in Phase 34 (VStack dock)
-- [v1.6]: Run screen numbers snap instantly; chrome uses BSAnimation tokens
-- [Phase 33-analyzed-state-fix]: Upsert via fetch-then-insert for explicit SwiftData control
-- [Phase 33-analyzed-state-fix]: Completion counter pattern for SwiftUI-native reactive updates
-- [Phase 36]: 2.5s window + 3 SPM dead zone for responsive jitter-free cadence display
-- [Phase 36]: 8s debounce for song selection (~10s total with 2s poll)
-- [Phase 37]: Tempo normalization via candidate array [trackBPM, 2x, 0.5x] with min-delta selection
+- [v1.7]: Half/double-tempo normalization in SyncQuality.from(spm:trackBPM:tolerance:)
+- [v1.7]: SF Symbol icons in SyncBadge (waveform.path.ecg / badge.minus / slash)
+- [v1.7]: 2.5s window + 3 SPM dead zone for responsive jitter-free cadence display
+- [v1.7]: 8s debounce for song selection (~10s total with 2s poll)
+- [v1.7]: safeAreaInset for mini player dock above tab bar
+- [v1.7]: DragGesture for collapsible player strip with snap thresholds
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
@@ -73,6 +71,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:20:34.327Z
-Stopped at: Completed 37-01-PLAN.md
+Last session: 2026-03-27
+Stopped at: Milestone v1.7 complete
 Resume file: None
